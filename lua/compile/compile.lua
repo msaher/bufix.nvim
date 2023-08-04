@@ -44,16 +44,17 @@ function Compile:_rest()
         self.job = nil
     end
 
-    if self:_has_buf() then
-        A.nvim_buf_delete(self.buf, {force = true})
-    end
-
+    -- Give time for the '[process existed 0] message to show up.
+    -- Otherwise, they'll show up in the wrong place
+    -- This is only needed for jobs that haven't finished running
+    vim.cmd.sleep('15ms')
 end
 
 function Compile:_execute()
     if not self:_has_buf() then
         self.buf = A.nvim_create_buf(true, true)
     end
+
 
     -- TODO: make the window opening function dynamic
     local win = self:get_win()
