@@ -43,6 +43,11 @@ function Compile:_rest()
         fn.jobstop(self.job)
         self.job = nil
     end
+
+    if self:_has_buf() then
+        A.nvim_buf_delete(self.buf, {force = true})
+    end
+
 end
 
 function Compile:_execute()
