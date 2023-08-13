@@ -6,8 +6,6 @@ Compile = {}
 Compile.__index = Compile
 
 local default_config = {
-    job_opts = {
-    }
 }
 
 function Compile:new(o)
@@ -75,6 +73,11 @@ function Compile:_execute()
         cwd = fn.getcwd(),
         stderr_buffered = true,
         stdout_buffered = true,
+        on_exit = function(job_id, exit_code, event)
+            if self.on_exit ~= nil then
+                self.on_exit(self, job_id, exit_code, event)
+            end
+        end,
     })
 
     A.nvim_buf_set_name(self.buf, '*compile*: ' .. table.concat(self.cmd, " "))
