@@ -80,7 +80,14 @@ function Compile:_execute()
         end,
     })
 
-    A.nvim_buf_set_name(self.buf, '*compile*: ' .. table.concat(self.cmd, " "))
+    local name
+    if type(self.cmd) == 'table' then
+        name = table.concat(self.cmd, " ")
+    else
+        name = self.cmd
+    end
+
+    A.nvim_buf_set_name(self.buf, '*compile*: ' .. name)
 
     -- go back
     A.nvim_set_current_buf(buf_curr)
