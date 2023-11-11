@@ -70,6 +70,7 @@ function Compile:_execute()
     vim.opt_local.modified = false
     self.job = fn.termopen(self.cmd, {
         detach = false,
+        shell = true,
         cwd = fn.getcwd(),
         stderr_buffered = true,
         stdout_buffered = true,
