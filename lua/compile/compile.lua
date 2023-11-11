@@ -9,8 +9,14 @@ local default_config = {
 }
 
 function Compile:new(o)
-   local obj = vim.tbl_deep_extend('force', default_config, o)
-   return setmetatable(obj, self)
+   local config = vim.tbl_deep_extend('force', default_config, o)
+   local compile = setmetatable(config, self)
+
+   if config.auto_start then
+       compile:start()
+   end
+
+   return compile
 end
 
 function Compile:has_buf()
