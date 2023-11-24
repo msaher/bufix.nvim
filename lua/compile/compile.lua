@@ -107,4 +107,13 @@ function Compile:start()
     self:_execute()
 end
 
+function Compile:die()
+    self:_rest()
+
+    if self:_has_buf() then
+        A.nvim_buf_delete(self.buf, {force = true})
+    end
+end
+
+
 return Compile
