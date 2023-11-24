@@ -1,6 +1,5 @@
 local A = vim.api
 local fn = vim.fn
-local M = {}
 
 Compile = {}
 Compile.__index = Compile
