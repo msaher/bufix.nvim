@@ -45,12 +45,13 @@ function Compile:_rest()
     if self.job ~= nil then
         fn.jobstop(self.job)
         self.job = nil
+
+        -- Give time for the '[process existed 0] message to show up.
+        -- Otherwise, they'll show up in the wrong place
+        -- This is only needed for jobs that haven't finished running
+        vim.cmd.sleep('15ms')
     end
 
-    -- Give time for the '[process existed 0] message to show up.
-    -- Otherwise, they'll show up in the wrong place
-    -- This is only needed for jobs that haven't finished running
-    vim.cmd.sleep('15ms')
 end
 
 function Compile:_execute()
