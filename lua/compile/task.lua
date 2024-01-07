@@ -9,17 +9,13 @@ local default_config = {
 
 function Task:new(o)
    local config = vim.tbl_deep_extend('force', default_config, o)
-   local compile = setmetatable(config, self)
+   local task = setmetatable(config, self)
 
    if config.auto_start then
-       compile:start()
+       task:start()
    end
 
-   return compile
-end
-
-function Task:has_buf()
-    return self.buf ~= nil
+   return task
 end
 
 function Task:get_win()
@@ -35,7 +31,7 @@ function Task:get_win()
     return wid
 end
 
-function Task:_has_buf()
+function Task:has_buf()
     -- return self.buf ~= nil
     return fn.bufexists(self.buf) ~= 0
 end
@@ -55,11 +51,11 @@ function Task:_rest()
 end
 
 function Task:_execute()
-    if not self:_has_buf() then
+    if not self:has_buf() then
         self.buf = A.nvim_create_buf(true, true)
 
         -- set file type
-        A.nvim_set_option_value('filetype', 'compile', { buf = self.buf })
+        A.nvim_set_option_value('filetype', 'task', { buf = self.buf })
     end
 
 
@@ -97,7 +93,7 @@ function Task:_execute()
         name = self.cmd
     end
 
-    A.nvim_buf_set_name(self.buf, '*compile*: ' .. name)
+    A.nvim_buf_set_name(self.buf, '*task*: ' .. name)
 
     -- go back
     A.nvim_set_current_buf(buf_curr)
@@ -117,7 +113,7 @@ Task.restart = Task.start
 function Task:die()
     self:_rest()
 
-    if self:_has_buf() then
+    if self:has_buf() then
         A.nvim_buf_delete(self.buf, {force = true})
     end
 end
