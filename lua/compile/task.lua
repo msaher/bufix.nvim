@@ -1,13 +1,13 @@
 local A = vim.api
 local fn = vim.fn
 
-Compile = {}
-Compile.__index = Compile
+local Task = {}
+Task.__index = Task
 
 local default_config = {
 }
 
-function Compile:new(o)
+function Task:new(o)
    local config = vim.tbl_deep_extend('force', default_config, o)
    local compile = setmetatable(config, self)
 
@@ -18,11 +18,11 @@ function Compile:new(o)
    return compile
 end
 
-function Compile:has_buf()
+function Task:has_buf()
     return self.buf ~= nil
 end
 
-function Compile:get_win()
+function Task:get_win()
     if self.buf == nil  then
         return nil
     end
@@ -35,12 +35,12 @@ function Compile:get_win()
     return wid
 end
 
-function Compile:_has_buf()
+function Task:_has_buf()
     -- return self.buf ~= nil
     return fn.bufexists(self.buf) ~= 0
 end
 
-function Compile:_rest()
+function Task:_rest()
 
     if self.job ~= nil then
         fn.jobstop(self.job)
@@ -54,9 +54,12 @@ function Compile:_rest()
 
 end
 
-function Compile:_execute()
+function Task:_execute()
     if not self:_has_buf() then
         self.buf = A.nvim_create_buf(true, true)
+
+        -- set file type
+        A.nvim_set_option_value('filetype', 'compile', { buf = self.buf })
     end
 
 
@@ -102,12 +105,16 @@ function Compile:_execute()
 
 end
 
-function Compile:start()
+function Task:start()
     self:_rest()
     self:_execute()
 end
 
-function Compile:die()
+-- restart is an alias for start
+Task.restart = Task.start
+
+
+function Task:die()
     self:_rest()
 
     if self:_has_buf() then
@@ -115,5 +122,4 @@ function Compile:die()
     end
 end
 
-
-return Compile
+return Task
