@@ -6,9 +6,10 @@ local Task = {}
 Task.__index = Task
 
 local default_config = {
-    auto_start = true,
+    auto_start = false,
     opener = require('compile.openers').current,
     hidden = false,
+    startinsert = false,
 }
 
 -- @param o table
@@ -101,6 +102,10 @@ function Task:_termopen()
 
         end,
     })
+
+    if self.startinsert then
+        vim.cmd.startinsert()
+    end
 
 end
 
