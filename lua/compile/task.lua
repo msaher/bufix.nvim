@@ -10,6 +10,7 @@ local default_config = {
     opener = require('compile.openers').current,
     hidden = false,
     startinsert = false,
+    cwd = fn.getcwd()
 }
 
 -- @param o table
@@ -75,7 +76,7 @@ function Task:_termopen()
     self.job = fn.termopen(self.cmd, {
         detach = false,
         shell = true,
-        cwd = fn.getcwd(),
+        cwd = self.cwd,
         stderr_buffered = true,
         stdout_buffered = true,
         on_exit = function(job_id, exit_code, event)
