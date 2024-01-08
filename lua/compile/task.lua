@@ -1,12 +1,20 @@
 local A = vim.api
 local fn = vim.fn
 
+-- @class Task
 local Task = {}
 Task.__index = Task
 
 local default_config = {
+    auto_start = true,
+    opener = require('compile.openers').current
+
 }
 
+-- @param o table
+-- @field string | string[]
+-- @field auto_start boolean
+-- @return Task
 function Task:new(o)
    local config = vim.tbl_deep_extend('force', default_config, o)
    local task = setmetatable(config, self)
@@ -18,6 +26,7 @@ function Task:new(o)
    return task
 end
 
+-- @return number | nil
 function Task:get_win()
     if self.buf == nil  then
         return nil
@@ -31,11 +40,13 @@ function Task:get_win()
     return wid
 end
 
+-- @return boolean
 function Task:has_buf()
     -- return self.buf ~= nil
     return fn.bufexists(self.buf) ~= 0
 end
 
+-- @return nil
 function Task:_rest()
 
     if self.job ~= nil then
@@ -50,6 +61,7 @@ function Task:_rest()
 
 end
 
+-- @return nil
 function Task:_execute()
     if not self:has_buf() then
         self.buf = A.nvim_create_buf(true, true)
@@ -62,13 +74,11 @@ function Task:_execute()
     -- TODO: make the window opening function dynamic
     local win = self:get_win()
     local win_curr = A.nvim_get_current_win()
-    if win == nil then
-        vim.cmd.split()
-        vim.cmd.wincmd('J')
-        win = A.nvim_get_current_win()
-    end
 
-    A.nvim_win_set_buf(win, self.buf)
+    if win == nil then
+        win = self.opener.open()
+        A.nvim_win_set_buf(win, self.buf)
+    end
 
     local buf_curr = A.nvim_get_current_buf()
     A.nvim_set_current_buf(self.buf)
@@ -95,12 +105,18 @@ function Task:_execute()
 
     A.nvim_buf_set_name(self.buf, '*task*: ' .. name)
 
-    -- go back
+    -- go back to original buffer
     A.nvim_set_current_buf(buf_curr)
-    A.nvim_set_current_win(win_curr)
+
+    if not self.opener.focus then
+        -- go back to original window
+        A.nvim_set_current_win(win_curr)
+    end
 
 end
 
+-- Starts the task
+-- @return nil
 function Task:start()
     self:_rest()
     self:_execute()
@@ -110,11 +126,14 @@ end
 Task.restart = Task.start
 
 
+-- Kills the task
+-- @return nil
 function Task:die()
     self:_rest()
 
     if self:has_buf() then
         A.nvim_buf_delete(self.buf, {force = true})
+        self.buf = nil
     end
 end
 
