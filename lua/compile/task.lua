@@ -62,6 +62,28 @@ function Task:_rest()
 
 end
 
+-- opens up a new terminal in the current window
+-- its the responsiblity of the caller to ensure
+-- that the intended window is currently focused.
+-- @return nil
+function Task:_termopen()
+    A.nvim_set_current_buf(self.buf)
+    vim.opt_local.modified = false
+    self.job = fn.termopen(self.cmd, {
+        detach = false,
+        shell = true,
+        cwd = fn.getcwd(),
+        stderr_buffered = true,
+        stdout_buffered = true,
+        on_exit = function(job_id, exit_code, event)
+            if self.on_exit ~= nil then
+                self.on_exit(self, job_id, exit_code, event)
+            end
+        end,
+    })
+
+end
+
 -- @return nil
 function Task:_execute()
     if not self:has_buf() then
@@ -80,20 +102,7 @@ function Task:_execute()
     end
 
     local buf_curr = A.nvim_get_current_buf()
-    A.nvim_set_current_buf(self.buf)
-    vim.opt_local.modified = false
-    self.job = fn.termopen(self.cmd, {
-        detach = false,
-        shell = true,
-        cwd = fn.getcwd(),
-        stderr_buffered = true,
-        stdout_buffered = true,
-        on_exit = function(job_id, exit_code, event)
-            if self.on_exit ~= nil then
-                self.on_exit(self, job_id, exit_code, event)
-            end
-        end,
-    })
+    self:_termopen()
 
     local name
     if type(self.cmd) == 'table' then
