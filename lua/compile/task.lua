@@ -70,8 +70,6 @@ function Task:_execute()
         A.nvim_set_option_value('filetype', 'task', { buf = self.buf })
     end
 
-
-    -- TODO: make the window opening function dynamic
     local win = self:get_win()
     local win_curr = A.nvim_get_current_win()
 
