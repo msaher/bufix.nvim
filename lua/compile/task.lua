@@ -7,13 +7,14 @@ Task.__index = Task
 
 local default_config = {
     auto_start = true,
-    opener = require('compile.openers').current
-
+    opener = require('compile.openers').current,
+    hidden = false,
 }
 
 -- @param o table
 -- @field string | string[]
 -- @field auto_start boolean
+-- @field hidden boolean
 -- @return Task
 function Task:new(o)
    local config = vim.tbl_deep_extend('force', default_config, o)
@@ -109,6 +110,10 @@ function Task:_execute()
     if not self.opener.focus then
         -- go back to original window
         A.nvim_set_current_win(win_curr)
+    end
+
+    if self.hidden then
+        A.nvim_win_close(win, true)
     end
 
 end
