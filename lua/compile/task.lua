@@ -16,6 +16,7 @@ local default_config = {
 -- @field auto_start boolean
 -- @field hidden boolean
 -- @field close boolean
+-- @field open boolean
 -- @return Task
 function Task:new(o)
    local config = vim.tbl_deep_extend('force', default_config, o)
@@ -83,7 +84,21 @@ function Task:_termopen()
 
             if self.close then
                 A.nvim_buf_delete(self.buf, {})
+
+            -- TODO: clean this up
+            elseif self.open then
+                local win_curr = A.nvim_get_current_win()
+                if self:get_win() == nil then
+                    local win = self.opener.open()
+                    A.nvim_win_set_buf(win, self.buf)
+                    if not self.opener.focus then
+                        A.nvim_set_current_win(win_curr)
+                    end
+                end
+
             end
+
+
         end,
     })
 
