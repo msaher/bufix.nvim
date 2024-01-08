@@ -104,10 +104,6 @@ function Task:_termopen()
         end,
     })
 
-    if self.startinsert then
-        vim.cmd.startinsert()
-    end
-
 end
 
 -- @return nil
@@ -142,8 +138,10 @@ function Task:_execute()
     A.nvim_set_current_buf(buf_curr)
 
     if not self.opener.focus then
-        -- go back to original window
-        A.nvim_set_current_win(win_curr)
+        A.nvim_set_current_win(win_curr) -- go back to original window
+
+    elseif self.startinsert then
+        vim.cmd.startinsert()
     end
 
     if self.hidden then
