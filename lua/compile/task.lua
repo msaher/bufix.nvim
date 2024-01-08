@@ -15,6 +15,7 @@ local default_config = {
 -- @field string | string[]
 -- @field auto_start boolean
 -- @field hidden boolean
+-- @field close boolean
 -- @return Task
 function Task:new(o)
    local config = vim.tbl_deep_extend('force', default_config, o)
@@ -79,6 +80,10 @@ function Task:_termopen()
             if self.on_exit ~= nil then
                 self.on_exit(self, job_id, exit_code, event)
             end
+
+            if self.close then
+                A.nvim_buf_delete(self.buf, {})
+            end
         end,
     })
 
@@ -88,7 +93,6 @@ end
 function Task:_execute()
     if not self:has_buf() then
         self.buf = A.nvim_create_buf(true, true)
-
         -- set file type
         A.nvim_set_option_value('filetype', 'task', { buf = self.buf })
     end
