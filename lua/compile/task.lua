@@ -21,10 +21,11 @@ local default_config = {
 -- @field open boolean
 -- @return Task
 function Task:new(o)
-   local config = vim.tbl_deep_extend('force', default_config, o)
-   local task = setmetatable(config, self)
+   local opts = vim.tbl_deep_extend('force', default_config, o)
+   local task = setmetatable({}, self)
+   task.opts = opts
 
-   if config.auto_start then
+   if opts.auto_start then
        task:start()
    end
 
@@ -73,27 +74,27 @@ end
 function Task:_termopen()
     A.nvim_set_current_buf(self.buf)
     vim.opt_local.modified = false
-    self.job = fn.termopen(self.cmd, {
+    self.job = fn.termopen(self.opts.cmd, {
         detach = false,
         shell = true,
-        cwd = self.cwd,
+        cwd = self.opts.cwd,
         stderr_buffered = true,
         stdout_buffered = true,
         on_exit = function(job_id, exit_code, event)
-            if self.on_exit ~= nil then
-                self.on_exit(self, job_id, exit_code, event)
+            if self.opts.on_exit ~= nil then
+                self.opts.on_exit(self, job_id, exit_code, event)
             end
 
-            if self.close then
+            if self.opts.close then
                 A.nvim_buf_delete(self.buf, {})
 
             -- TODO: clean this up
-            elseif self.open then
+            elseif self.opts.open then
                 local win_curr = A.nvim_get_current_win()
                 if self:get_win() == nil then
-                    local win = self.opener.open()
+                    local win = self.opts.opener.open()
                     A.nvim_win_set_buf(win, self.buf)
-                    if not self.opener.focus then
+                    if not self.opts.opener.focus then
                         A.nvim_set_current_win(win_curr)
                     end
                 end
@@ -118,7 +119,7 @@ function Task:_execute()
     local win_curr = A.nvim_get_current_win()
 
     if win == nil then
-        win = self.opener.open()
+        win = self.opts.opener.open()
         A.nvim_win_set_buf(win, self.buf)
     end
 
@@ -126,10 +127,10 @@ function Task:_execute()
     self:_termopen()
 
     local name
-    if type(self.cmd) == 'table' then
-        name = table.concat(self.cmd, " ")
+    if type(self.opts.cmd) == 'table' then
+        name = table.concat(self.opts.cmd, " ")
     else
-        name = self.cmd
+        name = self.opts.cmd
     end
 
     A.nvim_buf_set_name(self.buf, '*task*: ' .. name)
@@ -137,14 +138,14 @@ function Task:_execute()
     -- go back to original buffer
     A.nvim_set_current_buf(buf_curr)
 
-    if not self.opener.focus then
+    if not self.opts.opener.focus then
         A.nvim_set_current_win(win_curr) -- go back to original window
 
-    elseif self.startinsert then
+    elseif self.opts.startinsert then
         vim.cmd.startinsert()
     end
 
-    if self.hidden then
+    if self.opts.hidden then
         A.nvim_win_close(win, true)
     end
 
