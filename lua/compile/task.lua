@@ -6,8 +6,8 @@ local Task = {}
 Task.__index = Task
 
 local default_config = {
-    auto_start = false,
-    opener = require('compile.openers').current,
+    auto_start = true,
+    opener = require('compile.openers').split,
     hidden = false,
     startinsert = false,
     cwd = fn.getcwd()
@@ -50,6 +50,14 @@ end
 function Task:has_buf()
     -- return self.buf ~= nil
     return fn.bufexists(self.buf) ~= 0
+end
+
+function Task:get_buf()
+    if fn.bufexists(self.buf) ~= 0 then
+        return self.buf
+    else
+        return nil
+    end
 end
 
 -- @return nil
