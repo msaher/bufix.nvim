@@ -52,6 +52,10 @@ function Task:has_buf()
     return fn.bufexists(self.buf) ~= 0
 end
 
+function Task:has_win()
+    return self:get_win() ~= nil
+end
+
 --- Returns the buffer id associated with the task
 ---@return number | nil
 function Task:get_buf()
@@ -216,6 +220,23 @@ function Task:open()
         if not self.opts.opener.focus then
             A.nvim_set_current_win(win_curr)
         end
+    end
+end
+
+--- Closes the window the task resdies in
+function Task:close()
+    local win = self:get_win()
+    if win ~= nil then
+        A.nvim_win_close(win, {})
+    end
+
+end
+
+function Task:toggle()
+    if self:has_win() then
+        self:close()
+    else
+        self:open()
     end
 end
 
