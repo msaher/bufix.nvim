@@ -176,14 +176,12 @@ function Task:die()
     end
 end
 
+--- returns the name of the task. Used to set the name of the associated buffer
+---@return string
 function Task:get_name()
     local name = self.opts.name
-    if name ~= nil then
-        return name
-    elseif type(self.opts.cmd) == 'table' then
-        name = "*task*: " .. table.concat(self.opts.cmd, " ")
-    else
-        name = "*task*: " .. self.opts.cmd
+    if name == nil then
+        name = "*task*: " .. self:get_cmd()
     end
 
     return name
@@ -198,6 +196,20 @@ function Task:set_buf_name()
     if buf ~= nil then
         A.nvim_buf_set_name(self.buf, self:get_name())
     end
+end
+
+--- Returns the command as a string
+---@return string
+function Task:get_cmd()
+    local cmd
+
+    if type(self.opts.cmd) == 'table' then
+        cmd = table.concat(self.opts.cmd, " ")
+    else
+        cmd = "*task*: " .. self.opts.cmd
+    end
+
+    return cmd
 end
 
 return Task
