@@ -205,10 +205,14 @@ end
 
 function Task:open()
     -- TODO: clean this up
+    if self:get_buf() == nil then
+        self:start()
+    end
+
     local win_curr = A.nvim_get_current_win()
     if self:get_win() == nil then
         local win = self.opts.opener.open()
-        A.nvim_win_set_buf(win, self.buf)
+        A.nvim_win_set_buf(win, self:get_buf())
         if not self.opts.opener.focus then
             A.nvim_set_current_win(win_curr)
         end
