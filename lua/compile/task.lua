@@ -179,6 +179,7 @@ end
 --- Sets the name of the task
 function Task:set_name(name)
     self.opts.name = name
+    self:set_buf_name()
 end
 
 function Task:set_buf_name()
