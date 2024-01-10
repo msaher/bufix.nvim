@@ -1,7 +1,8 @@
 local A = vim.api
 local fn = vim.fn
 
--- @class Task
+---@class Task
+---@field opts table
 local Task = {}
 Task.__index = Task
 
@@ -13,13 +14,9 @@ local default_config = {
     cwd = fn.getcwd()
 }
 
--- @param o table
--- @field string | string[]
--- @field auto_start boolean
--- @field hidden boolean
--- @field close boolean
--- @field open boolean
--- @return Task
+--- Creates a new task
+---@param o table
+---@return Task
 function Task:new(o)
    local opts = vim.tbl_deep_extend('force', default_config, o)
    local task = setmetatable({}, self)
@@ -32,7 +29,8 @@ function Task:new(o)
    return task
 end
 
--- @return number | nil
+--- Get the window id, if any
+---@return number | nil
 function Task:get_win()
     if self.buf == nil  then
         return nil
@@ -46,12 +44,15 @@ function Task:get_win()
     return wid
 end
 
--- @return boolean
+--- Check if the task has a buffer associated with it
+---@return boolean
 function Task:has_buf()
     -- return self.buf ~= nil
     return fn.bufexists(self.buf) ~= 0
 end
 
+--- Returns the buffer id associated with the task
+---@return number | nil
 function Task:get_buf()
     if fn.bufexists(self.buf) ~= 0 then
         return self.buf
@@ -60,7 +61,6 @@ function Task:get_buf()
     end
 end
 
--- @return nil
 function Task:_rest()
 
     if self.job ~= nil then
@@ -75,10 +75,8 @@ function Task:_rest()
 
 end
 
--- opens up a new terminal in the current window
--- its the responsiblity of the caller to ensure
--- that the intended window is currently focused.
--- @return nil
+--- Opens up a new terminal in the current window its the responsiblity of the
+--caller to ensure that the intended window is currently focused.
 function Task:_termopen()
     A.nvim_set_current_buf(self.buf)
     vim.opt_local.modified = false
@@ -116,7 +114,6 @@ function Task:_termopen()
 
 end
 
--- @return nil
 function Task:_execute()
     if not self:has_buf() then
         self.buf = A.nvim_create_buf(true, true)
@@ -154,19 +151,18 @@ function Task:_execute()
 
 end
 
--- Starts the task
--- @return nil
+--- Starts the task. If the task is already running, then it will be re-started
 function Task:start()
     self:_rest()
     self:_execute()
 end
 
--- restart is an alias for start
-Task.restart = Task.start
+--- An alias for task:start()
+function Task:restart()
+    self:start()
+end
 
-
--- Kills the task
--- @return nil
+---Kills the task
 function Task:die()
     self:_rest()
 
@@ -176,7 +172,7 @@ function Task:die()
     end
 end
 
---- returns the name of the task. Used to set the name of the associated buffer
+--- Returns the name of the task
 ---@return string
 function Task:get_name()
     local name = self.opts.name
@@ -187,6 +183,7 @@ function Task:get_name()
     return name
 end
 
+--- Sets the name of the task
 function Task:set_name(name)
     self.opts.name = name
 end
@@ -206,7 +203,7 @@ function Task:get_cmd()
     if type(self.opts.cmd) == 'table' then
         cmd = table.concat(self.opts.cmd, " ")
     else
-        cmd = "*task*: " .. self.opts.cmd
+        cmd = self.opts.cmd
     end
 
     return cmd
