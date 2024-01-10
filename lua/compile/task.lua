@@ -1,5 +1,6 @@
 local A = vim.api
 local fn = vim.fn
+local U = require("compile.utils")
 
 ---@class Task
 ---@field opts table
@@ -97,15 +98,7 @@ function Task:_termopen()
 
             -- TODO: clean this up
             elseif self.opts.open then
-                local win_curr = A.nvim_get_current_win()
-                if self:get_win() == nil then
-                    local win = self.opts.opener.open()
-                    A.nvim_win_set_buf(win, self.buf)
-                    if not self.opts.opener.focus then
-                        A.nvim_set_current_win(win_curr)
-                    end
-                end
-
+                self:open()
             end
 
 
@@ -207,6 +200,18 @@ function Task:get_cmd()
     end
 
     return cmd
+end
+
+function Task:open()
+    -- TODO: clean this up
+    local win_curr = A.nvim_get_current_win()
+    if self:get_win() == nil then
+        local win = self.opts.opener.open()
+        A.nvim_win_set_buf(win, self.buf)
+        if not self.opts.opener.focus then
+            A.nvim_set_current_win(win_curr)
+        end
+    end
 end
 
 return Task
