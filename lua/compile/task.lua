@@ -12,7 +12,7 @@ local default_config = {
     opener = require('compile.openers').split,
     hidden = false,
     startinsert = false,
-    cwd = fn.getcwd()
+    cwd = nil,
 }
 
 --- Creates a new task
@@ -88,7 +88,7 @@ function Task:_termopen()
     self.job = fn.termopen(self.opts.cmd, {
         detach = false,
         shell = true,
-        cwd = self.opts.cwd,
+        cwd = self.opts.cwd or fn.getcwd(),
         stderr_buffered = true,
         stdout_buffered = true,
 
