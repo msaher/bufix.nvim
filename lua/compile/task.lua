@@ -66,7 +66,7 @@ function Task:get_buf()
     end
 end
 
-function Task:_reset()
+function Task:stop()
 
     if self.job ~= nil then
         fn.jobstop(self.job)
@@ -83,7 +83,6 @@ end
 --- Opens up a new terminal in the current window its the responsiblity of the
 --caller to ensure that the intended window is currently focused.
 function Task:_termopen()
-    A.nvim_set_current_buf(self.buf)
     A.nvim_set_current_buf(self:get_buf())
     vim.opt_local.modified = false
     self.job = fn.termopen(self.opts.cmd, {
@@ -149,7 +148,7 @@ end
 
 --- Starts the task. If the task is already running, then it will be re-started
 function Task:start()
-    self:_reset()
+    self:stop()
     self:_execute()
 end
 
@@ -160,7 +159,7 @@ end
 
 ---Kills the task
 function Task:die()
-    self:_reset()
+    self:stop()
 
     if self:has_buf() then
         A.nvim_buf_delete(self.buf, {force = true})
