@@ -100,7 +100,7 @@ function Task:_termopen()
             end
 
             if self.opts.close then
-                A.nvim_buf_delete(self:get_buf(), {})
+                A.nvim_buf_delete(self.buf, {})
 
             elseif self.opts.open then
                 self:open()
@@ -206,7 +206,7 @@ end
 function Task:set_buf_name()
     local buf = self:get_buf()
     if buf ~= nil then
-        A.nvim_buf_set_name(self.buf, self:get_name())
+        A.nvim_buf_set_name(buf, self:get_name())
     end
 end
 
@@ -261,5 +261,33 @@ function Task:toggle()
         self:open()
     end
 end
+
+-- TODO: support custom efm
+function Task:to_qflist()
+    local buf = self:get_buf()
+    if buf == nil then
+        error("Task has no buffer assocaited with it " .. self:get_name())
+    end
+
+    -- terminal buffers usually have extra empty lines.
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+    lines = vim.tbl_filter(function(line)
+        return line ~= ""
+    end, lines)
+
+    U.trim_trailing_strings(lines)
+
+    local last_line = lines[#lines]
+    -- remove [process exit] message, if it exists
+    if U.startswith(last_line, "[Process") then
+        lines[#lines] = nil
+    end
+
+    vim.fn.setqflist({}, 'r', {
+        lines = lines,
+    })
+
+end
+
 
 return Task
