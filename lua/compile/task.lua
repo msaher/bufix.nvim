@@ -110,6 +110,7 @@ function Task:_termopen()
         end,
     })
 
+    self:set_buf_name()
 end
 
 function Task:_execute()
@@ -129,8 +130,6 @@ function Task:_execute()
 
     local buf_curr = A.nvim_get_current_buf()
     self:_termopen()
-
-    self:set_buf_name()
 
     -- go back to original buffer
     A.nvim_set_current_buf(buf_curr)
