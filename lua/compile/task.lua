@@ -93,6 +93,8 @@ function Task:_termopen()
         stdout_buffered = true,
 
         on_exit = function(job_id, exit_code, event)
+            self.job = nil
+
             if self.opts.on_exit ~= nil then
                 self.opts.on_exit(self, job_id, exit_code, event)
             end
