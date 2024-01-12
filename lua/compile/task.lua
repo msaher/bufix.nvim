@@ -66,7 +66,7 @@ function Task:get_buf()
     end
 end
 
-function Task:_rest()
+function Task:_reset()
 
     if self.job ~= nil then
         fn.jobstop(self.job)
@@ -129,7 +129,6 @@ function Task:_execute()
     local buf_curr = A.nvim_get_current_buf()
     self:_termopen()
 
-    A.nvim_buf_set_name(self.buf, self:get_name())
     self:set_buf_name()
 
     -- go back to original buffer
@@ -150,7 +149,7 @@ end
 
 --- Starts the task. If the task is already running, then it will be re-started
 function Task:start()
-    self:_rest()
+    self:_reset()
     self:_execute()
 end
 
@@ -161,7 +160,7 @@ end
 
 ---Kills the task
 function Task:die()
-    self:_rest()
+    self:_reset()
 
     if self:has_buf() then
         A.nvim_buf_delete(self.buf, {force = true})
