@@ -84,6 +84,7 @@ end
 --caller to ensure that the intended window is currently focused.
 function Task:_termopen()
     A.nvim_set_current_buf(self.buf)
+    A.nvim_set_current_buf(self:get_buf())
     vim.opt_local.modified = false
     self.job = fn.termopen(self.opts.cmd, {
         detach = false,
@@ -98,9 +99,8 @@ function Task:_termopen()
             end
 
             if self.opts.close then
-                A.nvim_buf_delete(self.buf, {})
+                A.nvim_buf_delete(self:get_buf(), {})
 
-            -- TODO: clean this up
             elseif self.opts.open then
                 self:open()
             end
@@ -115,7 +115,7 @@ function Task:_execute()
     if not self:has_buf() then
         self.buf = A.nvim_create_buf(true, true)
         -- set file type
-        A.nvim_set_option_value('filetype', 'task', { buf = self.buf })
+        A.nvim_set_option_value('filetype', 'task', { buf = self:get_buf() })
     end
 
     local win = self:get_win()
@@ -123,7 +123,7 @@ function Task:_execute()
 
     if win == nil then
         win = self.opts.opener.open()
-        A.nvim_win_set_buf(win, self.buf)
+        A.nvim_win_set_buf(win, self:get_buf())
     end
 
     local buf_curr = A.nvim_get_current_buf()
