@@ -153,9 +153,27 @@ function Task:start()
     self:_execute()
 end
 
---- An alias for task:start()
+--- Restarts the task. Does not change the currently focused window
 function Task:restart()
-    self:start()
+    if not self:has_buf() then
+        self:_execute()
+        return
+    end
+
+    -- make sure buffer is not lost on_exit
+    local close = self.opts.close
+    self.opts.close = false
+    self:stop()
+    self.opts.close = close
+
+    local win_curr = A.nvim_get_current_win()
+    if self:get_win() == nil then
+        self:open()
+    end
+
+    A.nvim_set_current_win(self:get_win())
+    self:_termopen()
+    A.nvim_set_current_win(win_curr)
 end
 
 ---Kills the task
@@ -225,8 +243,13 @@ end
 --- Closes the window the task resdies in
 function Task:close()
     local win = self:get_win()
-    if win ~= nil then
-        A.nvim_win_close(win, {})
+    local win_curr = A.nvim_get_current_win()
+    local win_list = A.nvim_tabpage_list_wins(0)
+
+    local is_last_window = (#win_list == 1 and win_curr == win)
+
+    if not is_last_window then
+        A.nvim_win_close(win, true)
     end
 
 end
