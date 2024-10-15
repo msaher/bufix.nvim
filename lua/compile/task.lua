@@ -60,12 +60,13 @@ function Task:run(cmd, opts)
         end,
         on_exit = function(chan, exit_code, event)
             _ = event -- always "exit"
+            self.chan = nil
             local now = os.date("%a %b %e %H:%M:%S")
             local msg
             if exit_code == 0 then
                 msg = "Task finished at " .. now
             else
-                msg ="Task existed abnormally with code " .. exit_code " at" .. now
+                msg ="Task existed abnormally with code " .. exit_code .. " at" .. now
             end
 
             vim.api.nvim_buf_set_lines(self.buf, -1, -1, true, { msg })
@@ -74,8 +75,12 @@ function Task:run(cmd, opts)
 
     vim.api.nvim_create_autocmd({ "BufDelete" }, {
         buffer = self.buf,
-        callback = function()
-            vim.fn.jobstop(chan)
+        callback = function(data)
+            _ = data
+            if self.chan ~= nil then
+                vim.fn.jobstop(self.chan)
+            end
+            self.chan = nil
             self.buf = nil
         end,
     })
