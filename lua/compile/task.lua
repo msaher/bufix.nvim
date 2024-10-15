@@ -12,10 +12,25 @@ end
 function Task:run(cmd, opts)
     -- TODO: make cmd a table if shell is false
 
-    self.buf = vim.api.nvim_create_buf(true, true)
-    vim.api.nvim_open_win(self.buf, false, {
-        split = 'right'
-    })
+    if self.buf ~= nil then
+        if self.chan ~= nil then
+            -- TODO: use vim.ui.input()
+            vim.print("Something is running... ignoring you")
+        else
+            -- clear buffer
+            vim.api.nvim_buf_set_lines(self.buf, 0, -1, true, {})
+        end
+    else
+        self.buf = vim.api.nvim_create_buf(true, true)
+        vim.api.nvim_buf_set_name(self.buf, "*Task*")
+    end
+
+    local has_no_win = vim.fn.bufwinid(self.buf) == -1
+    if has_no_win then
+        vim.api.nvim_open_win(self.buf, false, {
+            split = "right"
+        })
+    end
 
     opts = opts or {}
     self.cwd = opts.cwd or self.cwd or vim.fn.getcwd()
@@ -27,7 +42,7 @@ function Task:run(cmd, opts)
         cmd,
     })
 
-    local chan = vim.fn.jobstart(cmd, {
+    self.chan = vim.fn.jobstart(cmd, {
         pty = true,     -- run in a pty. Avoids lazy behvaiour
         env = {
             PAGER = "", -- disable paging. This is not interactive
