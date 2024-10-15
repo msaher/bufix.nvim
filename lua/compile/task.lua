@@ -4,21 +4,21 @@ local Task = {}
 Task.__index = Task
 
 ---@return Task
-function Task.new(opts)
-    local opts = opts or {}
+function Task.new()
     local self = setmetatable({}, Task)
-    self.cwd = opts.cwd or vim.fn.getcwd()
-
     return self
 end
 
-function Task:run(cmd)
+function Task:run(cmd, opts)
     -- TODO: make cmd a table if shell is false
 
     self.buf = vim.api.nvim_create_buf(true, true)
     vim.api.nvim_open_win(self.buf, false, {
         split = 'right'
     })
+
+    opts = opts or {}
+    self.cwd = opts.cwd or self.cwd or vim.fn.getcwd()
 
     vim.api.nvim_buf_set_lines(self.buf, 0, -1, true, {
         "Running in " .. self.cwd,
