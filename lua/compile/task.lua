@@ -112,6 +112,8 @@ function Task:run(cmd, opts)
             end
             self.chan = nil
             self.buf = nil
+
+            return true
         end,
     })
 end
