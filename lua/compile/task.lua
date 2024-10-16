@@ -15,8 +15,16 @@ function Task:run(cmd, opts)
 
     if self.buf ~= nil then
         if self.chan ~= nil then
-            -- TODO: use vim.ui.input()
-            vim.print("Something is running... ignoring you")
+            vim.ui.select({ "yes", "no" }, { prompt = "A task process is running; kill it?" }, function(choice, idx)
+                _ = idx
+                if choice == "yes" then
+                    -- use jobwait() instead of jobstop() because it blocks
+                    vim.fn.jobwait({ self.chan }, 1500)
+                    self.chan = nil
+                    self:run(cmd, opts)
+                end
+            end)
+            return
         else
             -- clear buffer
             vim.api.nvim_buf_set_lines(self.buf, 0, -1, true, {})
@@ -77,16 +85,16 @@ function Task:run(cmd, opts)
         end,
         on_exit = function(chan, exit_code, event)
             _ = event -- always "exit"
-            self.chan = nil
+
             local now = os.date("%a %b %e %H:%M:%S")
             local msg
             if exit_code == 0 then
                 msg = "Task finished at " .. now
             else
-                msg ="Task existed abnormally with code " .. exit_code .. " at" .. now
+                msg = "Task existed abnormally with code " .. exit_code .. " at " .. now
             end
-
-            vim.api.nvim_buf_set_lines(self.buf, -1, -1, true, { msg })
+            vim.api.nvim_buf_set_lines(self.buf, -1, -1, true, { "", msg })
+            self.chan = nil
         end
     })
 
