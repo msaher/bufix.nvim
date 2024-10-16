@@ -1,5 +1,6 @@
 ---@class Task
 ---@field buf number?
+---@field chan number?
 local Task = {}
 Task.__index = Task
 
