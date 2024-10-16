@@ -34,18 +34,23 @@ function Task:run(cmd, opts)
         vim.api.nvim_buf_set_name(self.buf, "*Task*")
     end
 
-    local has_no_win = vim.fn.bufwinid(self.buf) == -1
-    if has_no_win then
-        vim.api.nvim_open_win(self.buf, false, {
+    opts = opts or {}
+    local cwd = opts.cwd or vim.fn.getcwd(vim.api.nvim_get_current_win())
+
+    local win = vim.fn.bufwinid(self.buf)
+    if win == -1 then
+        win = vim.api.nvim_open_win(self.buf, false, {
             split = "right"
         })
     end
 
-    opts = opts or {}
-    self.cwd = opts.cwd or self.cwd or vim.fn.getcwd()
+    -- change cwd of task window
+    vim.api.nvim_win_call(win, function()
+        vim.cmd("lcd " .. cwd)
+    end)
 
     vim.api.nvim_buf_set_lines(self.buf, 0, -1, true, {
-        "Running in " .. self.cwd,
+        "Running in " .. cwd,
         "Task started at " .. os.date("%a %b %e %H:%M:%S"),
         "",
         cmd,
@@ -56,7 +61,7 @@ function Task:run(cmd, opts)
         env = {
             PAGER = "", -- disable paging. This is not interactive
         },
-        cwd = self.cwd,
+        cwd = cwd,
         on_stdout = function(chan, data, name)
             _ = chan
             _ = name
