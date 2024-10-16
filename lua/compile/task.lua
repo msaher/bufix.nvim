@@ -51,12 +51,28 @@ function Task:run(cmd, opts)
         on_stdout = function(chan, data, name)
             _ = chan
             _ = name
-            if data then
-                vim.schedule(function()
-                    data = string.gsub(data[1], "\r", "")
-                    vim.api.nvim_buf_set_lines(self.buf, -1, -1, true, { data })
-                end)
+            if not data then
+                return
             end
+
+            -- remove "\r" from non-empty strings
+            -- remove empty strings and...
+            -- Empty strings usually appear at the end {"foo\r", ""}
+            local i = 1
+            while i <= #data do
+                if data[i]:sub(-1) == "\r" then
+                    data[i] = data[i]:sub(1, -2)
+                    i = i + 1
+                elseif data[i] == "" then
+                    table.remove(data, i)
+                else
+                    i = i + 1
+                end
+            end
+
+            vim.schedule(function()
+                vim.api.nvim_buf_set_lines(self.buf, -1, -1, true, data)
+            end)
         end,
         on_exit = function(chan, exit_code, event)
             _ = event -- always "exit"
