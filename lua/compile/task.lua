@@ -15,16 +15,14 @@ function Task:run(cmd, opts)
 
     if self.buf ~= nil then
         if self.chan ~= nil then
-            vim.ui.select({ "yes", "no" }, { prompt = "A task process is running; kill it?" }, function(choice, idx)
-                _ = idx
-                if choice == "yes" then
-                    -- use jobwait() instead of jobstop() because it blocks
-                    vim.fn.jobwait({ self.chan }, 1500)
-                    self.chan = nil
-                    self:run(cmd, opts)
-                end
-            end)
-            return
+            local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
+
+            if choice == 2 then -- yes
+                vim.fn.jobwait({ self.chan }, 1500)
+                self.chan = nil
+            else
+                return
+            end
         else
             -- clear buffer
             vim.api.nvim_buf_set_lines(self.buf, 0, -1, true, {})
