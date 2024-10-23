@@ -1,21 +1,28 @@
 local baleia = require("baleia").setup()
 
 ---@class Task
----@field buf number?
+---@field bufname number?
 ---@field chan number?
 local Task = {}
 Task.__index = Task
 
 ---@return Task
-function Task.new()
+function Task.new(bufname)
     local self = setmetatable({}, Task)
+    self.bufname = bufname
     return self
 end
 
 function Task:run(cmd, opts)
-    -- TODO: make cmd a table if shell is false
 
-    if self.buf ~= nil then
+    -- first buffer with name `self.bufname`
+    local buf = vim.iter(vim.api.nvim_list_bufs())
+        :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
+        :find(function(b)
+        return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == self.bufname
+    end)
+
+    if buf ~= nil then
         if self.chan ~= nil then
             local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
 
@@ -27,20 +34,21 @@ function Task:run(cmd, opts)
             end
         else
             -- clear buffer
-            vim.api.nvim_buf_set_lines(self.buf, 0, -1, true, {})
+            vim.api.nvim_buf_set_lines(buf, 0, -1, true, {})
         end
     else
-        self.buf = vim.api.nvim_create_buf(true, true)
-        baleia.automatically(self.buf) -- for colors
-        vim.api.nvim_buf_set_name(self.buf, "*Task*")
+        self.chan = nil
+        buf = vim.api.nvim_create_buf(true, true)
+        baleia.automatically(buf) -- for colors
+        vim.api.nvim_buf_set_name(buf, "*Task*")
     end
 
     opts = opts or {}
     local cwd = opts.cwd or vim.fn.getcwd(vim.api.nvim_get_current_win())
 
-    local win = vim.fn.bufwinid(self.buf)
+    local win = vim.fn.bufwinid(buf)
     if win == -1 then
-        win = vim.api.nvim_open_win(self.buf, false, {
+        win = vim.api.nvim_open_win(buf, false, {
             split = "below",
             win = -1,
         })
@@ -51,7 +59,7 @@ function Task:run(cmd, opts)
         vim.cmd("lcd " .. cwd)
     end)
 
-    vim.api.nvim_buf_set_lines(self.buf, 0, -1, true, {
+    vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
         "Running in " .. cwd,
         "Task started at " .. os.date("%a %b %e %H:%M:%S"),
         "",
@@ -87,7 +95,7 @@ function Task:run(cmd, opts)
             end
 
             vim.schedule(function()
-                vim.api.nvim_buf_set_lines(self.buf, -1, -1, true, data)
+                vim.api.nvim_buf_set_lines(buf, -1, -1, true, data)
             end)
         end,
         on_exit = function(chan, exit_code, event)
