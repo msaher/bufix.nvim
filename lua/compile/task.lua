@@ -1,3 +1,5 @@
+local baleia = require("baleia").setup()
+
 ---@class Task
 ---@field buf number?
 ---@field chan number?
@@ -29,6 +31,7 @@ function Task:run(cmd, opts)
         end
     else
         self.buf = vim.api.nvim_create_buf(true, true)
+        baleia.automatically(self.buf) -- for colors
         vim.api.nvim_buf_set_name(self.buf, "*Task*")
     end
 
@@ -38,7 +41,8 @@ function Task:run(cmd, opts)
     local win = vim.fn.bufwinid(self.buf)
     if win == -1 then
         win = vim.api.nvim_open_win(self.buf, false, {
-            split = "right"
+            split = "below",
+            win = -1,
         })
     end
 
