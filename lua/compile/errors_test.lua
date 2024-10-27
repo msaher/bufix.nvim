@@ -81,6 +81,13 @@ busted.describe("error patterns", function()
         { rule = "comma", line = "\"foo.c\", line 32 pos 1; (E) syntax error; unexpected symbol: \"lossage\"",  want = {col_start = 1, row_start = 32, filename = "foo.c"}},
         { rule = "comma", line = "\"foo.adb\", line 2(11): warning: file name does not match ...", want = {col_start = 11, row_start = 2, filename = "foo.adb", type = "warning"}},
         { rule = "comma", line = "\"src/swapping.c\", line 30.34: 1506-342 (W) \"/*\" detected in comment.", want = {col_start = 34, row_start = 30, filename = "src/swapping.c"}},
+
+        { rule = "msft", line = "keyboard handler.c(537) : warning C4005: 'min' : macro redefinition", want = {row_start = 537, filename = "keyboard handler.c", type = "warning"}},
+        { rule = "msft", line = "d:\\tmp\\test.c(23) : error C2143: syntax error : missing ';' before 'if'", want = {row_start = 23, filename = "d:\\tmp\\test.c"}},
+        { rule = "msft", line = "d:\\tmp\\test.c(1145) : see declaration of 'nsRefPtr'", want = {row_start = 1145, filename = "d:\\tmp\\test.c"}},
+        { rule = "msft", line = "1>test_main.cpp(29): error C2144: syntax error : 'int' should be preceded by ';'", want = {row_start = 29, filename = "test_main.cpp"}},
+        { rule = "msft", line = "1>test_main.cpp(29): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int", want = {row_start = 29, filename = "test_main.cpp"}},
+        { rule = "msft", line = "C:\\tmp\\test.cpp(101,11): error C4101: 'bias0123': unreferenced local variable [C:\\tmp\\project.vcxproj]", want = {col_start = 11, row_start = 101, filename = "C:\\tmp\\test.cpp"}},
     }
 
     busted.it("captures error information", function()

@@ -120,6 +120,28 @@ M.patterns = {
         ((S".(" + P" pos ") * Cg(digits/tonumber, "col_start") * P")"^-1)^-1 *
         S":.,; (-" * blank * Cg("warning", "type")^-1
     }),
+
+     -- Must be before edg-1, so that MSVC's longer messages are
+     -- considered before EDG.
+     -- The message may be a "warning", "error", or "fatal error" with
+     -- an error code, or "see declaration of" without an error code.
+    msft = Ct({
+        -- Optional number followed by ">"
+        (digits * P(">"))^-1 *
+        -- optional window drive followed by filename
+        Cg((R("AZ", "az") * P":")^-1 * except" :(\t\n" * except":(\t\n"^1, "filename") *
+        -- row
+        P("(") * Cg(digits/tonumber, "row_start") *
+        -- optional column
+        (P(",") * Cg(digits/tonumber, "col_start"))^-1 * P(")") *
+        -- colon
+        blank * P(":") * blank *
+        -- optional "see declaration"
+        (P("see declaration") +
+        P("warning") * Cg(Cc("warning"), "type"))^-1 -- optional warning
+        -- + P("error") * -[[ Cg(Cc("error"), "type") --]])^-1 -- optional error
+    }),
+
 }
 
 return M
