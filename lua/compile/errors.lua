@@ -63,6 +63,21 @@ M.patterns = {
         Cg((any - S(" \n"))^1, "filename")
     }),
 
+    ant = Ct({
+        -- optional one or two bracketed sections with content inside
+        (blank * P"[" * (any - S"] \n")^1 * P"]" * blank)^-2 *
+            -- windows or unix path
+            (Cg(R("AZ", "az") * P":" * filename, "filename") + Cg(filename, "filename")) *
+            -- line number
+            P":" * Cg(digits / tonumber, "row_start") *
+            -- optional column information
+            (P":" * Cg(digits / tonumber, "col_start") *
+            P":" * Cg(digits / tonumber, "row_end") *
+            P":" * Cg(digits / tonumber, "col_end"))^-1 *
+            -- optional " warning" keyword. If it exists,
+            (":" * P" warning" * Cg(Cc("warning"), "type"))^-1
+    }),
+
 
 }
 

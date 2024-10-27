@@ -44,6 +44,16 @@ busted.describe("error patterns", function()
         { rule = "ada", line = "0x8008621 main+16 at error.c:17", want = { row_start = 17, filename = "error.c" }},
 
         { rule = "aix", line = "****** Error number 140 in line 8 of file errors.c ******", want = {row_start = 8, filename = "errors.c"}},
+
+        { rule = "ant",  line = "[javac] /src/DataBaseTestCase.java:27: unreported exception ...", want = {row_start = 27, filename = "/src/DataBaseTestCase.java"}},
+        { rule = "ant",  line = "[javac] /src/DataBaseTestCase.java:49: warning: finally clause cannot complete normally", want = {row_start = 49, filename = "/src/DataBaseTestCase.java", type = "warning"}},
+        { rule = "ant",  line = "[jikes]  foo.java:3:5:7:9: blah blah", want = {col_start = 5, col_end = 9, row_start = 3, row_end = 7, filename = "foo.java"}},
+        { rule = "ant",  line = "[javac] c:/cygwin/Test.java:12: error: foo: bar", want = {row_start = 12, filename = "c:/cygwin/Test.java"}},
+        { rule = "ant",  line = "[javac] c:\\cygwin\\Test.java:87: error: foo: bar", want = {row_start = 87, filename = "c:\\cygwin\\Test.java"}},
+        -- -- Checkstyle error, but ant reports a warning (note additional
+        -- -- severity level after task name)
+        {rule = "ant", line = "[checkstyle] [ERROR] /src/Test.java:38: warning: foo", want = {row_start = 38, filename = "/src/Test.java", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()
