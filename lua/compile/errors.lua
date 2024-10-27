@@ -82,6 +82,17 @@ M.patterns = {
         Cg(filename, "filename") * P":" * P" line " * Cg(digits / tonumber, "row_start")
     }),
 
+    borland = Ct({
+        -- optionally check if warning or error
+        (P"Error" + ("Warning" * Cg(Cc("warning"), "type")))^-1 * blank *
+        -- optionally match error/warning code
+        (S"FEW"*digits)^-1 * blank *
+        -- windows or unix path
+        (Cg(R("AZ", "az") * P":" * -S("^:( \t\n"), "filename") + Cg(except(":( \t\n")^1, "filename")) * blank *
+        -- row
+        Cg(digits / tonumber, "row_start")
+    }),
+
 
 }
 

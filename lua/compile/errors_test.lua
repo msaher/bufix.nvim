@@ -56,6 +56,11 @@ busted.describe("error patterns", function()
 
         {rule = "bash", line = "a.sh: line 1: ls-l: command not found", want = {row_start = 1, filename = "a.sh"}},
 
+        { rule = "borland", line = "Error ping.c 15: Unable to open include file 'sys/types.h'", want = {row_start = 15, filename = "ping.c"}},
+        { rule = "borland", line = "Warning pong.c 68: Call to function 'func' with no prototype",  want = {row_start = 68, filename = "pong.c", type = "warning"}},
+        { rule = "borland", line = "Error E2010 ping.c 15: Unable to open include file 'sys/types.h'",  want = {row_start = 15, filename = "ping.c"}},
+        { rule = "borland", line = "Warning W1022 pong.c 68: Call to function 'func' with no prototype",  want = {row_start = 68, filename = "pong.c", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()
