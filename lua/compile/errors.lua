@@ -101,6 +101,11 @@ M.patterns = {
         (P" characters " * Cg(digits/tonumber, "col_start") * ("-" * Cg(digits/tonumber, "col_end"))^-1)^-1
     }),
 
+    cmake = Ct({
+        P"CMake " * (P"Error" + P"Warning" * Cg(Cc"warning", "type")) *
+        P" at " * Cg(filename, "filename") * P":" *
+        Cg(digits/tonumber, "row_start")
+    }),
 
 }
 

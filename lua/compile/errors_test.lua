@@ -66,6 +66,14 @@ busted.describe("error patterns", function()
         { rule = "python_tracebacks_and_caml", line = "File \"/usr/share/gdesklets/display/TargetGauge.py\", line 41, in add_children", want = {row_start = 41, filename = "/usr/share/gdesklets/display/TargetGauge.py"}},
         { rule = "python_tracebacks_and_caml", line = "File \\lib\\python\\Products\\PythonScripts\\PythonScript.py, line 302, in _exec", want = {row_start = 302, filename = "\\lib\\python\\Products\\PythonScripts\\PythonScript.py"}},
         { rule = "python_tracebacks_and_caml", line = "File \"/tmp/foo.py\", line 10", want = {row_start = 10, filename = "/tmp/foo.py"}},
+
+
+        -- TODO: add this later
+        -- (clang-include "In file included from foo.cpp:2:" 1 nil 2 "foo.cpp" 0)
+
+        { rule = "cmake", line = "CMake Error at CMakeLists.txt:23 (hurz):", want = {row_start = 23, filename = "CMakeLists.txt"}},
+        { rule = "cmake", line = "CMake Warning at cmake/modules/UseUG.cmake:73 (find_package):", want = {row_start = 73, filename = "cmake/modules/UseUG.cmake", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()
