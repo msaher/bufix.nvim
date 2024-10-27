@@ -114,6 +114,12 @@ M.patterns = {
         Cg(digits/tonumber, "row_start")
     }),
 
+    comma = Ct({
+        dquote * Cg(filename, "filename") * dquote *
+        P", line " * Cg(digits/tonumber, "row_start") *
+        ((S".(" + P" pos ") * Cg(digits/tonumber, "col_start") * P")"^-1)^-1 *
+        S":.,; (-" * blank * Cg("warning", "type")^-1
+    }),
 }
 
 return M

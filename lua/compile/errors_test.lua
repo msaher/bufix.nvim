@@ -75,6 +75,12 @@ busted.describe("error patterns", function()
         { rule = "cmake", line = "CMake Warning at cmake/modules/UseUG.cmake:73 (find_package):", want = {row_start = 73, filename = "cmake/modules/UseUG.cmake", type = "warning"}},
 
         { rule = "cmake_info", line = "  cmake/modules/DuneGridMacros.cmake:19 (include)", want = {row_start = 19, filename = "cmake/modules/DuneGridMacros.cmake", type = "info"}},
+
+        { rule = "comma", line = "\"foo.f\", line 3: Error: syntax error near end of statement", want = {row_start = 3, filename = "foo.f"}},
+        { rule = "comma", line = "\"vvouch.c\", line 19.5: 1506-046 (S) Syntax error.", want = {col_start = 5, row_start = 19, filename = "vvouch.c"}},
+        { rule = "comma", line = "\"foo.c\", line 32 pos 1; (E) syntax error; unexpected symbol: \"lossage\"",  want = {col_start = 1, row_start = 32, filename = "foo.c"}},
+        { rule = "comma", line = "\"foo.adb\", line 2(11): warning: file name does not match ...", want = {col_start = 11, row_start = 2, filename = "foo.adb", type = "warning"}},
+        { rule = "comma", line = "\"src/swapping.c\", line 30.34: 1506-342 (W) \"/*\" detected in comment.", want = {col_start = 34, row_start = 30, filename = "src/swapping.c"}},
     }
 
     busted.it("captures error information", function()
