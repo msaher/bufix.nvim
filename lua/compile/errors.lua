@@ -78,6 +78,10 @@ M.patterns = {
             (":" * P" warning" * Cg(Cc("warning"), "type"))^-1
     }),
 
+    bash = Ct({
+        Cg(filename, "filename") * P":" * P" line " * Cg(digits / tonumber, "row_start")
+    }),
+
 
 }
 

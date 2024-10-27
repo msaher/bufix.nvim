@@ -54,6 +54,8 @@ busted.describe("error patterns", function()
         -- -- severity level after task name)
         {rule = "ant", line = "[checkstyle] [ERROR] /src/Test.java:38: warning: foo", want = {row_start = 38, filename = "/src/Test.java", type = "warning"}},
 
+        {rule = "bash", line = "a.sh: line 1: ls-l: command not found", want = {row_start = 1, filename = "a.sh"}},
+
     }
 
     busted.it("captures error information", function()
