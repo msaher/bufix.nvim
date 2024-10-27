@@ -50,6 +50,12 @@ M.patterns = {
             dquote^-1 * Cg(filename, "filename") * dquote^-1
     }),
 
+    ada = Ct(
+        (P"warning: " * Cg(Cc"warning", "type"))^-1 *
+        (any-P" at ")^0 * P" at " * Cg(filename, "filename") *
+        P(":") * Cg(digits / tonumber, "row_start")
+    ),
+
 
 }
 

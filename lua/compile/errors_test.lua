@@ -40,6 +40,8 @@ busted.describe("error patterns", function()
         { rule = "absoft", line = "error on line 19 of fplot.f: spelling error?", want = {row_start = 19, filename = "fplot.f" }},
         { rule = "absoft", line = "warning on line 17 of fplot.f: data type is undefined for variable d", want = {row_start = 17, filename = "fplot.f" }},
 
+        { rule = "ada", line = "foo.adb:61:11:  [...] in call to size declared at foo.ads:11", want = {row_start = 11, filename = "foo.ads"}},
+        { rule = "ada", line = "0x8008621 main+16 at error.c:17", want = { row_start = 17, filename = "error.c" }},
     }
 
     busted.it("captures error information", function()
