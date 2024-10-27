@@ -61,6 +61,11 @@ busted.describe("error patterns", function()
         { rule = "borland", line = "Error E2010 ping.c 15: Unable to open include file 'sys/types.h'",  want = {row_start = 15, filename = "ping.c"}},
         { rule = "borland", line = "Warning W1022 pong.c 68: Call to function 'func' with no prototype",  want = {row_start = 68, filename = "pong.c", type = "warning"}},
 
+        { rule = "python_tracebacks_and_caml", line = "File \"foobar.ml\", lines 5-8, characters 20-155: blah blah", want = {col_start = 20, col_end = 155, row_start = 5, row_end = 8, filename = "foobar.ml"}},
+        { rule = "python_tracebacks_and_caml", line = "File \"F:\\ocaml\\sorting.ml\", line 65, characters 2-145:\nWarning 26: unused variable equ.", want = {col_start = 2, col_end = 145, row_start = 65, filename = "F:\\ocaml\\sorting.ml"}},
+        { rule = "python_tracebacks_and_caml", line = "File \"/usr/share/gdesklets/display/TargetGauge.py\", line 41, in add_children", want = {row_start = 41, filename = "/usr/share/gdesklets/display/TargetGauge.py"}},
+        { rule = "python_tracebacks_and_caml", line = "File \\lib\\python\\Products\\PythonScripts\\PythonScript.py, line 302, in _exec", want = {row_start = 302, filename = "\\lib\\python\\Products\\PythonScripts\\PythonScript.py"}},
+        { rule = "python_tracebacks_and_caml", line = "File \"/tmp/foo.py\", line 10", want = {row_start = 10, filename = "/tmp/foo.py"}},
     }
 
     busted.it("captures error information", function()

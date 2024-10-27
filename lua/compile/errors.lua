@@ -93,6 +93,14 @@ M.patterns = {
         Cg(digits / tonumber, "row_start")
     }),
 
+    python_tracebacks_and_caml = Ct({
+        blank * P"File " * dquote^-1 * Cg(win_or_unix_filename, "filename") * dquote^-1 *
+        -- find lines
+        P", line" * P"s"^-1 * blank * Cg(digits/tonumber, "row_start") * ("-" * Cg(digits/tonumber, "row_end"))^-1 * P","^-1 *
+        -- optionaly characters section
+        (P" characters " * Cg(digits/tonumber, "col_start") * ("-" * Cg(digits/tonumber, "col_end"))^-1)^-1
+    }),
+
 
 }
 
