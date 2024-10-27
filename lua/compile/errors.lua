@@ -56,6 +56,13 @@ M.patterns = {
         P(":") * Cg(digits / tonumber, "row_start")
     ),
 
+    aix = Ct({
+        anywhere(" in line ") *
+        Cg(digits / tonumber, "row_start") *
+        " of file " *
+        Cg((any - S(" \n"))^1, "filename")
+    }),
+
 
 }
 

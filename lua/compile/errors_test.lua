@@ -42,6 +42,8 @@ busted.describe("error patterns", function()
 
         { rule = "ada", line = "foo.adb:61:11:  [...] in call to size declared at foo.ads:11", want = {row_start = 11, filename = "foo.ads"}},
         { rule = "ada", line = "0x8008621 main+16 at error.c:17", want = { row_start = 17, filename = "error.c" }},
+
+        { rule = "aix", line = "****** Error number 140 in line 8 of file errors.c ******", want = {row_start = 8, filename = "errors.c"}},
     }
 
     busted.it("captures error information", function()
