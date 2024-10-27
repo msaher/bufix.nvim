@@ -142,6 +142,13 @@ M.patterns = {
         -- + P("error") * -[[ Cg(Cc("error"), "type") --]])^-1 -- optional error
     }),
 
+    edg_1 = Ct{
+        Cg((except(" (\n"))^1, "filename") *
+        "(" * Cg(digits / tonumber, "row_start") * ")" *
+        ": " *
+        ("error" + Cg("warning", "type") + "remark" * Cg(Cc"info", "type"))  -- error/warning/remark
+    }
+
 }
 
 return M

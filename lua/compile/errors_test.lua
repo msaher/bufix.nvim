@@ -88,6 +88,11 @@ busted.describe("error patterns", function()
         { rule = "msft", line = "1>test_main.cpp(29): error C2144: syntax error : 'int' should be preceded by ';'", want = {row_start = 29, filename = "test_main.cpp"}},
         { rule = "msft", line = "1>test_main.cpp(29): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int", want = {row_start = 29, filename = "test_main.cpp"}},
         { rule = "msft", line = "C:\\tmp\\test.cpp(101,11): error C4101: 'bias0123': unreferenced local variable [C:\\tmp\\project.vcxproj]", want = {col_start = 11, row_start = 101, filename = "C:\\tmp\\test.cpp"}},
+
+        { rule = "edg_1", line = "build/intel/debug/../../../struct.cpp(42): error: identifier \"foo\" is undefined", want = {row_start = 42, filename = "build/intel/debug/../../../struct.cpp"}},
+        { rule = "edg_1", line = "build/intel/debug/struct.cpp(44): warning #1011: missing return statement at end of", want = {row_start = 44, filename = "build/intel/debug/struct.cpp", type = "warning"}},
+        { rule = "edg_1", line = "build/intel/debug/iptr.h(302): remark #981: operands are evaluated in unspecified order", want = {row_start = 302, filename = "build/intel/debug/iptr.h", type = "info"}},
+
     }
 
     busted.it("captures error information", function()
