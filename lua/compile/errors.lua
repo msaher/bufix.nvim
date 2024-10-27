@@ -107,6 +107,13 @@ M.patterns = {
         Cg(digits/tonumber, "row_start")
     }),
 
+    cmake_info = Ct({
+        Cg(Cc"info", "type") * -- type is always info
+        P"  " * (P" *"^-1) *  -- match two spaces and optionally a space with an asterisk
+        Cg((1 - P":")^1, "filename") * P":" *
+        Cg(digits/tonumber, "row_start")
+    }),
+
 }
 
 return M

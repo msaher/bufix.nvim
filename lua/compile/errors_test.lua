@@ -74,6 +74,7 @@ busted.describe("error patterns", function()
         { rule = "cmake", line = "CMake Error at CMakeLists.txt:23 (hurz):", want = {row_start = 23, filename = "CMakeLists.txt"}},
         { rule = "cmake", line = "CMake Warning at cmake/modules/UseUG.cmake:73 (find_package):", want = {row_start = 73, filename = "cmake/modules/UseUG.cmake", type = "warning"}},
 
+        { rule = "cmake_info", line = "  cmake/modules/DuneGridMacros.cmake:19 (include)", want = {row_start = 19, filename = "cmake/modules/DuneGridMacros.cmake", type = "info"}},
     }
 
     busted.it("captures error information", function()
