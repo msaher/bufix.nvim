@@ -174,6 +174,15 @@ M.patterns = {
         (P("Warning") * Cg(Cc("warning"), "type"))^-1
     }),
 
+    ibm = Ct({
+        Cg(except" \n\t("^1, "filename") *
+        "(" * Cg(digits / tonumber, "row_start") * -- row number
+        ":" * Cg(digits / tonumber, "col_start") * -- column number
+        ") :" *
+        -- optional warning or ifnormation
+        (Cg("warning", "type") + Cg("info", "type"))^-1
+    }),
+
 }
 
 return M

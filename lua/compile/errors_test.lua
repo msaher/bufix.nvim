@@ -106,6 +106,10 @@ busted.describe("error patterns", function()
         { rule = "iar", line = "\"foo.c\",3  Error[32]: Error message", want = {row_start = 3, filename = "foo.c"}},
         { rule = "iar", line = "\"foo.c\",3  Warning[32]: Error message", want = {row_start = 3, filename = "foo.c", type = "warning"}},
 
+        { rule = "ibm", line = "foo.c(2:0) : informational EDC0804: Function foo is not referenced.", want = {col_start = 0, row_start = 2, filename = "foo.c"}},
+        { rule = "ibm", line = "foo.c(3:8) : warning EDC0833: Implicit return statement encountered.", want = {col_start = 8, row_start = 3, filename = "foo.c"}},
+        { rule = "ibm", line = "foo.c(5:5) : error EDC0350: Syntax error.", want = { col_start = 5, row_start = 5, filename = "foo.c"}},
+
     }
 
     busted.it("captures error information", function()
