@@ -145,6 +145,11 @@ busted.describe("error patterns", function()
         { rule = "ruby_Test::Unit", line = "    [examples/test-unit.rb:28:in `here_is_a_deep_assert'", want = {row_start = 28, filename = "examples/test-unit.rb"}},
         { rule = "ruby_Test::Unit", line = "     examples/test-unit.rb:19:in `test_a_deep_assert']:", want = {row_start = 19, filename = "examples/test-unit.rb"}},
 
+        { rule = "gmake", line = "make: *** [Makefile:20: all] Error 2", want = {row_start = 20, filename = "Makefile", type = "info"}},
+        { rule = "gmake", line = "make[4]: *** [sub/make.mk:19: all] Error 127", want = {row_start = 19, filename = "sub/make.mk", type = "info"}},
+        { rule = "gmake", line = "gmake[4]: *** [sub/make.mk:19: all] Error 2", want = {row_start = 19, filename = "sub/make.mk", type = "info"}},
+        { rule = "gmake", line = "gmake-4.3[4]: *** [make.mk:1119: all] Error 2", want = {row_start = 1119, filename = "make.mk", type = "info"}},
+        { rule = "gmake", line = "Make-4.3: *** [make.INC:1119: dir/all] Error 2", want = {row_start = 1119, filename = "make.INC", type = "info"}},
 
     }
 

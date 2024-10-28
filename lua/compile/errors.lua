@@ -259,4 +259,13 @@ M.patterns["ruby_Test::Unit"] = Ct({
     Cg(digits / tonumber, "row_start") * ":" *
     P"in"
 })
+
+M.patterns.gmake = Ct({
+    Cg(Cc"info", "type") * -- always info
+    except(":")^1 * ":" * " *** " *
+    "[" *
+    Cg(except(":")^1, "filename") * ":" *
+    Cg(digits / tonumber, "row_start")
+})
+
 return M
