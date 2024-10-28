@@ -166,6 +166,14 @@ M.patterns = {
         "file " * Cg(except(" :;\n")^1, "filename")
     }),
 
+    -- TODO: add kotlin
+
+    iar = Ct({
+        dquote * Cg((1 - dquote)^0, "filename") * dquote *
+        "," * Cg(digits / tonumber, "row_start") * blank *
+        (P("Warning") * Cg(Cc("warning"), "type"))^-1
+    }),
+
 }
 
 return M

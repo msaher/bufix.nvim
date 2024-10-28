@@ -102,6 +102,10 @@ busted.describe("error patterns", function()
         { rule = "ftnchek", line = "Warning near line 10 file arrayclash.f: Module contains no executable", want = {row_start = 10, filename = "arrayclash.f", type = "warning"}},
         { rule = "ftnchek", line = "Nonportable usage near line 31 col 9 file assign.f: mixed default and explicit", want = {col_start = 9, row_start = 31, filename = "assign.f"}},
 
+
+        { rule = "iar", line = "\"foo.c\",3  Error[32]: Error message", want = {row_start = 3, filename = "foo.c"}},
+        { rule = "iar", line = "\"foo.c\",3  Warning[32]: Error message", want = {row_start = 3, filename = "foo.c", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()
