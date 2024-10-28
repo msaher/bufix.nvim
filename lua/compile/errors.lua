@@ -154,6 +154,11 @@ M.patterns = {
         dquote * Cg(except(" \"\n")^1, "filename") * dquote
     }),
 
+    epc = Ct({
+        "Error " * digits * " at " *
+        "(" * Cg(digits / tonumber, "row_start") * ":" * Cg(except(")\n")^1, "filename") * ")"
+    })
+
 
 }
 

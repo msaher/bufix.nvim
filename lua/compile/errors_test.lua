@@ -95,6 +95,7 @@ busted.describe("error patterns", function()
 
         { rule = "edg_2",  line = "detected during ... at line 62 of \"build/intel/debug/../../../trace.h\"", want = {row_start = 62, filename = "build/intel/debug/../../../trace.h"}},
 
+        { rule = "epc", line = "Error 24 at (2:progran.f90) : syntax error", want = {row_start = 2, filename = "progran.f90"}},
     }
 
     busted.it("captures error information", function()
