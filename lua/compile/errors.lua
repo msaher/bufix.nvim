@@ -166,7 +166,13 @@ M.patterns = {
         "file " * Cg(except(" :;\n")^1, "filename")
     }),
 
-    -- TODO: add kotlin
+    gradle_kotlin = Ct({
+        (P"w"*Cg(Cc"warning", "type"))^-1 * except(":")^-1 * ": " *
+            P"file://" * Cg(except":"^1, "filename") *
+            ":" * Cg(digits/tonumber, "row_start") *
+            ":" * Cg(digits/tonumber, "col_start")
+    }),
+
 
     iar = Ct({
         dquote * Cg((1 - dquote)^0, "filename") * dquote *

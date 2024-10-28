@@ -124,6 +124,9 @@ busted.describe("error patterns", function()
         { rule = "java",  line = "==1332==    at 0x4040743C: System::getErrorString() (../src/Lib/System.cpp:217)", want = {row_start = 217, filename = "../src/Lib/System.cpp"}},
         { rule = "java",  line = "==1332==    by 0x8008621: main (vtest.c:180)", want = {row_start = 180, filename = "vtest.c", type = "warning"}},
 
+        { rule = "gradle_kotlin", line = "e: file:///src/Test.kt:267:5 foo: bar", want = {col_start = 5, row_start = 267, filename = "/src/Test.kt"}},
+        { rule = "gradle_kotlin", line = "w: file:///src/Test.kt:267:5 foo: bar", want = {col_start = 5, row_start = 267, filename = "/src/Test.kt", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()
