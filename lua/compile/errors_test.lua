@@ -119,6 +119,11 @@ busted.describe("error patterns", function()
         { rule = "irix", line = "/usr/lib/cmplrs/cc/cfe: warning: foo.c: 1: blah blah", want = {row_start = 1, filename = "foo.c", type = "warning"}},
         { rule = "irix", line = "foo bar: baz.f, line 27: ...", want = {row_start = 27, filename = "baz.f"}},
 
+        { rule = "java",  line = "\tat org.foo.ComponentGateway.doGet(ComponentGateway.java:172)", want = {row_start = 172, filename = "ComponentGateway.java"}},
+        { rule = "java",  line = "\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:740)", want = {row_start = 740, filename = "HttpServlet.java"}},
+        { rule = "java",  line = "==1332==    at 0x4040743C: System::getErrorString() (../src/Lib/System.cpp:217)", want = {row_start = 217, filename = "../src/Lib/System.cpp"}},
+        { rule = "java",  line = "==1332==    by 0x8008621: main (vtest.c:180)", want = {row_start = 180, filename = "vtest.c", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()

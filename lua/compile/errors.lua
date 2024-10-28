@@ -204,6 +204,14 @@ M.patterns.irix = Ct({
 
     Cg(except",\": \n\t"^1, "filename") *
 
-    (P", line " + P":")* blank * Cg(digit^1 / tonumber, "row_start")
+    (P", line " + P":")* blank * Cg(digits / tonumber, "row_start")
+})
+
+
+M.patterns.java = Ct({
+    ((S(" \t")^1 * "at ") + ("==" * digits * "==" * blank * ("at" + "by" * Cg(Cc"warning", "type"))))^1 * blank *
+    -- search for (filename:row_start) anywhere
+    anywhere("(" * Cg(except("):")^0, "filename") * ":" * Cg(digits/tonumber, "row_start") * ")" * -1)
+})
 })
 return M
