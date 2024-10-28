@@ -221,8 +221,8 @@ M.patterns.java = Ct({
 })
 
 M.patterns.jikes_file = Ct({
-    P"Found" + P"Issued" *
-    any^1 * P"compiling " * dquote *
+    (P"Found" + P"Issued") *
+    (1-P"compiling")^1 * P"compiling " * dquote *
     Cg(except("\"\n")^1, "filename") * dquote * P":"
 })
 

@@ -128,7 +128,11 @@ busted.describe("error patterns", function()
         { rule = "gradle_kotlin", line = "w: file:///src/Test.kt:267:5 foo: bar", want = {col_start = 5, row_start = 267, filename = "/src/Test.kt", type = "warning"}},
 
         { rule = "jikes_file", line = "Found 2 semantic errors compiling \"../javax/swing/BorderFactory.java\":", want = { filename = "../javax/swing/BorderFactory.java"}},
-        { rule "jikes_file", line = "Issued 1 semantic warning compiling \"java/awt/Toolkit.java\":", want = { filename = "java/awt/Toolkit.java"}},
+        { rule = "jikes_file", line = "Issued 1 semantic warning compiling \"java/awt/Toolkit.java\":", want = { filename = "java/awt/Toolkit.java"}},
+
+        { rule = "maven", line = "FooBar.java:[111,53] no interface expected here", want = {col_start = 53, row_start = 111, filename = "FooBar.java"}},
+        { rule = "maven", line = "[ERROR] /Users/cinsk/hello.java:[651,96] ';' expected", want = {col_start = 96, row_start = 651, filename = "/Users/cinsk/hello.java"}},
+        { rule = "maven", line = "[WARNING] /foo/bar/Test.java:[27,43] unchecked conversion", want = {col_start = 43, row_start = 27, filename = "/foo/bar/Test.java", type = "warning"}},
 
     }
 
