@@ -231,4 +231,11 @@ M.patterns.jikes_line = Ct({
     blank * P"<" * P"-"^0 * P">" * eol *
     P"*** " * (P"Error" + P"Warning" * Cg(Cc"warning", "type"))
 })
+
+
+M.patterns.maven = Ct({
+    ("[ERROR]" + "[WARNING]"*Cg(Cc"warning", "type") + "INFO"*Cg(Cc"info", "type"))^-1 * blank *
+    Cg(except(" \n[:")^1, "filename") * ":" *
+    "[" * Cg(digits/tonumber, "row_start") * "," * Cg(digits/tonumber, "col_start") * "]"
+})
 return M
