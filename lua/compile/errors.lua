@@ -244,4 +244,12 @@ M.patterns.clang_include = Ct({
     P"In file included from " * Cg(except(":\n")^1, "filename") * ":" * Cg(digits/tonumber, "row_start") * ":" * -1
 })
 
+M.patterns.gcc_include = Ct({
+    (P"In file included " + blank) * "from " *
+    digit^0 * -- idk why. just translating regex
+    Cg(except(":")^1, "filename") * ":" *
+    Cg(digits/tonumber, "row_start") *
+    (":" * Cg(digits/tonumber, "col_start"))^-1 -- optional col
+
+})
 return M

@@ -134,8 +134,13 @@ busted.describe("error patterns", function()
         { rule = "maven", line = "[ERROR] /Users/cinsk/hello.java:[651,96] ';' expected", want = {col_start = 96, row_start = 651, filename = "/Users/cinsk/hello.java"}},
         { rule = "maven", line = "[WARNING] /foo/bar/Test.java:[27,43] unchecked conversion", want = {col_start = 43, row_start = 27, filename = "/foo/bar/Test.java", type = "warning"}},
 
-        { rule = "clang_include", line = "In file included from foo.cpp:2:", want = {row_start = 2, filename = "foo.cpp", type = "info"}}
+        { rule = "clang_include", line = "In file included from foo.cpp:2:", want = {row_start = 2, filename = "foo.cpp", type = "info"}},
 
+        { rule = "gcc_include", line = "In file included from /usr/include/c++/3.3/backward/warn.h:4,", want = {row_start = 4, filename = "/usr/include/c++/3.3/backward/warn.h"}},
+        { rule = "gcc_include", line = "                 from /usr/include/c++/3.3/backward/iostream.h:31:0,", want = {col_start = 0, row_start = 31, filename = "/usr/include/c++/3.3/backward/iostream.h"}},
+        { rule = "gcc_include", line = "                 from test_clt.cc:1:", want = {row_start = 1, filename = "test_clt.cc"}},
+        { rule = "gcc_include", line = "\tfrom plain-exception.rb:3:in `proxy'", want = {row_start = 3, filename = "plain-exception.rb"}},
+        { rule = "gcc_include", line = "\tfrom plain-exception.rb:12", want = {row_start = 12, filename = "plain-exception.rb"}},
 
     }
 
