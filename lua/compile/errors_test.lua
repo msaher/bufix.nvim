@@ -134,6 +134,9 @@ busted.describe("error patterns", function()
         { rule = "maven", line = "[ERROR] /Users/cinsk/hello.java:[651,96] ';' expected", want = {col_start = 96, row_start = 651, filename = "/Users/cinsk/hello.java"}},
         { rule = "maven", line = "[WARNING] /foo/bar/Test.java:[27,43] unchecked conversion", want = {col_start = 43, row_start = 27, filename = "/foo/bar/Test.java", type = "warning"}},
 
+        { rule = "clang_include", line = "In file included from foo.cpp:2:", want = {row_start = 2, filename = "foo.cpp", type = "info"}}
+
+
     }
 
     busted.it("captures error information", function()

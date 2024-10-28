@@ -238,4 +238,10 @@ M.patterns.maven = Ct({
     Cg(except(" \n[:")^1, "filename") * ":" *
     "[" * Cg(digits/tonumber, "row_start") * "," * Cg(digits/tonumber, "col_start") * "]"
 })
+
+M.patterns.clang_include = Ct({
+    Cg(Cc"info", "type") * -- always info
+    P"In file included from " * Cg(except(":\n")^1, "filename") * ":" * Cg(digits/tonumber, "row_start") * ":" * -1
+})
+
 return M
