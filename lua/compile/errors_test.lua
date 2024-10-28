@@ -93,6 +93,8 @@ busted.describe("error patterns", function()
         { rule = "edg_1", line = "build/intel/debug/struct.cpp(44): warning #1011: missing return statement at end of", want = {row_start = 44, filename = "build/intel/debug/struct.cpp", type = "warning"}},
         { rule = "edg_1", line = "build/intel/debug/iptr.h(302): remark #981: operands are evaluated in unspecified order", want = {row_start = 302, filename = "build/intel/debug/iptr.h", type = "info"}},
 
+        { rule = "edg_2",  line = "detected during ... at line 62 of \"build/intel/debug/../../../trace.h\"", want = {row_start = 62, filename = "build/intel/debug/../../../trace.h"}},
+
     }
 
     busted.it("captures error information", function()

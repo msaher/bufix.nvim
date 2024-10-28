@@ -17,7 +17,7 @@ local dquote = P'"'
 local squote = P"'"
 
 -- from https://www.inf.puc-rio.br/~roberto/lpeg/
-local function anywhere (p)
+local function anywhere(p)
   return P{ p + 1 * lpeg.V(1) }
 end
 
@@ -142,12 +142,18 @@ M.patterns = {
         -- + P("error") * -[[ Cg(Cc("error"), "type") --]])^-1 -- optional error
     }),
 
-    edg_1 = Ct{
+    edg_1 = Ct({
         Cg((except(" (\n"))^1, "filename") *
         "(" * Cg(digits / tonumber, "row_start") * ")" *
         ": " *
         ("error" + Cg("warning", "type") + "remark" * Cg(Cc"info", "type"))  -- error/warning/remark
-    }
+    }),
+
+    edg_2 = Ct({
+        anywhere(P"at line ") * Cg(digits / tonumber, "row_start") * " of " *
+        dquote * Cg(except(" \"\n")^1, "filename") * dquote
+    }),
+
 
 }
 
