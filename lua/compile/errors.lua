@@ -157,8 +157,14 @@ M.patterns = {
     epc = Ct({
         "Error " * digits * " at " *
         "(" * Cg(digits / tonumber, "row_start") * ":" * Cg(except(")\n")^1, "filename") * ")"
-    })
+    }),
 
+    ftnchek = Ct({
+        ("Warning " * Cg(Cc"warning", "type") * (1-P"line")^1)^-1 * -- optional warning
+        anywhere("line") * S" \n" * Cg(digits/tonumber, "row_start") * S" \n" *
+        ("col " * Cg(digits/tonumber, "col_start") * S" \n")^-1 * -- optional column
+        "file " * Cg(except(" :;\n")^1, "filename")
+    }),
 
 }
 

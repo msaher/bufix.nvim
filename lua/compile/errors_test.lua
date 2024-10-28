@@ -96,6 +96,12 @@ busted.describe("error patterns", function()
         { rule = "edg_2",  line = "detected during ... at line 62 of \"build/intel/debug/../../../trace.h\"", want = {row_start = 62, filename = "build/intel/debug/../../../trace.h"}},
 
         { rule = "epc", line = "Error 24 at (2:progran.f90) : syntax error", want = {row_start = 2, filename = "progran.f90"}},
+
+        { rule = "ftnchek", line = "Dummy arg W in module SUBA line 8 file arrayclash.f is array", want = {row_start = 8, filename = "arrayclash.f"}},
+        { rule = "ftnchek", line = "L4 used at line 55 file test/assign.f; never set", want = {row_start =55, filename = "test/assign.f"}},
+        { rule = "ftnchek", line = "Warning near line 10 file arrayclash.f: Module contains no executable", want = {row_start = 10, filename = "arrayclash.f", type = "warning"}},
+        { rule = "ftnchek", line = "Nonportable usage near line 31 col 9 file assign.f: mixed default and explicit", want = {col_start = 9, row_start = 31, filename = "assign.f"}},
+
     }
 
     busted.it("captures error information", function()
