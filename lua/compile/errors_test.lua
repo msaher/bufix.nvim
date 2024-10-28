@@ -127,6 +127,9 @@ busted.describe("error patterns", function()
         { rule = "gradle_kotlin", line = "e: file:///src/Test.kt:267:5 foo: bar", want = {col_start = 5, row_start = 267, filename = "/src/Test.kt"}},
         { rule = "gradle_kotlin", line = "w: file:///src/Test.kt:267:5 foo: bar", want = {col_start = 5, row_start = 267, filename = "/src/Test.kt", type = "warning"}},
 
+        { rule = "jikes_file", line = "Found 2 semantic errors compiling \"../javax/swing/BorderFactory.java\":", want = { filename = "../javax/swing/BorderFactory.java"}},
+        { rule "jikes_file", line = "Issued 1 semantic warning compiling \"java/awt/Toolkit.java\":", want = { filename = "java/awt/Toolkit.java"}},
+
     }
 
     busted.it("captures error information", function()

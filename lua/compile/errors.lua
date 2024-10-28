@@ -219,5 +219,16 @@ M.patterns.java = Ct({
     -- search for (filename:row_start) anywhere
     anywhere("(" * Cg(except("):")^0, "filename") * ":" * Cg(digits/tonumber, "row_start") * ")" * -1)
 })
+
+M.patterns.jikes_file = Ct({
+    P"Found" + P"Issued" *
+    any^1 * P"compiling " * dquote *
+    Cg(except("\"\n")^1, "filename") * dquote * P":"
+})
+
+M.patterns.jikes_line = Ct({
+    blank * Cg(digits/tonumber, "row_start") * P"." * blank * rest_of_line * eol *
+    blank * P"<" * P"-"^0 * P">" * eol *
+    P"*** " * (P"Error" + P"Warning" * Cg(Cc"warning", "type"))
 })
 return M
