@@ -185,4 +185,25 @@ M.patterns = {
 
 }
 
+M.patterns.irix = Ct({
+    -- prefix: alphanumeric characters, dashes, underscores, slashes, spaces, followed by ": "
+    ((R("AZ", "az", "09") + S("-_/ ")) - ":")^1 * ": " *
+
+    -- error type ("Info", "Warning", "Error", "Severe"), followed by optional error number
+    (
+        (
+        S"Ss"*"evere"                              +
+        S"Ee"*"rror"                               +
+        S"Ww"*"arning" * Cg(Cc("warning"), "type") +
+        S"Ii"*"nfo"    * Cg(Cc("info"), "type")
+        ) *
+
+        (blank * digit^1)^-1 * -- optional numeric code after error type
+        ":"
+    )^-1 * blank *
+
+    Cg(except",\": \n\t"^1, "filename") *
+
+    (P", line " + P":")* blank * Cg(digit^1 / tonumber, "row_start")
+})
 return M

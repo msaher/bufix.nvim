@@ -110,6 +110,15 @@ busted.describe("error patterns", function()
         { rule = "ibm", line = "foo.c(3:8) : warning EDC0833: Implicit return statement encountered.", want = {col_start = 8, row_start = 3, filename = "foo.c"}},
         { rule = "ibm", line = "foo.c(5:5) : error EDC0350: Syntax error.", want = { col_start = 5, row_start = 5, filename = "foo.c"}},
 
+        { rule = "irix", line = "ccom: Error: foo.c, line 2: syntax error", want = {row_start = 2, filename = "foo.c"}},
+        { rule = "irix", line = "cc: Severe: /src/Python-2.3.3/Modules/_curses_panel.c, line 17: Cannot find file <panel.h> ...", want = {row_start = 17, filename = "/src/Python-2.3.3/Modules/_curses_panel.c"}},
+        { rule = "irix", line = "cc: Info: foo.c, line 27: ...", want = {row_start = 27, filename = "foo.c", type = "info"}},
+        { rule = "irix", line = "cfe: Warning 712: foo.c, line 2: illegal combination of pointer and ...", want = {row_start = 2, filename = "foo.c", type = "warning"}},
+        { rule = "irix", line = "cfe: Warning 600: xfe.c: 170: Not in a conditional directive while ...", want = {row_start = 170, filename = "xfe.c", type = "warning"}},
+        { rule = "irix", line = "/usr/lib/cmplrs/cc/cfe: Error: foo.c: 1: blah blah", want = {row_start = 1, filename = "foo.c"}},
+        { rule = "irix", line = "/usr/lib/cmplrs/cc/cfe: warning: foo.c: 1: blah blah", want = {row_start = 1, filename = "foo.c", type = "warning"}},
+        { rule = "irix", line = "foo bar: baz.f, line 27: ...", want = {row_start = 27, filename = "baz.f"}},
+
     }
 
     busted.it("captures error information", function()
