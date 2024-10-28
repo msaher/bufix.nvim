@@ -142,6 +142,10 @@ busted.describe("error patterns", function()
         { rule = "gcc_include", line = "\tfrom plain-exception.rb:3:in `proxy'", want = {row_start = 3, filename = "plain-exception.rb"}},
         { rule = "gcc_include", line = "\tfrom plain-exception.rb:12", want = {row_start = 12, filename = "plain-exception.rb"}},
 
+        { rule = "ruby_Test::Unit", line = "    [examples/test-unit.rb:28:in `here_is_a_deep_assert'", want = {row_start = 28, filename = "examples/test-unit.rb"}},
+        { rule = "ruby_Test::Unit", line = "     examples/test-unit.rb:19:in `test_a_deep_assert']:", want = {row_start = 19, filename = "examples/test-unit.rb"}},
+
+
     }
 
     busted.it("captures error information", function()

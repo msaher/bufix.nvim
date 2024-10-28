@@ -252,4 +252,11 @@ M.patterns.gcc_include = Ct({
     (":" * Cg(digits/tonumber, "col_start"))^-1 -- optional col
 
 })
+
+M.patterns["ruby_Test::Unit"] = Ct({
+    blank * P"["^-1 *
+    Cg(except(":")^1, "filename") * ":" *
+    Cg(digits / tonumber, "row_start") * ":" *
+    P"in"
+})
 return M
