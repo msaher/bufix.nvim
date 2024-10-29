@@ -268,4 +268,39 @@ M.patterns.gmake = Ct({
     Cg(digits / tonumber, "row_start")
 })
 
+local regex = "^\\%([[:alpha:]][-[:alnum:].]\\+: \\?\\|[ \t]\\%(in \\| from\\)\\)\\?\\(\\%([0-9]*[^0-9\\n]\\)\\%([^\\n :]\\| [^-/\\n]\\|:[^ \\n]\\)\\{-}\\)\\%(: \\?\\)\\([0-9]\\+\\)\\%(-\\([0-9]\\+\\)\\%(\\.\\([0-9]\\+\\)\\)\\?\\|[.:]\\([0-9]\\+\\)\\%(-\\%(\\([0-9]\\+\\)\\.\\)\\([0-9]\\+\\)\\)\\?\\)\\?:\\%( *\\(\\%(FutureWarning\\|RuntimeWarning\\|W\\%(arning\\)\\|warning\\)\\)\\| *\\([Ii]nfo\\%(\\>\\|formationa\\?l\\?\\)\\|I:\\|\\[ skipping .\\+ ]\\|instantiated from\\|required from\\|[Nn]ote\\)\\| *\\%([Ee]rror\\)\\|\\%([0-9]\\?\\)\\%([^0-9\\n]\\|$\\)\\|[0-9][0-9][0-9]\\)"
+
+-- ;; The `gnu' message syntax is
+-- ;;   [PROGRAM:]FILE:LINE[-ENDLINE]:[COL[-ENDCOL]:] MESSAGE
+-- ;; or
+-- ;;   [PROGRAM:]FILE:LINE[.COL][-ENDLINE[.ENDCOL]]: MESSAGE
+M.patterns.gnu = Ct({
+    [1] = V'without_program' + V'with_program',
+
+    without_program = V'yapping'^-1  * V'filename' * ":" * V'location',
+    with_program =  V'program' * ":" * V'filename' * ":" * V'location',
+
+    yapping = blank * (P"in " + P"from" + "|"),
+    program = (R("AZ", "az") * (R("AZ", "az", "09") + S".-_")^1),
+
+    -- captures filename.
+    -- Avoids entirely numerical filenames
+    filename = Cg(R("09")^0 * (1-(digit+"\n")) *
+                    -- three possible cases to match the rest of the filename
+                  (except("\n :")^1 + (P" " * except"-/\n")^1 + P(":" * except":\n")^1)
+            , "filename"),
+
+    -- save some typing
+    nums = R("09")^1 / tonumber,
+    row_start = Cg(V'nums', "row_start"),
+    row_end = Cg(V'nums', "row_end"),
+    col_start = Cg(V'nums', "col_start"),
+    col_end = Cg(V'nums', "col_end"),
+
+    location = V'location_format1' + V'location_format2',
+    location_format1 = V'row_start' * (P"-" * V'row_end')^-1 * P":" * (V'col_start' * (P"-" * V'col_end' * P":")^-1)^-1,
+    location_format2 = V'row_start' * (P"." * V'col_start')^-1 * (P"-" * V'row_end' * (P"." * V'col_end')^-1)^-1 * P":",
+
+})
+
 return M
