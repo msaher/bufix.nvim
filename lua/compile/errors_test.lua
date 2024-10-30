@@ -184,6 +184,9 @@ busted.describe("error patterns", function()
         { rule = "cucumber", line = "Scenario: undefined step  # features/cucumber.feature:3", want = {row_start = 3, filename = "features/cucumber.feature"}},
         { rule = "cucumber", line = "      /home/gusev/.rvm/foo/bar.rb:500:in `_wrap_assertion'", want = {row_start = 500, filename = "/home/gusev/.rvm/foo/bar.rb"}},
 
+        { rule = "lcc", line = "E, file.cc(35,52) Illegal operation on pointers", want = {col_start = 52, row_start = 35, filename = "file.cc"}},
+        { rule = "lcc", line = "W, file.cc(36,52) blah blah", want = {col_start = 52, row_start = 36, filename = "file.cc", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()

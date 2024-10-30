@@ -323,4 +323,12 @@ M.patterns.cucumber = Ct(
     Cg(except("(:")^1, "filename") * ":" *
     Cg(digits / tonumber, "row_start")
 )
+
+M.patterns.lcc = Ct(
+    (P"E" + P"W" * Cg(Cc"warning", "type")) * ", " *
+    Cg(except("^(\n")^1, "filename") * "(" *
+    Cg(digits/tonumber, "row_start") * "," * blank *
+    Cg(digits/tonumber, "col_start")
+)
+
 return M
