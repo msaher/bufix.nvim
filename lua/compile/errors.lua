@@ -314,4 +314,13 @@ M.patterns.gnu = Ct({
     error = S"Ee"*"rror",
 })
 
+M.patterns.cucumber = Ct(
+    anywhere(
+        (P"cucumber" * (P" -p " * (1-blank)^1)^-1) +
+        "     " +
+        "#"
+    ) * blank *
+    Cg(except("(:")^1, "filename") * ":" *
+    Cg(digits / tonumber, "row_start")
+)
 return M

@@ -181,6 +181,9 @@ busted.describe("error patterns", function()
         { rule = "gnu", line = "plain-exception.rb:7:in `fun': unhandled exception", want = {row_start = 7, filename = "plain-exception.rb"}},
         { rule = "gnu", line = "examples/test-unit.rb:10:in `test_assert_raise'", want = {row_start = 10, filename = "examples/test-unit.rb"}},
 
+        { rule = "cucumber", line = "Scenario: undefined step  # features/cucumber.feature:3", want = {row_start = 3, filename = "features/cucumber.feature"}},
+        { rule = "cucumber", line = "      /home/gusev/.rvm/foo/bar.rb:500:in `_wrap_assertion'", want = {row_start = 500, filename = "/home/gusev/.rvm/foo/bar.rb"}},
+
     }
 
     busted.it("captures error information", function()
