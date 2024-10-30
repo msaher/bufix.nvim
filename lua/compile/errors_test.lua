@@ -151,6 +151,36 @@ busted.describe("error patterns", function()
         { rule = "gmake", line = "gmake-4.3[4]: *** [make.mk:1119: all] Error 2", want = {row_start = 1119, filename = "make.mk", type = "info"}},
         { rule = "gmake", line = "Make-4.3: *** [make.INC:1119: dir/all] Error 2", want = {row_start = 1119, filename = "make.INC", type = "info"}},
 
+        { rule = "gnu", line =  "foo.adb:61:11:  [...] in call to size declared at foo.ads:11", want = {col_start = 11, row_start = 61, filename = "foo.adb"}},
+        { rule = "gnu", line =  "foo.c:8: message", want = {row_start = 8, filename = "foo.c"}},
+        { rule = "gnu", line =  "../foo.c:8: W: message", want = {row_start = 8, filename = "../foo.c", type = "warning"}},
+        { rule = "gnu", line =  "/tmp/foo.c:8:warning message", want = {row_start = 8, filename = "/tmp/foo.c", type = "warning"}},
+        { rule = "gnu", line =  "foo/bar.py:8: FutureWarning message", want = {row_start = 8, filename = "foo/bar.py", type = "warning"}},
+        { rule = "gnu", line =  "foo.py:8: RuntimeWarning message", want = {row_start = 8, filename = "foo.py", type = "warning"}},
+        { rule = "gnu", line =  "foo.c:8:I: message", want = {row_start = 8, filename = "foo.c", type = "info"}},
+        { rule = "gnu", line =  "foo.c:8.23: note: message", want = {col_start = 23, row_start = 8, filename = "foo.c", type = "info"}},
+        { rule = "gnu", line =  "foo.c:8.23: info: message", want = {col_start = 23, row_start = 8, filename = "foo.c", type = "info"}},
+        { rule = "gnu", line =  "foo.c:8:23:information: message", want = {col_start = 23, row_start = 8, filename = "foo.c", type = "info"}},
+        { rule = "gnu", line =  "foo.c:8.23-45: Informational: message", want = {col_start = 23, col_end = 45, row_start = 8, filename = "foo.c", type = "info"}},
+        { rule = "gnu", line =  "foo.c:8-23: message", want = {row_start = 8, row_end = 23, filename = "foo.c"}},
+        { rule = "gnu", line =  "   |foo.c:8: message", want = {row_start = 8, filename = "foo.c"}},
+
+        -- ;; The next one is not in the GNU standards AFAICS.
+        -- ;; Here we seem to interpret it as LINE1-LINE2.COL2.
+        { rule = "gnu", line = "foo.c:8-45.3: message", want = {col_start = 3, row_start = 8, row_end = 45, filename = "foo.c"}},
+        -- deleting this one because it doesn't make sense. what does it even mean?
+        -- { rule = "gnu", line = "foo.c:8.23-9.1: message", want = {col_start = 23 (8 . 9) "foo.c")
+        { rule = "gnu", line = "jade:dbcommon.dsl:133:17:E: missing argument for function call", want = {col_start = 17, row_start = 133, filename = "dbcommon.dsl"}},
+        { rule = "gnu", line = "G:/cygwin/dev/build-myproj.xml:54: Compiler Adapter 'javac' can't be found.", want = {row_start = 54, filename = "G:/cygwin/dev/build-myproj.xml"}},
+        { rule = "gnu", line = "file:G:/cygwin/dev/build-myproj.xml:54: Compiler Adapter 'javac' can't be found.", want = {row_start = 54, filename = "G:/cygwin/dev/build-myproj.xml"}},
+        -- deleting this one because {standard input} isn't a real filename
+        -- { rule = "gnu", line = "{standard input}:27041: Warning: end of file not at end of a line; newline inserted", want = {row_start = 27041, type = "warning"}},
+        { rule = "gnu", line = "boost/container/detail/flat_tree.hpp:589:25:   [ skipping 5 instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]", want = {col_start = 25, row_start = 589, filename = "boost/container/detail/flat_tree.hpp", type = "info"}},
+        -- not sure why the "gnu" rule is overloaded
+        -- ;; ruby (uses gnu)
+        { rule = "gnu", line = "plain-exception.rb:7:in `fun': unhandled exception", want = {row_start = 7, filename = "plain-exception.rb"}},
+        { rule = "gnu", line = "examples/test-unit.rb:10:in `test_assert_raise'", want = {row_start = 10, filename = "examples/test-unit.rb"}},
+
     }
 
     busted.it("captures error information", function()

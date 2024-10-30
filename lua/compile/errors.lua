@@ -277,17 +277,22 @@ local regex = "^\\%([[:alpha:]][-[:alnum:].]\\+: \\?\\|[ \t]\\%(in \\| from\\)\\
 M.patterns.gnu = Ct({
     [1] = V'without_program' + V'with_program',
 
-    without_program = V'yapping'^-1  * V'filename' * ":" * V'location',
-    with_program =  V'program' * ":" * V'filename' * ":" * V'location',
+    without_program = V'yapping'^-1  * V'data',
+    with_program =  V'program' * ":" * V'data',
+    data = V'filename' * ":" * V'location' * P":"^-1 * blank * V'type'^-1,
 
     yapping = blank * (P"in " + P"from" + "|"),
     program = (R("AZ", "az") * (R("AZ", "az", "09") + S".-_")^1),
 
     -- captures filename.
     -- Avoids entirely numerical filenames
-    filename = Cg(R("09")^0 * (1-(digit+"\n")) *
+    -- type of files:
+    -- has space
+    -- has colon
+    -- has no space nor colon
+    filename = Cg(R"09"^0 * (1-(R"09"+"\n")) *
                     -- three possible cases to match the rest of the filename
-                  (except("\n :")^1 + (P" " * except"-/\n")^1 + P(":" * except":\n")^1)
+                  (except"\n :"^1 + (P" " * (except"-/\n")^1) + (P":" * except":\n"^1))
             , "filename"),
 
     -- save some typing
@@ -298,9 +303,15 @@ M.patterns.gnu = Ct({
     col_end = Cg(V'nums', "col_end"),
 
     location = V'location_format1' + V'location_format2',
-    location_format1 = V'row_start' * (P"-" * V'row_end')^-1 * P":" * (V'col_start' * (P"-" * V'col_end' * P":")^-1)^-1,
+
+    location_format1 = V'row_start' * (P"-" * V'row_end')^-1 * S":." * (V'col_start' * (P"-" * V'col_end' * P":")^-1)^-1,
     location_format2 = V'row_start' * (P"." * V'col_start')^-1 * (P"-" * V'row_end' * (P"." * V'col_end')^-1)^-1 * P":",
 
+    type = V'warning' + V'info' + V'error',
+
+    warning = (P"FutureWarning" + P"RuntimeWarning" + P"W" + S("Ww")*P"arning") * Cg(Cc"warning", "type"),
+    info = ((S"Ii"*"nfo" * (P"rmation" + P"l"^-1)^-1) + P"I:" + (P"[ skipping " * except("]")^1 * "]") + P"instantiated from" + P"required from" + S"Nn"*"ote") * Cg(Cc"info", "type"),
+    error = S"Ee"*"rror",
 })
 
 return M
