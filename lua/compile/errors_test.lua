@@ -215,6 +215,8 @@ busted.describe("error patterns", function()
 
         { rule = "rxp", line = "in unnamed entity at line 71 char 8 of file:///home/reto/test/group.xml", want = {col_start = 8, row_start = 71, filename = "/home/reto/test/group.xml"}},
         { rule = "rxp", line = "in unnamed entity at line 4 char 8 of file:///home/reto/test/group.xml", want = {col_start = 8, row_start = 4, filename = "/home/reto/test/group.xml"}},
+
+        { rule = "shellcheck", line = "In autogen.sh line 48:", want = {row_start = 48, filename = "autogen.sh"}},
     }
 
     busted.it("captures error information", function()

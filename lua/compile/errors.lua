@@ -419,4 +419,9 @@ M.patterns.rxp = Ct(
     "of file://" * Cg(P(1)^1, "filename")
 )
 
+M.patterns.shellcheck = Ct(
+    "In " * Cg((1-P(" line "))^1, "filename") * " line " *
+    Cg(digits/tonumber, "row_start") * ":"
+)
+
 return M
