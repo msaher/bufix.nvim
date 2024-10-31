@@ -204,6 +204,12 @@ busted.describe("error patterns", function()
         { rule = "oracle", line = "PCC-00004: mismatched IF/ELSE/ENDIF block at line 27 in file /usr/src/sb/ODBI_BHP.hpp", want = {row_start = 27, filename = "/usr/src/sb/ODBI_BHP.hpp"}},
         { rule = "oracle", line = "PCC-02151: line 21 column 40 file /usr/src/sb/ODBI_BHP.hpp:", want = {col_start = 40, row_start = 21, filename = "/usr/src/sb/ODBI_BHP.hpp"}},
 
+        { rule = "perl", line = "syntax error at automake line 922, near \"':'\"", want = {row_start = 922, filename = "automake"}},
+        { rule = "perl", line = "Died at test.pl line 27.", want = {row_start = 27, filename = "test.pl"}},
+        { rule = "perl", line = "store::odrecall('File_A', 'x2') called at store.pm line 90", want = {row_start = 90, filename = "store.pm"}},
+        { rule = "perl", line = "\t(in cleanup) something bad at foo.pl line 3 during global destruction.", want = {row_start = 3, filename = "foo.pl"}},
+        { rule = "perl", line = "GLib-GObject-WARNING **: /build/buildd/glib2.0-2.14.5/gobject/gsignal.c:1741: instance `0x8206790' has no handler with id `1234' at t-compilation-perl-gtk.pl line 3.", want = {row_start = 3, filename = "t-compilation-perl-gtk.pl"}},
+
     }
 
     busted.it("captures error information", function()

@@ -387,5 +387,18 @@ M.patterns.oracle = Ct(
     Cg(except(":")^1, "filename")
 )
 
+M.patterns.perl = Ct(
+    anywhere(P" at " *
+        Cg(except(" \n")^1, "filename") *
+        " line " *
+        Cg(digits/tonumber, "row_start") *
+        (
+            S",." +
+            -1 +
+            P" during global destruction." * -1
+        )
+    )
+)
+
 
 return M
