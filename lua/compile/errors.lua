@@ -58,7 +58,7 @@ M.ant = Ct(
         -- line number
         P":" * Cg(digits / tonumber, "line") *
         -- optional column information
-        (P":" * Cg(digits / tonumber, "col_start") *
+        (P":" * Cg(digits / tonumber, "col") *
         P":" * Cg(digits / tonumber, "line_end") *
         P":" * Cg(digits / tonumber, "col_end"))^-1 *
         -- optional " warning" keyword. If it exists,
@@ -85,7 +85,7 @@ M.python_tracebacks_and_caml = Ct(
     -- find lines
     P", line" * P"s"^-1 * blank * Cg(digits/tonumber, "line") * ("-" * Cg(digits/tonumber, "line_end"))^-1 * P","^-1 *
     -- optionaly characters section
-    (P" characters " * Cg(digits/tonumber, "col_start") * ("-" * Cg(digits/tonumber, "col_end"))^-1)^-1
+    (P" characters " * Cg(digits/tonumber, "col") * ("-" * Cg(digits/tonumber, "col_end"))^-1)^-1
 )
 
 M.cmake = Ct(
@@ -104,7 +104,7 @@ M.cmake_info = Ct(
 M.comma = Ct(
     dquote * Cg(filename, "filename") * dquote *
     P", line " * Cg(digits/tonumber, "line") *
-    ((S".(" + P" pos ") * Cg(digits/tonumber, "col_start") * P")"^-1)^-1 *
+    ((S".(" + P" pos ") * Cg(digits/tonumber, "col") * P")"^-1)^-1 *
     S":.,; (-" * blank * Cg("warning", "type")^-1
 )
 
@@ -120,7 +120,7 @@ M.msft = Ct(
     -- row
     P("(") * Cg(digits/tonumber, "line") *
     -- optional column
-    (P(",") * Cg(digits/tonumber, "col_start"))^-1 * P(")") *
+    (P(",") * Cg(digits/tonumber, "col"))^-1 * P(")") *
     -- colon
     blank * P(":") * blank *
     -- optional "see declaration"
@@ -149,7 +149,7 @@ M.epc = Ct(
 M.ftnchek = Ct(
     ("Warning " * Cg(Cc"warning", "type") * (1-P"line")^1)^-1 * -- optional warning
     anywhere("line") * S" \n" * Cg(digits/tonumber, "line") * S" \n" *
-    ("col " * Cg(digits/tonumber, "col_start") * S" \n")^-1 * -- optional column
+    ("col " * Cg(digits/tonumber, "col") * S" \n")^-1 * -- optional column
     "file " * Cg(except(" :;\n")^1, "filename")
 )
 
@@ -157,7 +157,7 @@ M.gradle_kotlin = Ct(
     (P"w"*Cg(Cc"warning", "type"))^-1 * except(":")^-1 * ": " *
         P"file://" * Cg(except":"^1, "filename") *
         ":" * Cg(digits/tonumber, "line") *
-        ":" * Cg(digits/tonumber, "col_start")
+        ":" * Cg(digits/tonumber, "col")
 )
 
 M.iar = Ct(
@@ -169,7 +169,7 @@ M.iar = Ct(
 M.ibm = Ct(
     Cg(except" \n\t("^1, "filename") *
     "(" * Cg(digits / tonumber, "line") * -- row number
-    ":" * Cg(digits / tonumber, "col_start") * -- column number
+    ":" * Cg(digits / tonumber, "col") * -- column number
     ") :" *
     -- optional warning or ifnormation
     (Cg("warning", "type") + Cg("info", "type"))^-1
@@ -220,7 +220,7 @@ M.jikes_line = Ct(
 M.maven = Ct(
     ("[ERROR]" + "[WARNING]"*Cg(Cc"warning", "type") + "INFO"*Cg(Cc"info", "type"))^-1 * blank *
     Cg(except(" \n[:")^1, "filename") * ":" *
-    "[" * Cg(digits/tonumber, "line") * "," * Cg(digits/tonumber, "col_start") * "]"
+    "[" * Cg(digits/tonumber, "line") * "," * Cg(digits/tonumber, "col") * "]"
 )
 
 M.clang_include = Ct(
@@ -233,7 +233,7 @@ M.gcc_include = Ct(
     digit^0 * -- idk why. just translating regex
     Cg(except(":")^1, "filename") * ":" *
     Cg(digits/tonumber, "line") *
-    (":" * Cg(digits/tonumber, "col_start"))^-1 -- optional col
+    (":" * Cg(digits/tonumber, "col"))^-1 -- optional col
 
 )
 
@@ -281,13 +281,13 @@ M.gnu = Ct({
     nums = R("09")^1 / tonumber,
     line = Cg(V'nums', "line"),
     line_end = Cg(V'nums', "line_end"),
-    col_start = Cg(V'nums', "col_start"),
+    col = Cg(V'nums', "col"),
     col_end = Cg(V'nums', "col_end"),
 
     location = V'location_format1' + V'location_format2',
 
-    location_format1 = V'line' * (P"-" * V'line_end')^-1 * S":." * (V'col_start' * (P"-" * V'col_end' * P":")^-1)^-1,
-    location_format2 = V'line' * (P"." * V'col_start')^-1 * (P"-" * V'line_end' * (P"." * V'col_end')^-1)^-1 * P":",
+    location_format1 = V'line' * (P"-" * V'line_end')^-1 * S":." * (V'col' * (P"-" * V'col_end' * P":")^-1)^-1,
+    location_format2 = V'line' * (P"." * V'col')^-1 * (P"-" * V'line_end' * (P"." * V'col_end')^-1)^-1 * P":",
 
     type = V'warning' + V'info' + V'error',
 
@@ -310,7 +310,7 @@ M.lcc = Ct(
     (P"E" + P"W" * Cg(Cc"warning", "type")) * ", " *
     Cg(except("^(\n")^1, "filename") * "(" *
     Cg(digits/tonumber, "line") * "," * blank *
-    Cg(digits/tonumber, "col_start")
+    Cg(digits/tonumber, "col")
 )
 
 M.makepp = Ct({
@@ -364,7 +364,7 @@ M.oracle = Ct(
 
     -- optional column
     ((P"," + P" at")^-1 * P" column " *
-    Cg(digits/tonumber, "col_start")
+    Cg(digits/tonumber, "col")
     )^-1 *
 
     (P"," + P" in" + P" of" )^-1 * " file " *
@@ -399,7 +399,7 @@ M.rxp = Ct(
     "in" *
     (1-P"at ")^1 * "at " *
     "line " * Cg(digits/tonumber, "line") * " " *
-    "char " * Cg(digits/tonumber, "col_start")  * " " *
+    "char " * Cg(digits/tonumber, "col")  * " " *
     "of file://" * Cg(P(1)^1, "filename")
 )
 
@@ -418,14 +418,14 @@ M.sun = Ct(
     (1-P("File = "))^0 * -- optional yapping
     "File = " * Cg((1-P",")^1, "filename") * ", " *
     "Line = " * Cg(digits/tonumber, "line") *
-    (P", " * "Column = " * Cg(digits/tonumber, "col_start"))^-1
+    (P", " * "Column = " * Cg(digits/tonumber, "col"))^-1
 
 )
 
 M.sun_ada = Ct(
     Cg(except(",\n\t")^1, "filename") *
     ", line " * Cg(digits/tonumber, "line") *
-    ", char " * Cg(digits/tonumber, "col_start") *
+    ", char " * Cg(digits/tonumber, "col") *
     S":., (-"
 )
 
