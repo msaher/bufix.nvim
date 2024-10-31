@@ -194,6 +194,9 @@ busted.describe("error patterns", function()
         { rule = "makepp", line = "makepp: bla bla `/foo/bar.c' and `/foo/bar.h'", want = {filename = "/foo/bar.c"}},
 
         { rule = "mips_1", line = "TrimMask (255) in solomon.c may be indistinguishable from TrimMasks (93) in solomo.c due to truncation", want = {row_start = 255, filename = "solomon.c"}},
+
+        { rule = "mips_2", line = "name defined but never used: LinInt in cmap_calc.c(199)", want = {row_start = 199, filename = "cmap_calc.c"}},
+
     }
 
     busted.it("captures error information", function()

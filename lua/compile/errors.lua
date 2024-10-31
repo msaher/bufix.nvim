@@ -357,4 +357,12 @@ M.patterns.mips_1 = Ct(
     )
 )
 
+M.patterns.mips_2 = Ct(
+    anywhere(
+        " in " *
+        Cg(except"(\n"^1, "filename") *
+        "(" * Cg(digits/tonumber, "row_start") * ")"
+    )
+)
+
 return M
