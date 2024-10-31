@@ -365,4 +365,9 @@ M.patterns.mips_2 = Ct(
     )
 )
 
+M.patterns.omake = Ct(
+    "*** omake: file" *
+    Cg((1-P("changed")^-1), "filename") * P("changed")
+)
+
 return M
