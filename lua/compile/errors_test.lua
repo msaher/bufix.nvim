@@ -217,6 +217,11 @@ busted.describe("error patterns", function()
         { rule = "rxp", line = "in unnamed entity at line 4 char 8 of file:///home/reto/test/group.xml", want = {col_start = 8, row_start = 4, filename = "/home/reto/test/group.xml"}},
 
         { rule = "shellcheck", line = "In autogen.sh line 48:", want = {row_start = 48, filename = "autogen.sh"}},
+
+        { rule = "sun", line = "cc-1020 CC: REMARK File = CUI_App.h, Line = 735", want = {row_start = 735, filename = "CUI_App.h", type = "info"}},
+        { rule = "sun", line = "cc-1070 cc: WARNING File = linkl.c, Line = 38", want = {row_start = 38, filename = "linkl.c", type = "warning"}},
+        { rule = "sun", line = "cf90-113 f90comp: ERROR NSE, File = Hoved.f90, Line = 16, Column = 3", want = {col_start = 3, row_start = 16, filename = "Hoved.f90"}},
+
     }
 
     busted.it("captures error information", function()

@@ -424,4 +424,18 @@ M.patterns.shellcheck = Ct(
     Cg(digits/tonumber, "row_start") * ":"
 )
 
+M.patterns.sun = Ct(
+    anywhere(": ") *
+    (
+        "ERROR" +
+        "WARNING" * Cg(Cc"warning", "type") +
+        "REMARK" * Cg(Cc"info", "type")
+    ) *
+    (1-P("File = "))^0 * -- optional yapping
+    "File = " * Cg((1-P",")^1, "filename") * ", " *
+    "Line = " * Cg(digits/tonumber, "row_start") *
+    (P", " * "Column = " * Cg(digits/tonumber, "col_start"))^-1
+
+)
+
 return M
