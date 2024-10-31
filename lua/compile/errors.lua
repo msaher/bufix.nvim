@@ -438,4 +438,12 @@ M.patterns.sun = Ct(
 
 )
 
+M.patterns.sun_ada = Ct(
+    Cg(except(",\n\t")^1, "filename") *
+    ", line " * Cg(digits/tonumber, "row_start") *
+    ", char " * Cg(digits/tonumber, "col_start") *
+    S":., (-"
+)
+
+
 return M

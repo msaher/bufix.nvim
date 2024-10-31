@@ -222,6 +222,8 @@ busted.describe("error patterns", function()
         { rule = "sun", line = "cc-1070 cc: WARNING File = linkl.c, Line = 38", want = {row_start = 38, filename = "linkl.c", type = "warning"}},
         { rule = "sun", line = "cf90-113 f90comp: ERROR NSE, File = Hoved.f90, Line = 16, Column = 3", want = {col_start = 3, row_start = 16, filename = "Hoved.f90"}},
 
+        { rule = "sun_ada", line = "/home3/xdhar/rcds_rc/main.a, line 361, char 6:syntax error: \",\" inserted", want = {col_start = 6, row_start = 361, filename = "/home3/xdhar/rcds_rc/main.a"}},
+
     }
 
     busted.it("captures error information", function()
