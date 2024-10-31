@@ -197,6 +197,13 @@ busted.describe("error patterns", function()
 
         { rule = "mips_2", line = "name defined but never used: LinInt in cmap_calc.c(199)", want = {row_start = 199, filename = "cmap_calc.c"}},
 
+        { rule = "oracle", line = "Semantic error at line 528, column 5, file erosacqdb.pc:", want = {col_start = 5, row_start = 528, filename = "erosacqdb.pc"}},
+        { rule = "oracle", line = "Error at line 41, column 10 in file /usr/src/sb/ODBI_BHP.hpp", want = {col_start = 10, row_start = 41, filename = "/usr/src/sb/ODBI_BHP.hpp"}},
+        { rule = "oracle", line = "PCC-02150: error at line 49, column 27 in file /usr/src/sb/ODBI_dxfgh.pc", want = {col_start = 27, row_start = 49, filename = "/usr/src/sb/ODBI_dxfgh.pc"}},
+        { rule = "oracle", line = "PCC-00003: invalid SQL Identifier at column name in line 12 of file /usr/src/sb/ODBI_BHP.hpp", want = {row_start = 12, filename = "/usr/src/sb/ODBI_BHP.hpp"}},
+        { rule = "oracle", line = "PCC-00004: mismatched IF/ELSE/ENDIF block at line 27 in file /usr/src/sb/ODBI_BHP.hpp", want = {row_start = 27, filename = "/usr/src/sb/ODBI_BHP.hpp"}},
+        { rule = "oracle", line = "PCC-02151: line 21 column 40 file /usr/src/sb/ODBI_BHP.hpp:", want = {col_start = 40, row_start = 21, filename = "/usr/src/sb/ODBI_BHP.hpp"}},
+
     }
 
     busted.it("captures error information", function()

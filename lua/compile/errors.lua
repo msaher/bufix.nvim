@@ -268,8 +268,6 @@ M.patterns.gmake = Ct({
     Cg(digits / tonumber, "row_start")
 })
 
-local regex = "^\\%([[:alpha:]][-[:alnum:].]\\+: \\?\\|[ \t]\\%(in \\| from\\)\\)\\?\\(\\%([0-9]*[^0-9\\n]\\)\\%([^\\n :]\\| [^-/\\n]\\|:[^ \\n]\\)\\{-}\\)\\%(: \\?\\)\\([0-9]\\+\\)\\%(-\\([0-9]\\+\\)\\%(\\.\\([0-9]\\+\\)\\)\\?\\|[.:]\\([0-9]\\+\\)\\%(-\\%(\\([0-9]\\+\\)\\.\\)\\([0-9]\\+\\)\\)\\?\\)\\?:\\%( *\\(\\%(FutureWarning\\|RuntimeWarning\\|W\\%(arning\\)\\|warning\\)\\)\\| *\\([Ii]nfo\\%(\\>\\|formationa\\?l\\?\\)\\|I:\\|\\[ skipping .\\+ ]\\|instantiated from\\|required from\\|[Nn]ote\\)\\| *\\%([Ee]rror\\)\\|\\%([0-9]\\?\\)\\%([^0-9\\n]\\|$\\)\\|[0-9][0-9][0-9]\\)"
-
 -- ;; The `gnu' message syntax is
 -- ;;   [PROGRAM:]FILE:LINE[-ENDLINE]:[COL[-ENDCOL]:] MESSAGE
 -- ;; or
@@ -369,5 +367,25 @@ M.patterns.omake = Ct(
     "*** omake: file" *
     Cg((1-P("changed")^-1), "filename") * P("changed")
 )
+
+M.patterns.oracle = Ct(
+    (
+        P"Semantic error" +
+        P"Error" +
+        P"PCC-" * digits * ":"
+    ) *
+
+    (1-P("line"))^0 * "line " *
+    Cg(digits/tonumber, "row_start") *
+
+    -- optional column
+    ((P"," + P" at")^-1 * P" column " *
+    Cg(digits/tonumber, "col_start")
+    )^-1 *
+
+    (P"," + P" in" + P" of" )^-1 * " file " *
+    Cg(except(":")^1, "filename")
+)
+
 
 return M
