@@ -1,4 +1,4 @@
-local errors = require("compile.errors")
+local rules = require("compile.rules")
 local busted = require("plenary.busted")
 
 
@@ -227,7 +227,7 @@ busted.describe("error patterns", function()
 
     busted.it("captures error information", function()
         for i, v in ipairs(cases) do
-            local got = errors[v.rule]:match(v.line)
+            local got = rules[v.rule]:match(v.line)
             assert(
                 tbl_equal(got, v.want),
                 string.format("Test #%d failed for rule '%s' with line '%s'\n\tgot %s, want %s", i, v.rule, v.line, vim.inspect(got), vim.inspect(v.want))
