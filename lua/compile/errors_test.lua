@@ -193,6 +193,7 @@ busted.describe("error patterns", function()
         -- we could match either filenames
         { rule = "makepp", line = "makepp: bla bla `/foo/bar.c' and `/foo/bar.h'", want = {filename = "/foo/bar.c"}},
 
+        { rule = "mips_1", line = "TrimMask (255) in solomon.c may be indistinguishable from TrimMasks (93) in solomo.c due to truncation", want = {row_start = 255, filename = "solomon.c"}},
     }
 
     busted.it("captures error information", function()

@@ -350,4 +350,11 @@ M.patterns.makepp = Ct({
 
 })
 
+M.patterns.mips_1 = Ct(
+    anywhere(
+        "(" * Cg(digits/tonumber, "row_start") * ")" * " in " *
+        Cg(except" \n"^1, "filename")
+    )
+)
+
 return M
