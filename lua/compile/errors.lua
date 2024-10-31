@@ -400,5 +400,15 @@ M.patterns.perl = Ct(
     )
 )
 
+M.patterns.php = Ct(
+    anywhere(
+        (P"Parse" + P"Fatal") *
+        " error: " *
+        (1-P(" in "))^1 * " in " *
+
+        Cg((1-P(" on line "))^1, "filename") * " on line " *
+        Cg(digits/tonumber, "row_start")
+    )
+)
 
 return M

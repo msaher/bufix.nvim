@@ -210,6 +210,9 @@ busted.describe("error patterns", function()
         { rule = "perl", line = "\t(in cleanup) something bad at foo.pl line 3 during global destruction.", want = {row_start = 3, filename = "foo.pl"}},
         { rule = "perl", line = "GLib-GObject-WARNING **: /build/buildd/glib2.0-2.14.5/gobject/gsignal.c:1741: instance `0x8206790' has no handler with id `1234' at t-compilation-perl-gtk.pl line 3.", want = {row_start = 3, filename = "t-compilation-perl-gtk.pl"}},
 
+        { rule = "php", line = "Parse error: parse error, unexpected $ in main.php on line 59", want = {row_start = 59, filename = "main.php"}},
+        { rule = "php", line = "Fatal error: Call to undefined function: mysql_pconnect() in db.inc on line 66", want = {row_start = 66, filename = "db.inc"}},
+
     }
 
     busted.it("captures error information", function()
