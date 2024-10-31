@@ -445,5 +445,17 @@ M.patterns.sun_ada = Ct(
     S":., (-"
 )
 
+M.patterns.watcom = Ct(
+    blank *
+    Cg(except("(")^1, "filename") *
+    "(" * Cg(digits/tonumber, "row_start") * ")" *
+    ": " *
+    (
+        P"Error! E" * digits +
+        P"Warning! W" * digits * Cg(Cc"warning", "type")
+    )
+    * ":"
+
+)
 
 return M

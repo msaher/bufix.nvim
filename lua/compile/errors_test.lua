@@ -224,6 +224,9 @@ busted.describe("error patterns", function()
 
         { rule = "sun_ada", line = "/home3/xdhar/rcds_rc/main.a, line 361, char 6:syntax error: \",\" inserted", want = {col_start = 6, row_start = 361, filename = "/home3/xdhar/rcds_rc/main.a"}},
 
+        { rule = "watcom", line = "..\\src\\ctrl\\lister.c(109): Error! E1009: Expecting ';' but found '{'", want = {row_start = 109, filename = "..\\src\\ctrl\\lister.c"}},
+        { rule = "watcom", line = "..\\src\\ctrl\\lister.c(120): Warning! W201: Unreachable code", want = {row_start = 120, filename = "..\\src\\ctrl\\lister.c", type = "warning"}},
+
     }
 
     busted.it("captures error information", function()
