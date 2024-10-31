@@ -411,4 +411,12 @@ M.patterns.php = Ct(
     )
 )
 
+M.patterns.rxp = Ct(
+    "in" *
+    (1-P"at ")^1 * "at " *
+    "line " * Cg(digits/tonumber, "row_start") * " " *
+    "char " * Cg(digits/tonumber, "col_start")  * " " *
+    "of file://" * Cg(P(1)^1, "filename")
+)
+
 return M

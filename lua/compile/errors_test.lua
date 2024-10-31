@@ -213,6 +213,8 @@ busted.describe("error patterns", function()
         { rule = "php", line = "Parse error: parse error, unexpected $ in main.php on line 59", want = {row_start = 59, filename = "main.php"}},
         { rule = "php", line = "Fatal error: Call to undefined function: mysql_pconnect() in db.inc on line 66", want = {row_start = 66, filename = "db.inc"}},
 
+        { rule = "rxp", line = "in unnamed entity at line 71 char 8 of file:///home/reto/test/group.xml", want = {col_start = 8, row_start = 71, filename = "/home/reto/test/group.xml"}},
+        { rule = "rxp", line = "in unnamed entity at line 4 char 8 of file:///home/reto/test/group.xml", want = {col_start = 8, row_start = 4, filename = "/home/reto/test/group.xml"}},
     }
 
     busted.it("captures error information", function()
