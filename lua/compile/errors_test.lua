@@ -187,6 +187,12 @@ busted.describe("error patterns", function()
         { rule = "lcc", line = "E, file.cc(35,52) Illegal operation on pointers", want = {col_start = 52, row_start = 35, filename = "file.cc"}},
         { rule = "lcc", line = "W, file.cc(36,52) blah blah", want = {col_start = 52, row_start = 36, filename = "file.cc", type = "warning"}},
 
+        { rule = "makepp", line = "makepp: Scanning `/foo/bar.c'", want = {filename = "/foo/bar.c"}},
+        { rule = "makepp", line = "makepp: warning: bla bla `/foo/bar.c' and `/foo/bar.h'", want = {filename = "/foo/bar.c", type = "warning"}},
+        { rule = "makepp", line = "makepp: bla bla `/foo/Makeppfile:12' bla", want = {row_start = 12, filename = "/foo/Makeppfile"}},
+        -- we could match either filenames
+        { rule = "makepp", line = "makepp: bla bla `/foo/bar.c' and `/foo/bar.h'", want = {filename = "/foo/bar.c"}},
+
     }
 
     busted.it("captures error information", function()

@@ -331,4 +331,23 @@ M.patterns.lcc = Ct(
     Cg(digits/tonumber, "col_start")
 )
 
+M.patterns.makepp = Ct({
+    [1] = V'prefix' * blank * V'path',
+    prefix = P"makepp" *
+        (
+            (P": warning" * Cg(Cc"warning", "type") * ":" * except("`")^0) +
+            (P": Scanning") +
+            (P": " * S"Rr"*"eloading") +
+            (P": " * S"Ll"*"oading") +
+            (P": Imported") +
+            (P"log:" * except("`")^0) +
+            (P": " * except("`")^0)
+        ),
+
+    path = "`" * Cg(except(":' \t")^1, "filename") *
+           (":" * Cg(digits/tonumber, "row_start"))^-1 * -- optional line number
+            "'", -- ends with a single quote
+
+})
+
 return M
