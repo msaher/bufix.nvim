@@ -39,6 +39,10 @@ function Task:run(cmd, opts)
     else
         self.chan = nil
         buf = vim.api.nvim_create_buf(true, true)
+
+        -- set buffer options
+        vim.api.nvim_set_option_value("expandtab", false, { buf = buf })
+        vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
         baleia.automatically(buf) -- for colors
         vim.api.nvim_buf_set_name(buf, "*Task*")
     end
