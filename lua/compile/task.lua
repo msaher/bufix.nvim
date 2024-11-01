@@ -1,4 +1,4 @@
-local baleia = require("baleia").setup()
+local errors = require("compile.errors")
 
 ---@class Task
 ---@field bufname number?
@@ -43,15 +43,31 @@ function Task:run(cmd, opts)
         -- set buffer options
         vim.api.nvim_set_option_value("expandtab", false, { buf = buf })
         vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
-        baleia.automatically(buf) -- for colors
+
+        vim.keymap.set("n", "<CR>", function()
+            local win = vim.api.nvim_get_current_win()
+            local cwd = vim.fn.getcwd(win)
+            local row = vim.api.nvim_win_get_cursor(win)[1] -- 1-based
+            local line = vim.api.nvim_buf_get_lines(buf, row-1, row, true)[1] -- 0-based
+
+            local data = errors.match(line)
+            if data ~= nil then
+                errors.enter(data, cwd)
+            end
+        end,
+        { buffer = buf }
+        )
+
         vim.api.nvim_buf_set_name(buf, "*Task*")
     end
 
+    -- if a cwd is not passed, use the current window's cwd
     opts = opts or {}
     local cwd = opts.cwd or vim.fn.getcwd(vim.api.nvim_get_current_win())
 
     local win = vim.fn.bufwinid(buf)
     if win == -1 then
+        -- TODO: make this an opt
         win = vim.api.nvim_open_win(buf, false, {
             split = "below",
             win = -1,
@@ -69,9 +85,10 @@ function Task:run(cmd, opts)
         "",
         cmd,
     })
+    local line_count = 4
 
     self.chan = vim.fn.jobstart(cmd, {
-        pty = true,     -- run in a pty. Avoids lazy behvaiour
+        pty = true,     -- run in a pty. Avoids lazy behvaiour and quirks
         env = {
             PAGER = "", -- disable paging. This is not interactive
         },
@@ -84,7 +101,7 @@ function Task:run(cmd, opts)
             end
 
             -- remove "\r" from non-empty strings
-            -- remove empty strings and...
+            -- remove empty strings
             -- Empty strings usually appear at the end {"foo\r", ""}
             local i = 1
             while i <= #data do
@@ -100,6 +117,15 @@ function Task:run(cmd, opts)
 
             vim.schedule(function()
                 vim.api.nvim_buf_set_lines(buf, -1, -1, true, data)
+
+                for i, line in ipairs(data) do
+                    local cap = errors.match(line)
+                    if cap ~= nil then
+                        vim.api.nvim_buf_add_highlight(buf, -1, "Question", line_count+i-1, 0, -1)
+                    end
+                end
+
+                line_count = line_count + #data
             end)
         end,
         on_exit = function(chan, exit_code, event)
