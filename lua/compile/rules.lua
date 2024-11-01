@@ -27,6 +27,14 @@ end
 
 local win_or_unix_filename = (C(R("AZ", "az") * P":" * filename, "filename") + C(filename, "filename"))
 
+---@class Capture
+---@field filename string
+---@field line? number
+---@field line_end? number
+---@field col? number
+---@field col_end? number
+---@field type? number
+
 local M = {}
 
 M.absoft = Ct(
