@@ -58,7 +58,7 @@ function Task:run(cmd, opts)
         { buffer = buf }
         )
 
-        vim.api.nvim_buf_set_name(buf, "*Task*")
+        vim.api.nvim_buf_set_name(buf, self.bufname)
     end
 
     -- if a cwd is not passed, use the current window's cwd
