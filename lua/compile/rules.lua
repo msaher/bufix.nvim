@@ -72,10 +72,11 @@ M.bash = Ct(
 )
 
 M.borland = Ct(
-    -- optionally check if warning or error
-    (P"Error" + ("Warning" * Cg(Cc("warning"), "type")))^-1 * blank *
-    -- optionally match error/warning code
-    (S"FEW"*digits)^-1 * blank *
+    -- check type
+    (P"Error" + ("Warning" * Cg(Cc("warning"), "type"))) * " " *
+
+    ((S"FEW"*digits) * blank)^-1 *
+
     -- windows or unix path
     (Cg(R("AZ", "az") * P":" * -S("^:( \t\n"), "filename") + Cg(except(":( \t\n")^1, "filename")) * blank *
     -- row
