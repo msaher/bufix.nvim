@@ -50,9 +50,8 @@ M.aix = Ct(
     Cg((any - S(" \n"))^1, "filename")
 )
 
-M.ant = Ct(
-    -- optional one or two bracketed sections with content inside
-    (blank * P"[" * (any - S"] \n")^1 * P"]" * blank)^-2 *
+M.ant = Ct({
+    [1] = V'bracket_part' * V'bracket_part'^-1 *
         -- windows or unix path
         (Cg(R("AZ", "az") * P":" * filename, "filename") + Cg(filename, "filename")) *
         -- line number
@@ -62,8 +61,11 @@ M.ant = Ct(
         P":" * Cg(digits / tonumber, "line_end") *
         P":" * Cg(digits / tonumber, "col_end"))^-1 *
         -- optional " warning" keyword. If it exists,
-        (":" * P" warning" * Cg(Cc("warning"), "type"))^-1
-)
+        (":" * P" warning" * Cg(Cc("warning"), "type"))^-1,
+
+
+    bracket_part = blank * P"[" * (any - S"] \n")^1 * P"]" * blank,
+})
 
 M.bash = Ct(
     Cg(filename, "filename") * P":" * P" line " * Cg(digits / tonumber, "line")
