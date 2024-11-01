@@ -138,22 +138,50 @@ function Task:run(cmd, opts)
             else
                 msg = "Task existed abnormally with code " .. exit_code .. " at " .. now
             end
-            vim.api.nvim_buf_set_lines(self.buf, -1, -1, true, { "", msg })
+            vim.api.nvim_buf_set_lines(buf, -1, -1, true, { "", msg })
             self.chan = nil
+
         end
     })
 
     vim.api.nvim_create_autocmd({ "BufDelete" }, {
-        buffer = self.buf,
+        buffer = buf,
         callback = function(data)
             _ = data
             if self.chan ~= nil then
                 vim.fn.jobstop(self.chan)
             end
             self.chan = nil
-            self.buf = nil
+            buf = nil
 
             return true
         end,
     })
 end
+
+local function main()
+    -- clean *Task* if it exists
+    local buf = vim.iter(vim.api.nvim_list_bufs()):find(function(b)
+        return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == "*Task*"
+    end)
+
+    if buf ~= nil then
+        vim.api.nvim_buf_delete(buf, { force = true })
+    end
+
+    local t = Task.new("*Task*")
+    vim.api.nvim_buf_create_user_command(0, "T", function()
+        t:run("ls")
+    end, { force = true })
+
+    local last_input = nil
+    vim.keymap.set("n", "<leader>r", function()
+        input = vim.fn.input({ prompt = "Command to run: ", default = last_input or ""})
+        if input ~= nil and input ~= "" then
+            t:run(input)
+            last_input = input
+        end
+    end)
+end
+
+main()
