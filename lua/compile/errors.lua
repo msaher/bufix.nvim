@@ -5,6 +5,16 @@ local rules = require("compile.rules")
 -- to speed up searching
 local cache = vim.ringbuf(5)
 
+-- highlight
+-- TODO: allow users to override this. Also create actual highlight grups
+M.highlights = {
+    filename = "Directory",
+    line = "ModeMsg",
+    col = "Question",
+    type = "WarningMsg",
+}
+
+
 ---@param line string
 ---@return Capture?
 function M.match(line)
