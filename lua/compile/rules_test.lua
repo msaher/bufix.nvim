@@ -228,6 +228,14 @@ busted.describe("error patterns", function()
     busted.it("captures error information", function()
         for i, v in ipairs(cases) do
             local got = rules[v.rule]:match(v.line)
+
+            -- discard spans; we don't care about that in tests
+            if got ~= nil then
+                got = vim.tbl_map(function(cap)
+                    return cap.value
+                end, got)
+            end
+
             assert(
                 tbl_equal(got, v.want),
                 string.format("Test #%d failed for rule '%s' with line '%s'\n\tgot %s, want %s", i, v.rule, v.line, vim.inspect(got), vim.inspect(v.want))

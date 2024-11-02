@@ -54,15 +54,13 @@ function M.enter(data, cwd)
     end
 
     local line = data.line and data.line.value
-    if line ~= nil then
-        local col = data.col and data.col.value or 1
-        col = col - 1 -- columsn in vim are 0-based
-        vim.api.nvim_win_set_cursor(win, {
-            line,
-            col,
-        })
-
+    if line == nil then
+        return
     end
+
+    local col = data.col and data.col.value or 1
+    col = col - 1 -- colums are 0-based
+    vim.api.nvim_win_set_cursor(win, { line, col, })
 
 end
 

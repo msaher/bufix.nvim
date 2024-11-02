@@ -1,8 +1,20 @@
---- Diagnostics for any buffer
+---@class Span
+---@field start number
+---@field finish number
+---@field value string|number
+
+---@class Capture
+---@field filename Span
+---@field line? Span
+---@field line_end? Span
+---@field col? Span
+---@field col_end? Span
+---@field type? Span
+---@field type? Span
 
 local lpeg = vim.lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
-local C, Cg, Ct, Cc = lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.Cc
+local C, Cg, Ct, Cc, Cp = lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.Cc, lpeg.Cp
 
 -- Helper patterns
 local blank = S(" \t")^0
@@ -27,96 +39,101 @@ end
 
 local win_or_unix_filename = (C(R("AZ", "az") * P":" * filename, "filename") + C(filename, "filename"))
 
----@class Capture
----@field filename string
----@field line? number
----@field line_end? number
----@field col? number
----@field col_end? number
----@field type? number
+local function Cg_span(patt, name)
+    return Cg(
+        Ct(
+            Cp() * -- start position
+            Cg(patt, "value") *
+            Cp() -- end
+        ) / function(t)
+            return { start = t[1], value = t.value, finish = t[2] }
+        end,
+        name
+    )
+end
 
 local M = {}
 
 M.absoft = Ct(
     ((S"eE" * P"rror on") + (S"wW"*P"arning on"))^-1 * blank *
         S"Ll" * P"ine" * blank *
-        Cg(digits / tonumber, "line") * blank *
+        Cg_span(digits / tonumber, "line") * blank *
         P"of" * blank *
-        dquote^-1 * Cg(filename, "filename") * dquote^-1
+        dquote^-1 * Cg_span(filename, "filename") * dquote^-1
 )
 
 M.ada = Ct(
-    (P"warning: " * Cg(Cc"warning", "type"))^-1 *
-    (any-P" at ")^0 * P" at " * Cg(filename, "filename") *
-    P(":") * Cg(digits / tonumber, "line")
+    (P"warning: " * Cg_span(Cc"warning", "type"))^-1 *
+    (any-P" at ")^0 * P" at " * Cg_span(filename, "filename") *
+    P(":") * Cg_span(digits / tonumber, "line")
 )
 
 M.aix = Ct(
     anywhere(" in line ") *
-    Cg(digits / tonumber, "line") *
+    Cg_span(digits / tonumber, "line") *
     " of file " *
-    Cg((any - S(" \n"))^1, "filename")
+    Cg_span((any - S(" \n"))^1, "filename")
 )
 
 M.ant = Ct({
     [1] = V'bracket_part' * V'bracket_part'^-1 *
         -- windows or unix path
-        (Cg(R("AZ", "az") * P":" * filename, "filename") + Cg(filename, "filename")) *
+        (Cg_span(R("AZ", "az") * P":" * filename, "filename") + Cg_span(filename, "filename")) *
         -- line number
-        P":" * Cg(digits / tonumber, "line") *
+        P":" * Cg_span(digits / tonumber, "line") *
         -- optional column information
-        (P":" * Cg(digits / tonumber, "col") *
-        P":" * Cg(digits / tonumber, "line_end") *
-        P":" * Cg(digits / tonumber, "col_end"))^-1 *
+        (P":" * Cg_span(digits / tonumber, "col") *
+        P":" * Cg_span(digits / tonumber, "line_end") *
+        P":" * Cg_span(digits / tonumber, "col_end"))^-1 *
         -- optional " warning" keyword. If it exists,
-        (":" * P" warning" * Cg(Cc("warning"), "type"))^-1,
+        (":" * P" warning" * Cg_span(Cc("warning"), "type"))^-1,
 
 
     bracket_part = blank * P"[" * (any - S"] \n")^1 * P"]" * blank,
 })
 
 M.bash = Ct(
-    Cg(filename, "filename") * P":" * P" line " * Cg(digits / tonumber, "line")
+    Cg_span(filename, "filename") * P":" * P" line " * Cg_span(digits / tonumber, "line")
 )
 
 M.borland = Ct(
     -- check type
-    (P"Error" + ("Warning" * Cg(Cc("warning"), "type"))) * " " *
+    (P"Error" + ("Warning" * Cg_span(Cc("warning"), "type"))) * " " *
 
     ((S"FEW"*digits) * blank)^-1 *
 
     -- windows or unix path
-    (Cg(R("AZ", "az") * P":" * -S("^:( \t\n"), "filename") + Cg(except(":( \t\n")^1, "filename")) * blank *
+    (Cg_span(R("AZ", "az") * P":" * -S("^:( \t\n"), "filename") + Cg_span(except(":( \t\n")^1, "filename")) * blank *
     -- row
-    Cg(digits / tonumber, "line")
+    Cg_span(digits / tonumber, "line")
 )
 
 M.python_tracebacks_and_caml = Ct(
-    blank * P"File " * dquote^-1 * Cg(win_or_unix_filename, "filename") * dquote^-1 *
+    blank * P"File " * dquote^-1 * Cg_span(win_or_unix_filename, "filename") * dquote^-1 *
     -- find lines
-    P", line" * P"s"^-1 * blank * Cg(digits/tonumber, "line") * ("-" * Cg(digits/tonumber, "line_end"))^-1 * P","^-1 *
+    P", line" * P"s"^-1 * blank * Cg_span(digits/tonumber, "line") * ("-" * Cg_span(digits/tonumber, "line_end"))^-1 * P","^-1 *
     -- optionaly characters section
-    (P" characters " * Cg(digits/tonumber, "col") * ("-" * Cg(digits/tonumber, "col_end"))^-1)^-1
+    (P" characters " * Cg_span(digits/tonumber, "col") * ("-" * Cg_span(digits/tonumber, "col_end"))^-1)^-1
 )
 
 M.cmake = Ct(
-    P"CMake " * (P"Error" + P"Warning" * Cg(Cc"warning", "type")) *
-    P" at " * Cg(filename, "filename") * P":" *
-    Cg(digits/tonumber, "line")
+    P"CMake " * (P"Error" + P"Warning" * Cg_span(Cc"warning", "type")) *
+    P" at " * Cg_span(filename, "filename") * P":" *
+    Cg_span(digits/tonumber, "line")
 )
 
 M.cmake_info = Ct(
-    Cg(Cc"info", "type") * -- type is always info
+    Cg_span(Cc"info", "type") * -- type is always info
     P"  " * (P" *"^-1) *  -- match two spaces and optionally a space with an asterisk
-    Cg((1 - P":")^1, "filename") * P":" *
-    Cg(digits/tonumber, "line")
+    Cg_span((1 - P":")^1, "filename") * P":" *
+    Cg_span(digits/tonumber, "line")
 )
 
 M.comma = Ct(
-    dquote * Cg(filename, "filename") * dquote *
-    P", line " * Cg(digits/tonumber, "line") *
-    ((S".(" + P" pos ") * Cg(digits/tonumber, "col") * P")"^-1)^-1 *
-    S":.,; (-" * blank * Cg("warning", "type")^-1
+    dquote * Cg_span(filename, "filename") * dquote *
+    P", line " * Cg_span(digits/tonumber, "line") *
+    ((S".(" + P" pos ") * Cg_span(digits/tonumber, "col") * P")"^-1)^-1 *
+    S":.,; (-" * blank * Cg_span("warning", "type")^-1
 )
 
  -- Must be before edg-1, so that MSVC's longer messages are
@@ -127,63 +144,63 @@ M.msft = Ct(
     -- Optional number followed by ">"
     (digits * P(">"))^-1 *
     -- optional window drive followed by filename
-    Cg((R("AZ", "az") * P":")^-1 * except" :(\t\n" * except":(\t\n"^1, "filename") *
+    Cg_span((R("AZ", "az") * P":")^-1 * except" :(\t\n" * except":(\t\n"^1, "filename") *
     -- row
-    P("(") * Cg(digits/tonumber, "line") *
+    P("(") * Cg_span(digits/tonumber, "line") *
     -- optional column
-    (P(",") * Cg(digits/tonumber, "col"))^-1 * P(")") *
+    (P(",") * Cg_span(digits/tonumber, "col"))^-1 * P(")") *
     -- colon
     blank * P(":") * blank *
     -- optional "see declaration"
     (P("see declaration") +
-    P("warning") * Cg(Cc("warning"), "type"))^-1 -- optional warning
-    -- + P("error") * -[[ Cg(Cc("error"), "type") --]])^-1 -- optional error
+    P("warning") * Cg_span(Cc("warning"), "type"))^-1 -- optional warning
+    -- + P("error") * -[[ Cg_span(Cc("error"), "type") --]])^-1 -- optional error
 )
 
 M.edg_1 = Ct(
-    Cg((except(" (\n"))^1, "filename") *
-    "(" * Cg(digits / tonumber, "line") * ")" *
+    Cg_span((except(" (\n"))^1, "filename") *
+    "(" * Cg_span(digits / tonumber, "line") * ")" *
     ": " *
-    ("error" + Cg("warning", "type") + "remark" * Cg(Cc"info", "type"))  -- error/warning/remark
+    ("error" + Cg_span("warning", "type") + "remark" * Cg_span(Cc"info", "type"))  -- error/warning/remark
 )
 
 M.edg_2 = Ct(
-    anywhere(P"at line ") * Cg(digits / tonumber, "line") * " of " *
-    dquote * Cg(except(" \"\n")^1, "filename") * dquote
+    anywhere(P"at line ") * Cg_span(digits / tonumber, "line") * " of " *
+    dquote * Cg_span(except(" \"\n")^1, "filename") * dquote
 )
 
 M.epc = Ct(
     "Error " * digits * " at " *
-    "(" * Cg(digits / tonumber, "line") * ":" * Cg(except(")\n")^1, "filename") * ")"
+    "(" * Cg_span(digits / tonumber, "line") * ":" * Cg_span(except(")\n")^1, "filename") * ")"
 )
 
 M.ftnchek = Ct(
-    ("Warning " * Cg(Cc"warning", "type") * (1-P"line")^1)^-1 * -- optional warning
-    anywhere("line") * S" \n" * Cg(digits/tonumber, "line") * S" \n" *
-    ("col " * Cg(digits/tonumber, "col") * S" \n")^-1 * -- optional column
-    "file " * Cg(except(" :;\n")^1, "filename")
+    ("Warning " * Cg_span(Cc"warning", "type") * (1-P"line")^1)^-1 * -- optional warning
+    anywhere("line") * S" \n" * Cg_span(digits/tonumber, "line") * S" \n" *
+    ("col " * Cg_span(digits/tonumber, "col") * S" \n")^-1 * -- optional column
+    "file " * Cg_span(except(" :;\n")^1, "filename")
 )
 
 M.gradle_kotlin = Ct(
-    (P"w"*Cg(Cc"warning", "type"))^-1 * except(":")^-1 * ": " *
-        P"file://" * Cg(except":"^1, "filename") *
-        ":" * Cg(digits/tonumber, "line") *
-        ":" * Cg(digits/tonumber, "col")
+    (P"w"*Cg_span(Cc"warning", "type"))^-1 * except(":")^-1 * ": " *
+        P"file://" * Cg_span(except":"^1, "filename") *
+        ":" * Cg_span(digits/tonumber, "line") *
+        ":" * Cg_span(digits/tonumber, "col")
 )
 
 M.iar = Ct(
-    dquote * Cg((1 - dquote)^0, "filename") * dquote *
-    "," * Cg(digits / tonumber, "line") * blank *
-    (P("Warning") * Cg(Cc("warning"), "type"))^-1
+    dquote * Cg_span((1 - dquote)^0, "filename") * dquote *
+    "," * Cg_span(digits / tonumber, "line") * blank *
+    (P("Warning") * Cg_span(Cc("warning"), "type"))^-1
 )
 
 M.ibm = Ct(
-    Cg(except" \n\t("^1, "filename") *
-    "(" * Cg(digits / tonumber, "line") * -- row number
-    ":" * Cg(digits / tonumber, "col") * -- column number
+    Cg_span(except" \n\t("^1, "filename") *
+    "(" * Cg_span(digits / tonumber, "line") * -- row number
+    ":" * Cg_span(digits / tonumber, "col") * -- column number
     ") :" *
     -- optional warning or ifnormation
-    (Cg("warning", "type") + Cg("info", "type"))^-1
+    (Cg_span("warning", "type") + Cg_span("info", "type"))^-1
 )
 
 M.irix = Ct(
@@ -195,72 +212,72 @@ M.irix = Ct(
         (
         S"Ss"*"evere"                              +
         S"Ee"*"rror"                               +
-        S"Ww"*"arning" * Cg(Cc("warning"), "type") +
-        S"Ii"*"nfo"    * Cg(Cc("info"), "type")
+        S"Ww"*"arning" * Cg_span(Cc("warning"), "type") +
+        S"Ii"*"nfo"    * Cg_span(Cc("info"), "type")
         ) *
 
         (blank * digit^1)^-1 * -- optional numeric code after error type
         ":"
     )^-1 * blank *
 
-    Cg(except",\": \n\t"^1, "filename") *
+    Cg_span(except",\": \n\t"^1, "filename") *
 
-    (P", line " + P":")* blank * Cg(digits / tonumber, "line")
+    (P", line " + P":")* blank * Cg_span(digits / tonumber, "line")
 )
 
 
 M.java = Ct(
-    ((S(" \t")^1 * "at ") + ("==" * digits * "==" * blank * ("at" + "by" * Cg(Cc"warning", "type"))))^1 * blank *
+    ((S(" \t")^1 * "at ") + ("==" * digits * "==" * blank * ("at" + "by" * Cg_span(Cc"warning", "type"))))^1 * blank *
     -- search for (filename:line) anywhere
-    anywhere("(" * Cg(except("):")^0, "filename") * ":" * Cg(digits/tonumber, "line") * ")" * -1)
+    anywhere("(" * Cg_span(except("):")^0, "filename") * ":" * Cg_span(digits/tonumber, "line") * ")" * -1)
 )
 
 M.jikes_file = Ct(
     (P"Found" + P"Issued") *
     (1-P"compiling")^1 * P"compiling " * dquote *
-    Cg(except("\"\n")^1, "filename") * dquote * P":"
+    Cg_span(except("\"\n")^1, "filename") * dquote * P":"
 )
 
 M.jikes_line = Ct(
-    blank * Cg(digits/tonumber, "line") * P"." * blank * rest_of_line * eol *
+    blank * Cg_span(digits/tonumber, "line") * P"." * blank * rest_of_line * eol *
     blank * P"<" * P"-"^0 * P">" * eol *
-    P"*** " * (P"Error" + P"Warning" * Cg(Cc"warning", "type"))
+    P"*** " * (P"Error" + P"Warning" * Cg_span(Cc"warning", "type"))
 )
 
 
 M.maven = Ct(
-    ("[ERROR]" + "[WARNING]"*Cg(Cc"warning", "type") + "INFO"*Cg(Cc"info", "type"))^-1 * blank *
-    Cg(except(" \n[:")^1, "filename") * ":" *
-    "[" * Cg(digits/tonumber, "line") * "," * Cg(digits/tonumber, "col") * "]"
+    ("[ERROR]" + "[WARNING]"*Cg_span(Cc"warning", "type") + "INFO"*Cg_span(Cc"info", "type"))^-1 * blank *
+    Cg_span(except(" \n[:")^1, "filename") * ":" *
+    "[" * Cg_span(digits/tonumber, "line") * "," * Cg_span(digits/tonumber, "col") * "]"
 )
 
 M.clang_include = Ct(
-    Cg(Cc"info", "type") * -- always info
-    P"In file included from " * Cg(except(":\n")^1, "filename") * ":" * Cg(digits/tonumber, "line") * ":" * -1
+    Cg_span(Cc"info", "type") * -- always info
+    P"In file included from " * Cg_span(except(":\n")^1, "filename") * ":" * Cg_span(digits/tonumber, "line") * ":" * -1
 )
 
 M.gcc_include = Ct(
     (P"In file included " + blank) * "from " *
     digit^0 * -- idk why. just translating regex
-    Cg(except(":")^1, "filename") * ":" *
-    Cg(digits/tonumber, "line") *
-    (":" * Cg(digits/tonumber, "col"))^-1 -- optional col
+    Cg_span(except(":")^1, "filename") * ":" *
+    Cg_span(digits/tonumber, "line") *
+    (":" * Cg_span(digits/tonumber, "col"))^-1 -- optional col
 
 )
 
 M["ruby_Test::Unit"] = Ct(
     blank * P"["^-1 *
-    Cg(except(":")^1, "filename") * ":" *
-    Cg(digits / tonumber, "line") * ":" *
+    Cg_span(except(":")^1, "filename") * ":" *
+    Cg_span(digits / tonumber, "line") * ":" *
     P"in"
 )
 
 M.gmake = Ct(
-    Cg(Cc"info", "type") * -- always info
+    Cg_span(Cc"info", "type") * -- always info
     except(":")^1 * ":" * " *** " *
     "[" *
-    Cg(except(":")^1, "filename") * ":" *
-    Cg(digits / tonumber, "line")
+    Cg_span(except(":")^1, "filename") * ":" *
+    Cg_span(digits / tonumber, "line")
 )
 
 -- ;; The `gnu' message syntax is
@@ -283,17 +300,17 @@ M.gnu = Ct({
     -- has space
     -- has colon
     -- has no space nor colon
-    filename = Cg(R"09"^0 * (1-(R"09"+"\n")) *
+    filename = Cg_span(R"09"^0 * (1-(R"09"+"\n")) *
                     -- three possible cases to match the rest of the filename
                   (except"\n :"^1 + (P" " * (except"-/\n")^1) + (P":" * except":\n"^1))
             , "filename"),
 
     -- save some typing
     nums = R("09")^1 / tonumber,
-    line = Cg(V'nums', "line"),
-    line_end = Cg(V'nums', "line_end"),
-    col = Cg(V'nums', "col"),
-    col_end = Cg(V'nums', "col_end"),
+    line = Cg_span(V'nums', "line"),
+    line_end = Cg_span(V'nums', "line_end"),
+    col = Cg_span(V'nums', "col"),
+    col_end = Cg_span(V'nums', "col_end"),
 
     location = V'location_format1' + V'location_format2',
 
@@ -302,8 +319,8 @@ M.gnu = Ct({
 
     type = V'warning' + V'info' + V'error',
 
-    warning = (P"FutureWarning" + P"RuntimeWarning" + P"W" + S("Ww")*P"arning") * Cg(Cc"warning", "type"),
-    info = ((S"Ii"*"nfo" * (P"rmation" + P"l"^-1)^-1) + P"I:" + (P"[ skipping " * except("]")^1 * "]") + P"instantiated from" + P"required from" + S"Nn"*"ote") * Cg(Cc"info", "type"),
+    warning = (P"FutureWarning" + P"RuntimeWarning" + P"W" + S("Ww")*P"arning") * Cg_span(Cc"warning", "type"),
+    info = ((S"Ii"*"nfo" * (P"rmation" + P"l"^-1)^-1) + P"I:" + (P"[ skipping " * except("]")^1 * "]") + P"instantiated from" + P"required from" + S"Nn"*"ote") * Cg_span(Cc"info", "type"),
     error = S"Ee"*"rror",
 })
 
@@ -313,22 +330,22 @@ M.cucumber = Ct(
         "     " +
         "#"
     ) * blank *
-    Cg(except("(:")^1, "filename") * ":" *
-    Cg(digits / tonumber, "line")
+    Cg_span(except("(:")^1, "filename") * ":" *
+    Cg_span(digits / tonumber, "line")
 )
 
 M.lcc = Ct(
-    (P"E" + P"W" * Cg(Cc"warning", "type")) * ", " *
-    Cg(except("^(\n")^1, "filename") * "(" *
-    Cg(digits/tonumber, "line") * "," * blank *
-    Cg(digits/tonumber, "col")
+    (P"E" + P"W" * Cg_span(Cc"warning", "type")) * ", " *
+    Cg_span(except("^(\n")^1, "filename") * "(" *
+    Cg_span(digits/tonumber, "line") * "," * blank *
+    Cg_span(digits/tonumber, "col")
 )
 
 M.makepp = Ct({
     [1] = V'prefix' * blank * V'path',
     prefix = P"makepp" *
         (
-            (P": warning" * Cg(Cc"warning", "type") * ":" * except("`")^0) +
+            (P": warning" * Cg_span(Cc"warning", "type") * ":" * except("`")^0) +
             (P": Scanning") +
             (P": " * S"Rr"*"eloading") +
             (P": " * S"Ll"*"oading") +
@@ -337,30 +354,30 @@ M.makepp = Ct({
             (P": " * except("`")^0)
         ),
 
-    path = "`" * Cg(except(":' \t")^1, "filename") *
-           (":" * Cg(digits/tonumber, "line"))^-1 * -- optional line number
+    path = "`" * Cg_span(except(":' \t")^1, "filename") *
+           (":" * Cg_span(digits/tonumber, "line"))^-1 * -- optional line number
             "'", -- ends with a single quote
 
 })
 
 M.mips_1 = Ct(
     anywhere(
-        "(" * Cg(digits/tonumber, "line") * ")" * " in " *
-        Cg(except" \n"^1, "filename")
+        "(" * Cg_span(digits/tonumber, "line") * ")" * " in " *
+        Cg_span(except" \n"^1, "filename")
     )
 )
 
 M.mips_2 = Ct(
     anywhere(
         " in " *
-        Cg(except"(\n"^1, "filename") *
-        "(" * Cg(digits/tonumber, "line") * ")"
+        Cg_span(except"(\n"^1, "filename") *
+        "(" * Cg_span(digits/tonumber, "line") * ")"
     )
 )
 
 M.omake = Ct(
     "*** omake: file" *
-    Cg((1-P("changed")^-1), "filename") * P("changed")
+    Cg_span((1-P("changed")^-1), "filename") * P("changed")
 )
 
 M.oracle = Ct(
@@ -371,22 +388,22 @@ M.oracle = Ct(
     ) *
 
     (1-P("line"))^0 * "line " *
-    Cg(digits/tonumber, "line") *
+    Cg_span(digits/tonumber, "line") *
 
     -- optional column
     ((P"," + P" at")^-1 * P" column " *
-    Cg(digits/tonumber, "col")
+    Cg_span(digits/tonumber, "col")
     )^-1 *
 
     (P"," + P" in" + P" of" )^-1 * " file " *
-    Cg(except(":")^1, "filename")
+    Cg_span(except(":")^1, "filename")
 )
 
 M.perl = Ct(
     anywhere(P" at " *
-        Cg(except(" \n")^1, "filename") *
+        Cg_span(except(" \n")^1, "filename") *
         " line " *
-        Cg(digits/tonumber, "line") *
+        Cg_span(digits/tonumber, "line") *
         (
             S",." +
             -1 +
@@ -401,53 +418,53 @@ M.php = Ct(
         " error: " *
         (1-P(" in "))^1 * " in " *
 
-        Cg((1-P(" on line "))^1, "filename") * " on line " *
-        Cg(digits/tonumber, "line")
+        Cg_span((1-P(" on line "))^1, "filename") * " on line " *
+        Cg_span(digits/tonumber, "line")
     )
 )
 
 M.rxp = Ct(
     "in" *
     (1-P"at ")^1 * "at " *
-    "line " * Cg(digits/tonumber, "line") * " " *
-    "char " * Cg(digits/tonumber, "col")  * " " *
-    "of file://" * Cg(P(1)^1, "filename")
+    "line " * Cg_span(digits/tonumber, "line") * " " *
+    "char " * Cg_span(digits/tonumber, "col")  * " " *
+    "of file://" * Cg_span(P(1)^1, "filename")
 )
 
 M.shellcheck = Ct(
-    "In " * Cg((1-P(" line "))^1, "filename") * " line " *
-    Cg(digits/tonumber, "line") * ":"
+    "In " * Cg_span((1-P(" line "))^1, "filename") * " line " *
+    Cg_span(digits/tonumber, "line") * ":"
 )
 
 M.sun = Ct(
     anywhere(": ") *
     (
         "ERROR" +
-        "WARNING" * Cg(Cc"warning", "type") +
-        "REMARK" * Cg(Cc"info", "type")
+        "WARNING" * Cg_span(Cc"warning", "type") +
+        "REMARK" * Cg_span(Cc"info", "type")
     ) *
     (1-P("File = "))^0 * -- optional yapping
-    "File = " * Cg((1-P",")^1, "filename") * ", " *
-    "Line = " * Cg(digits/tonumber, "line") *
-    (P", " * "Column = " * Cg(digits/tonumber, "col"))^-1
+    "File = " * Cg_span((1-P",")^1, "filename") * ", " *
+    "Line = " * Cg_span(digits/tonumber, "line") *
+    (P", " * "Column = " * Cg_span(digits/tonumber, "col"))^-1
 
 )
 
 M.sun_ada = Ct(
-    Cg(except(",\n\t")^1, "filename") *
-    ", line " * Cg(digits/tonumber, "line") *
-    ", char " * Cg(digits/tonumber, "col") *
+    Cg_span(except(",\n\t")^1, "filename") *
+    ", line " * Cg_span(digits/tonumber, "line") *
+    ", char " * Cg_span(digits/tonumber, "col") *
     S":., (-"
 )
 
 M.watcom = Ct(
     blank *
-    Cg(except("(")^1, "filename") *
-    "(" * Cg(digits/tonumber, "line") * ")" *
+    Cg_span(except("(")^1, "filename") *
+    "(" * Cg_span(digits/tonumber, "line") * ")" *
     ": " *
     (
         P"Error! E" * digits +
-        P"Warning! W" * digits * Cg(Cc"warning", "type")
+        P"Warning! W" * digits * Cg_span(Cc"warning", "type")
     )
     * ":"
 
