@@ -13,6 +13,9 @@ function Task.new(bufname)
     return self
 end
 
+-- pattern to strip ansi escape sequences and carriage carriage-return
+local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
+
 function Task:run(cmd, opts)
 
     -- first buffer with name `self.bufname`
@@ -116,7 +119,7 @@ function Task:run(cmd, opts)
 
             -- strip ansii sequences and remove \r character
             data = vim.tbl_map(function(line)
-                return string.gsub(line, "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?", "")
+                return string.gsub(line, strip_ansii_cr, "")
             end, data)
 
             vim.schedule(function()
