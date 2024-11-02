@@ -87,12 +87,17 @@ function Task:run(cmd, opts)
     })
     local line_count = 4
 
+    -- as per :h on_stdout, the first and last items may be partial
+    local last_item = ""
+
     self.chan = vim.fn.jobstart(cmd, {
         pty = true,     -- run in a pty. Avoids lazy behvaiour and quirks
         env = {
             PAGER = "", -- disable paging. This is not interactive
+            TERM = "dumb", -- tells programs to avoid actual terminal behvaiour. stuff like colors
         },
         cwd = cwd,
+        stdout_buffered = false, -- we'll buffer stdout ourselves
         on_stdout = function(chan, data, name)
             _ = chan
             _ = name
@@ -100,24 +105,24 @@ function Task:run(cmd, opts)
                 return
             end
 
-            -- remove "\r" from non-empty strings
-            -- remove empty strings
-            -- Empty strings usually appear at the end {"foo\r", ""}
-            local i = 1
-            while i <= #data do
-                if data[i]:sub(-1) == "\r" then
-                    data[i] = data[i]:sub(1, -2)
-                    i = i + 1
-                elseif data[i] == "" then
-                    table.remove(data, i)
-                else
-                    i = i + 1
-                end
+            -- data being {""} means end of stream EOF
+            if #data == 1 and data[1] == "" then
+                return
             end
+
+            data[1] = last_item .. data[1]
+            last_item = data[#data]
+            data[#data] = nil
+
+            -- strip ansii sequences and remove \r character
+            data = vim.tbl_map(function(line)
+                return string.gsub(line, "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?", "")
+            end, data)
 
             vim.schedule(function()
                 vim.api.nvim_buf_set_lines(buf, -1, -1, true, data)
 
+                -- highlight captures
                 for i, line in ipairs(data) do
                     local cap = errors.match(line)
                     if cap ~= nil then
@@ -128,6 +133,7 @@ function Task:run(cmd, opts)
                 line_count = line_count + #data
             end)
         end,
+
         on_exit = function(chan, exit_code, event)
             _ = event -- always "exit"
 
