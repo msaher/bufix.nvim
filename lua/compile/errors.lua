@@ -32,14 +32,13 @@ end
 ---@param cwd? string
 function M.enter(data, cwd)
     cwd = cwd or vim.fn.getcwd()
+    local filename = data.filename.value
     local buf = vim.iter(vim.api.nvim_list_bufs())
         :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
-        :find(function(b) return vim.api.nvim_buf_get_name(b) == data.filename end)
+        :find(function(b) return vim.api.nvim_buf_get_name(b) == filename end)
 
     if buf == nil then
-        local path = vim.fs.joinpath(cwd, data.filename)
-        -- TODO: if the file doesn't really exist prompt before adding
-        buf = vim.fn.bufadd(path)
+        buf = vim.fn.bufadd(filename)
     end
 
     local win = vim.fn.bufwinid(buf)
@@ -54,11 +53,12 @@ function M.enter(data, cwd)
         vim.api.nvim_set_current_win(win)
     end
 
-    if data.line ~= nil then
-        local col = data.col or 1
-        col = col - 1 -- 0-based
+    local line = data.line and data.line.value
+    if line ~= nil then
+        local col = data.col and data.col.value or 1
+        col = col - 1 -- columsn in vim are 0-based
         vim.api.nvim_win_set_cursor(win, {
-            data.line,
+            line,
             col,
         })
 
