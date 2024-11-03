@@ -99,6 +99,7 @@ function Task:run(cmd, opts)
             split = "below",
             win = -1,
         })
+        vim.api.nvim_set_option_value("number", false, { win = win })
     end
 
     -- change cwd of task window
