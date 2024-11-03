@@ -16,14 +16,49 @@ end
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
+--- creates a buffer ready for receiving pty job stdout.
+--- the buffer's name is self.buffname
+---@return number
+function Task:_create_buf()
+    buf = vim.api.nvim_create_buf(true, true)
+
+    -- set buffer options
+    vim.api.nvim_set_option_value("expandtab", false, { buf = buf })
+    vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
+
+    vim.keymap.set("n", "<CR>", function()
+        local win = vim.api.nvim_get_current_win()
+        local cwd = vim.fn.getcwd(win)
+        local row = vim.api.nvim_win_get_cursor(win)[1] -- 1-based
+        local line = vim.api.nvim_buf_get_lines(buf, row-1, row, true)[1] -- 0-based
+
+        local data = errors.match(line)
+        if data ~= nil then
+            errors.enter(data, cwd)
+            errors.buf = buf
+        end
+    end,
+        { buffer = buf }
+    )
+
+    vim.api.nvim_buf_set_name(buf, self.bufname)
+
+    return buf
+end
+
+---@return number?
+function Task:_get_buf()
+    local buf = vim.iter(vim.api.nvim_list_bufs())
+        :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
+        :find(function(b) return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == self.bufname end)
+
+    return buf
+end
+
 function Task:run(cmd, opts)
 
     -- first buffer with name `self.bufname`
-    local buf = vim.iter(vim.api.nvim_list_bufs())
-        :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
-        :find(function(b)
-        return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == self.bufname
-    end)
+    local buf = self:_get_buf()
 
     if buf ~= nil then
         if self.chan ~= nil then
@@ -40,28 +75,9 @@ function Task:run(cmd, opts)
             vim.api.nvim_buf_set_lines(buf, 0, -1, true, {})
         end
     else
+        -- we dont care if there's already a running job
         self.chan = nil
-        buf = vim.api.nvim_create_buf(true, true)
-
-        -- set buffer options
-        vim.api.nvim_set_option_value("expandtab", false, { buf = buf })
-        vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
-
-        vim.keymap.set("n", "<CR>", function()
-            local win = vim.api.nvim_get_current_win()
-            local cwd = vim.fn.getcwd(win)
-            local row = vim.api.nvim_win_get_cursor(win)[1] -- 1-based
-            local line = vim.api.nvim_buf_get_lines(buf, row-1, row, true)[1] -- 0-based
-
-            local data = errors.match(line)
-            if data ~= nil then
-                errors.enter(data, cwd)
-            end
-        end,
-        { buffer = buf }
-        )
-
-        vim.api.nvim_buf_set_name(buf, self.bufname)
+        buf = self:_create_buf()
     end
 
     -- if a cwd is not passed, use the current window's cwd
