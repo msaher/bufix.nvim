@@ -3,6 +3,8 @@ local errors = require("compile.errors")
 ---@class Task
 ---@field bufname number?
 ---@field chan number?
+---@field last_cmd string?
+---@field last_cwd string?
 local Task = {}
 Task.__index = Task
 
@@ -53,6 +55,12 @@ function Task:_get_buf()
         :find(function(b) return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == self.bufname end)
 
     return buf
+end
+
+function Task:rerun()
+    if self.last_cmd ~= nil then
+        self:run(self.last_cmd, { cwd = self.last_cwd })
+    end
 end
 
 function Task:run(cmd, opts)
@@ -190,6 +198,10 @@ function Task:run(cmd, opts)
             return true
         end,
     })
+
+    -- save last_cmd
+    self.last_cmd = cmd
+    self.last_cwd = cwd
 end
 
 local function main()
