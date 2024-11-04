@@ -129,6 +129,7 @@ function M.set_extmark(row)
         sign_text = ">",
         sign_hl_group = "TODO",
         invalidate = true, -- remove the mark if the line gets deleted
+        undo_restore = false, -- delete the mark when its gets invalidated. breaks undo
     })
 end
 
@@ -153,9 +154,14 @@ local function jump(step)
         last_idx = vim.api.nvim_buf_line_count(current_buf)
     end
 
-    local i
+    local extmark_row = nil
     if extmark_id ~= nil then
-        i = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, {})[1] + step
+        extmark_row = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, {})[1]
+    end
+
+    local i
+    if extmark_row ~= nil then
+        i = extmark_row + step
     else
         i = 1
     end
