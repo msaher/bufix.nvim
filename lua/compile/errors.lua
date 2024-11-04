@@ -15,6 +15,42 @@ M.highlights = {
 }
 
 
+M.buf = nil
+M.extmark_id = nil
+M.autocmd_id = nil
+M.ns_id = vim.api.nvim_create_namespace("")
+
+---@param buf number
+function M.set_buf(buf)
+
+    -- dont do anything if the same buf is passed
+    if M.buf == buf then
+        return
+    end
+
+    M.buf = buf
+
+    -- TODO: vim notify
+    if not vim.api.nvim_buf_is_valid(buf) then
+        vim.print("invalid buffer. ignoring...")
+        return
+    end
+
+    -- remove previous autocmd if it exists
+    if M.autocmd_id ~= nil and vim.api.nvim_buf_is_valid(M.buf) then
+        vim.api.nvim_del_autocmd(M.autocmd_id)
+    end
+
+    -- clear M.buf when the buffer gets deleted
+    M.autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
+        buffer = buf,
+        callback = function(_)
+            M.buf = nil
+            return true
+        end,
+    })
+end
+
 ---@param line string
 ---@return Capture?
 function M.match(line)
@@ -32,7 +68,6 @@ function M.match(line)
             vim.print(k)
             return data
         end
-
     end
 
     return nil

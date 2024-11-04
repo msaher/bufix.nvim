@@ -3,7 +3,6 @@ local errors = require("compile.errors")
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
-
 ---@param first_item string
 ---@param data string[]
 ---@param line_count number
@@ -69,17 +68,19 @@ function Task:_create_buf()
     vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
 
     vim.keymap.set("n", "<CR>", function()
-            local win = vim.api.nvim_get_current_win()
-            local cwd = vim.fn.getcwd(win)
-            local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
-            local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
+        errors.set_buf(buf)
 
-            local data = errors.match(line)
-            if data ~= nil then
-                errors.enter(data, cwd)
-                errors.buf = buf
-            end
-        end,
+        local win = vim.api.nvim_get_current_win()
+        local cwd = vim.fn.getcwd(win)
+        local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
+        local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
+
+
+        local data = errors.match(line)
+        if data ~= nil then
+            errors.enter(data, row-1, cwd)
+        end
+    end,
         { buffer = buf }
     )
 
@@ -173,6 +174,7 @@ function Task:run(cmd, opts)
         end,
 
         on_exit = function(chan, exit_code, event)
+            _ = chan
             _ = event -- always "exit"
 
             local now = os.date("%a %b%e %H:%M:%S")
@@ -184,7 +186,6 @@ function Task:run(cmd, opts)
             end
             vim.api.nvim_buf_set_lines(buf, -1, -1, true, { "", msg })
             self.chan = nil
-
         end
     })
 
@@ -205,6 +206,9 @@ function Task:run(cmd, opts)
     -- save last_cmd
     self.last_cmd = cmd
     self.last_cwd = cwd
+
+    -- set buf as error buffer
+    errors.set_buf(buf)
 end
 
 local function main()
