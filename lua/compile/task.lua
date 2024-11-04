@@ -1,5 +1,48 @@
 local errors = require("compile.errors")
 
+-- pattern to strip ansi escape sequences and carriage carriage-return
+local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
+
+
+---@param first_item string
+---@param data string[]
+---@param line_count number
+---@return string
+---@return number
+local function pty_append_to_buf(buf, first_item, data, line_count)
+    -- as per :h on_stdout, the first and last items may be partial when
+    -- jobstart is passed the pty = true option.
+    -- We set the first item as the first element and return the last item
+    data[1] = first_item .. data[1]
+    first_item = data[#data] -- next first item
+    data[#data] = nil
+
+    -- strip ansii sequences and remove \r character
+    data = vim.tbl_map(function(line)
+        return select(1, string.gsub(line, strip_ansii_cr, ""))
+    end, data)
+
+    vim.schedule(function()
+        vim.api.nvim_buf_set_lines(buf, -1, -1, true, data)
+
+        -- highlight captures
+        for i, line in ipairs(data) do
+            local cap = errors.match(line)
+            if cap ~= nil then
+                local idx = line_count + i - 1
+
+                for k, span in pairs(cap) do
+                    local byte_start = vim.str_byteindex(line, span.start - 1)
+                    local byte_finish = vim.str_byteindex(line, span.finish - 1)
+                    vim.api.nvim_buf_add_highlight(buf, -1, errors.highlights[k], idx, byte_start, byte_finish)
+                end
+            end
+        end
+    end)
+
+    return first_item, #data
+end
+
 ---@class Task
 ---@field bufname number?
 ---@field chan number?
@@ -15,9 +58,6 @@ function Task.new(bufname)
     return self
 end
 
--- pattern to strip ansi escape sequences and carriage carriage-return
-local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
-
 --- creates a buffer ready for receiving pty job stdout.
 --- the buffer's name is self.buffname
 ---@return number
@@ -29,17 +69,17 @@ function Task:_create_buf()
     vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
 
     vim.keymap.set("n", "<CR>", function()
-        local win = vim.api.nvim_get_current_win()
-        local cwd = vim.fn.getcwd(win)
-        local row = vim.api.nvim_win_get_cursor(win)[1] -- 1-based
-        local line = vim.api.nvim_buf_get_lines(buf, row-1, row, true)[1] -- 0-based
+            local win = vim.api.nvim_get_current_win()
+            local cwd = vim.fn.getcwd(win)
+            local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
+            local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
 
-        local data = errors.match(line)
-        if data ~= nil then
-            errors.enter(data, cwd)
-            errors.buf = buf
-        end
-    end,
+            local data = errors.match(line)
+            if data ~= nil then
+                errors.enter(data, cwd)
+                errors.buf = buf
+            end
+        end,
         { buffer = buf }
     )
 
@@ -64,7 +104,6 @@ function Task:rerun()
 end
 
 function Task:run(cmd, opts)
-
     -- first buffer with name `self.bufname`
     local buf = self:_get_buf()
 
@@ -109,71 +148,34 @@ function Task:run(cmd, opts)
 
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
         "Running in " .. cwd,
-        "Task started at " .. os.date("%a %b %e %H:%M:%S"),
+        "Task started at " .. os.date("%a %b%e %H:%M:%S"),
         "",
         cmd,
     })
     local line_count = 4
-
-    -- as per :h on_stdout, the first and last items may be partial
-    local last_item = ""
+    local first_item = ""
 
     self.chan = vim.fn.jobstart(cmd, {
-        pty = true,     -- run in a pty. Avoids lazy behvaiour and quirks
+        pty = true,        -- run in a pty. Avoids lazy behvaiour and quirks
         env = {
-            PAGER = "", -- disable paging. This is not interactive
-            TERM = "dumb", -- tells programs to avoid actual terminal behvaiour. stuff like colors
+            PAGER = "",    -- disable paging. This is not interactive
+            TERM = "dumb", -- tells programs to avoid actual terminal behvaiour. avoids stuff like colors
         },
         cwd = cwd,
         stdout_buffered = false, -- we'll buffer stdout ourselves
         on_stdout = function(chan, data, name)
-            _ = chan
             _ = name
-            if not data then
-                return
-            end
+            _ = chan
 
-            -- data being {""} means end of stream EOF
-            if #data == 1 and data[1] == "" then
-                return
-            end
-
-            data[1] = last_item .. data[1]
-            last_item = data[#data]
-            data[#data] = nil
-
-            -- strip ansii sequences and remove \r character
-            data = vim.tbl_map(function(line)
-                return string.gsub(line, strip_ansii_cr, "")
-            end, data)
-
-            vim.schedule(function()
-                vim.api.nvim_buf_set_lines(buf, -1, -1, true, data)
-
-                -- highlight captures
-                for i, line in ipairs(data) do
-                    local cap = errors.match(line)
-                    if cap ~= nil then
-                        local idx = line_count+i-1
-
-                        for k, span in pairs(cap) do
-                            byte_start = vim.str_byteindex(line, span.start-1)
-                            byte_finish = vim.str_byteindex(line, span.finish-1)
-                            vim.api.nvim_buf_add_highlight(buf, -1, errors.highlights[k], idx, byte_start, byte_finish)
-                        end
-
-
-                    end
-                end
-
-                line_count = line_count + #data
-            end)
+            local added
+            first_item, added = pty_append_to_buf(buf, first_item, data, line_count)
+            line_count = line_count + added
         end,
 
         on_exit = function(chan, exit_code, event)
             _ = event -- always "exit"
 
-            local now = os.date("%a %b %e %H:%M:%S")
+            local now = os.date("%a %b%e %H:%M:%S")
             local msg
             if exit_code == 0 then
                 msg = "Task finished at " .. now
