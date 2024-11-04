@@ -65,7 +65,7 @@ M.absoft = Ct(
 M.ada = Ct(
     (P"warning: " * Cg_span(Cc"warning", "type"))^-1 *
     (any-P" at ")^0 * P" at " * Cg_span(filename, "filename") *
-    P(":") * Cg_span(digits / tonumber, "line")
+    P(":") * Cg_span(digits / tonumber, "line") * -1
 )
 
 M.aix = Ct(
