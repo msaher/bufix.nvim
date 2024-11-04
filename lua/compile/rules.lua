@@ -325,13 +325,14 @@ M.gnu = Ct({
 })
 
 M.cucumber = Ct(
-    anywhere(
-        (P"cucumber" * (P" -p " * (1-blank)^1)^-1) +
-        "     " +
-        "#"
-    ) * blank *
+    (
+        P"cucumber" * (P" -p " * (1-P(" ")^1))^-1 +
+        "      " +
+        anywhere(" # ")
+    ) *
     Cg_span(except("(:")^1, "filename") * ":" *
     Cg_span(digits / tonumber, "line")
+
 )
 
 M.lcc = Ct(
