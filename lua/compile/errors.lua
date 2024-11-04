@@ -55,6 +55,17 @@ function M.set_cwd(cwd)
     M.cwd = cwd
 end
 
+local function get_or_make_win()
+    local win = vim.fn.bufwinid(current_buf)
+    if win == -1 then
+        win = vim.api.nvim_open_win(current_buf, false, {
+            split = "below",
+        })
+    end
+
+    return win
+end
+
 ---@param line string
 ---@return Capture?
 function M.match(line)
@@ -129,6 +140,17 @@ function M.set_extmark(row)
         sign_hl_group = "TODO",
         invalidate = true, -- invalidate the extmark if the line gets deleted
     })
+
+    local win = get_or_make_win()
+    vim.api.nvim_win_set_cursor(win, { row+1, 0 })
+
+    -- FIXME: would be nice to center the the window around the cursor if its currently
+    -- focused on the last visible line. However, this needs scroll information
+    -- which neovim currently doesn't expose
+    -- vim.api.nvim_win_call(win, function()
+    --     vim.cmd.normal({"zz", bang = true })
+    -- end)
+
 end
 
 local function get_valid_extmark()

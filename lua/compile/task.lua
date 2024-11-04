@@ -75,10 +75,8 @@ function Task:_create_buf()
         errors.set_buf(buf)
 
         local win = vim.api.nvim_get_current_win()
-        local cwd = vim.fn.getcwd(win)
         local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
         local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
-
 
         local data = errors.match(line)
         if data ~= nil then
