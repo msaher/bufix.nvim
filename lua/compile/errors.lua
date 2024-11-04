@@ -128,13 +128,25 @@ function M.set_extmark(row)
     extmark_id = vim.api.nvim_buf_set_extmark(current_buf, ns_id, row, 0, {
         sign_text = ">",
         sign_hl_group = "TODO",
-        invalidate = true, -- remove the mark if the line gets deleted
-        undo_restore = false, -- delete the mark when its gets invalidated. breaks undo
+        invalidate = true, -- invalidate the extmark if the line gets deleted
     })
 end
 
--- function M.jump()
--- end
+local function get_valid_extmark()
+    if extmark_id == nil then
+        return nil
+    end
+
+    local extmark = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, { details = true})
+
+    if vim.tbl_isempty(extmark) or extmark[3].invalid then
+        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
+        extmark_id = nil
+        return nil
+    end
+
+    return extmark
+end
 
 ---@param dir number
 local function jump(step)
@@ -154,21 +166,15 @@ local function jump(step)
         last_idx = vim.api.nvim_buf_line_count(current_buf)
     end
 
-    local extmark_row = nil
-    if extmark_id ~= nil then
-        extmark_row = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, {})[1]
-    end
-
-    local i
-    if extmark_row ~= nil then
-        i = extmark_row + step
+    local extmark = get_valid_extmark()
+    if extmark ~= nil then
+        i = extmark[1] + step
     else
         i = 1
     end
 
     while i ~= last_idx do
         local line = vim.api.nvim_buf_get_lines(current_buf, i, i + 1, true)[1]
-        vim.print(line)
         local data = M.match(line)
         if data ~= nil then
             M.enter(data, i)
