@@ -74,8 +74,10 @@ function M.match(line)
 end
 
 ---@param data Capture
+---@param row number 0-base
 ---@param cwd? string
-function M.enter(data, cwd)
+function M.enter(data, row, cwd)
+    -- TODO: get working dir from window
     cwd = cwd or vim.fn.getcwd()
     local filename = data.filename.value
     local buf = vim.iter(vim.api.nvim_list_bufs())
@@ -105,7 +107,30 @@ function M.enter(data, cwd)
 
     local col = data.col and data.col.value or 1
     col = col - 1 -- colums are 0-based
+    -- TODO: wrap in pcall and show a msg
+    -- might fail if buf is open in another nvim isntance
     vim.api.nvim_win_set_cursor(win, { line, col, })
+
+    M.set_extmark(row)
+end
+
+---@param row number
+function M.set_extmark(row)
+    if M.buf == nil then
+        return
+    end
+
+    -- clean up previous extmark
+    if M.extmark_id ~= nil then
+        vim.api.nvim_buf_del_extmark(M.buf, M.ns_id, M.extmark_id)
+    end
+
+    M.extmark_id = vim.api.nvim_buf_set_extmark(M.buf, M.ns_id, row, 0, {
+        sign_text = ">",
+        sign_hl_group = "TODO",
+        invalidate = true, -- remove the mark if the line gets deleted
+    })
+end
 
 end
 
