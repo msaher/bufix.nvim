@@ -15,20 +15,20 @@ M.highlights = {
 }
 
 
-M.buf = nil
-M.extmark_id = nil
-M.autocmd_id = nil
-M.ns_id = vim.api.nvim_create_namespace("")
+local current_buf = nil
+local extmark_id = nil
+local autocmd_id = nil
+local ns_id = vim.api.nvim_create_namespace("")
 
 ---@param buf number
 function M.set_buf(buf)
 
     -- dont do anything if the same buf is passed
-    if M.buf == buf then
+    if current_buf == buf then
         return
     end
 
-    M.buf = buf
+    current_buf = buf
 
     -- TODO: vim notify
     if not vim.api.nvim_buf_is_valid(buf) then
@@ -37,15 +37,15 @@ function M.set_buf(buf)
     end
 
     -- remove previous autocmd if it exists
-    if M.autocmd_id ~= nil and vim.api.nvim_buf_is_valid(M.buf) then
-        vim.api.nvim_del_autocmd(M.autocmd_id)
+    if autocmd_id ~= nil and vim.api.nvim_buf_is_valid(current_buf) then
+        vim.api.nvim_del_autocmd(autocmd_id)
     end
 
-    -- clear M.buf when the buffer gets deleted
-    M.autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
+    -- clear current_buf when the buffer gets deleted
+    autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
         buffer = buf,
         callback = function(_)
-            M.buf = nil
+            current_buf = nil
             return true
         end,
     })
@@ -116,16 +116,16 @@ end
 
 ---@param row number
 function M.set_extmark(row)
-    if M.buf == nil then
+    if current_buf == nil then
         return
     end
 
     -- clean up previous extmark
-    if M.extmark_id ~= nil then
-        vim.api.nvim_buf_del_extmark(M.buf, M.ns_id, M.extmark_id)
+    if extmark_id ~= nil then
+        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
     end
 
-    M.extmark_id = vim.api.nvim_buf_set_extmark(M.buf, M.ns_id, row, 0, {
+    extmark_id = vim.api.nvim_buf_set_extmark(current_buf, ns_id, row, 0, {
         sign_text = ">",
         sign_hl_group = "TODO",
         invalidate = true, -- remove the mark if the line gets deleted
@@ -138,7 +138,7 @@ end
 ---@param dir number
 local function jump(step)
     -- TODO: display a message vim.notify()
-    if M.buf == nil then
+    if current_buf == nil then
         return
     end
 
@@ -150,18 +150,18 @@ local function jump(step)
     if step < 0 then
         last_idx = 0
     else
-        last_idx = vim.api.nvim_buf_line_count(M.buf)
+        last_idx = vim.api.nvim_buf_line_count(current_buf)
     end
 
     local i
-    if M.extmark_id ~= nil then
-        i = vim.api.nvim_buf_get_extmark_by_id(M.buf, M.ns_id, M.extmark_id, {})[1] + step
+    if extmark_id ~= nil then
+        i = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, {})[1] + step
     else
         i = 1
     end
 
     while i ~= last_idx do
-        local line = vim.api.nvim_buf_get_lines(M.buf, i, i + 1, true)[1]
+        local line = vim.api.nvim_buf_get_lines(current_buf, i, i + 1, true)[1]
         vim.print(line)
         local data = M.match(line)
         if data ~= nil then
