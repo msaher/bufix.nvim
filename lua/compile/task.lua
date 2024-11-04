@@ -68,6 +68,10 @@ function Task:_create_buf()
     vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
 
     vim.keymap.set("n", "<CR>", function()
+        -- must get the current buf manually instead of reusing outer buf
+        -- otherwise it breaks if the buffer was renamed and another job has
+        -- started that also called _create_buf()
+        local buf = vim.api.nvim_get_current_buf()
         errors.set_buf(buf)
 
         local win = vim.api.nvim_get_current_win()
