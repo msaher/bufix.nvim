@@ -78,7 +78,7 @@ function Task:_create_buf()
 
         local data = errors.match(line)
         if data ~= nil then
-            errors.enter(data, row-1, cwd)
+            errors.enter(data, row-1)
         end
     end,
         { buffer = buf }
@@ -209,6 +209,7 @@ function Task:run(cmd, opts)
 
     -- set buf as error buffer
     errors.set_buf(buf)
+    errors.set_cwd(cwd)
 end
 
 local function main()

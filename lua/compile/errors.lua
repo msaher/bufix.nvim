@@ -15,6 +15,7 @@ M.highlights = {
 }
 
 local current_buf = nil
+local cwd = nil
 local extmark_id = nil
 local autocmd_id = nil
 local ns_id = vim.api.nvim_create_namespace("")
@@ -49,6 +50,11 @@ function M.set_buf(buf)
     })
 end
 
+---@param cwd string
+function M.set_cwd(cwd)
+    M.cwd = cwd
+end
+
 ---@param line string
 ---@return Capture?
 function M.match(line)
@@ -73,10 +79,7 @@ end
 
 ---@param data Capture
 ---@param row number 0-base
----@param cwd? string
-function M.enter(data, row, cwd)
-    -- TODO: get working dir from window
-    cwd = cwd or vim.fn.getcwd()
+function M.enter(data, row)
     local filename = data.filename.value
     local buf = vim.iter(vim.api.nvim_list_bufs())
         :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
