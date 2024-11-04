@@ -14,7 +14,6 @@ M.highlights = {
     type = "WarningMsg",
 }
 
-
 local current_buf = nil
 local extmark_id = nil
 local autocmd_id = nil
@@ -28,13 +27,12 @@ function M.set_buf(buf)
         return
     end
 
+    if not vim.api.nvim_buf_is_valid(buf) then
+        error(string.format("buffer %d is not a valid buffer", buf))
+    end
+
     current_buf = buf
 
-    -- TODO: vim notify
-    if not vim.api.nvim_buf_is_valid(buf) then
-        vim.print("invalid buffer. ignoring...")
-        return
-    end
 
     -- remove previous autocmd if it exists
     if autocmd_id ~= nil and vim.api.nvim_buf_is_valid(current_buf) then
