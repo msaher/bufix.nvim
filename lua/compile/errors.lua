@@ -132,6 +132,56 @@ function M.set_extmark(row)
     })
 end
 
+-- function M.jump()
+-- end
+
+---@param dir number
+local function jump(step)
+    -- TODO: display a message vim.notify()
+    if M.buf == nil then
+        return
+    end
+
+    if step == 0 then
+        step = 1
+    end
+
+    local last_idx
+    if step < 0 then
+        last_idx = 0
+    else
+        last_idx = vim.api.nvim_buf_line_count(M.buf)
+    end
+
+    local i
+    if M.extmark_id ~= nil then
+        i = vim.api.nvim_buf_get_extmark_by_id(M.buf, M.ns_id, M.extmark_id, {})[1] + step
+    else
+        i = 1
+    end
+
+    while i ~= last_idx do
+        local line = vim.api.nvim_buf_get_lines(M.buf, i, i + 1, true)[1]
+        vim.print(line)
+        local data = M.match(line)
+        if data ~= nil then
+            M.enter(data, i)
+            return
+        end
+
+        i = i + step
+    end
+
+    -- TODO: vim.notify
+    vim.print("No more errors")
+end
+
+function M.next()
+    return jump(1)
+end
+
+function M.prev()
+    return jump(-1)
 end
 
 return M
