@@ -105,9 +105,7 @@ function M.enter(data, row, cwd)
 
     local col = data.col and data.col.value or 1
     col = col - 1 -- colums are 0-based
-    -- TODO: wrap in pcall and show a msg
-    -- might fail if buf is open in another nvim isntance
-    vim.api.nvim_win_set_cursor(win, { line, col, })
+    pcall(vim.api.nvim_win_set_cursor, win, { line, col, })
 
     M.set_extmark(row)
 end
