@@ -44,7 +44,7 @@ local function pty_append_to_buf(buf, first_item, data, line_count)
 end
 
 ---@class Task
----@field bufname number?
+---@field bufname string?
 ---@field chan number?
 ---@field last_cmd string?
 ---@field last_cwd string?

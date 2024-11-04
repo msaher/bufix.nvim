@@ -1,16 +1,16 @@
----@class Span
+---@class Span<T>
 ---@field start number
 ---@field finish number
----@field value string|number
+---@field value T
 
 ---@class Capture
----@field filename Span
----@field line? Span
----@field line_end? Span
----@field col? Span
----@field col_end? Span
----@field type? Span
----@field type? Span
+---@field filename Span<string>
+---@field line? Span<number>
+---@field line_end? Span<number>
+---@field col? Span<number>
+---@field col_end? Span<number>
+---@field type? Span<number>
+---@field type? Span<number>
 
 local lpeg = vim.lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
