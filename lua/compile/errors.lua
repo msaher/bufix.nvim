@@ -149,7 +149,6 @@ end
 
 ---@param dir number
 local function jump(step)
-    -- TODO: display a message vim.notify()
     if current_buf == nil then
         return
     end
@@ -183,8 +182,12 @@ local function jump(step)
         i = i + step
     end
 
-    -- TODO: vim.notify
-    vim.print("No more errors")
+    if step < 0 then
+        vim.notify("Moved back before first error", vim.log.levels.INFO)
+    else
+        vim.notify("Moved past last error", vim.log.levels.INFO)
+
+    end
 end
 
 function M.next()
