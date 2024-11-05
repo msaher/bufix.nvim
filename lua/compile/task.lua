@@ -138,7 +138,7 @@ function Task:run(cmd, opts)
     if win == -1 then
         -- TODO: make this an opt
         win = vim.api.nvim_open_win(buf, false, {
-            split = "below",
+            split = "right",
             win = -1,
         })
         vim.api.nvim_set_option_value("number", false, { win = win })

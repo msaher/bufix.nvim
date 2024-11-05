@@ -55,7 +55,7 @@ function M.set_cwd(cwd)
     M.cwd = cwd
 end
 
-local function get_or_make_win()
+local function get_or_make_error_win()
     local win = vim.fn.bufwinid(current_buf)
     if win == -1 then
         win = vim.api.nvim_open_win(current_buf, false, {
@@ -64,6 +64,36 @@ local function get_or_make_win()
     end
 
     return win
+end
+
+
+-- if window containing buffer is present, use it
+-- if current window is quickfix reuse last accessed window.
+-- if current window is NOT quickfix, use it
+-- If only one window, open split above
+--- Emulates quickfix window behaviour
+--- TODO: might want to respect 'switchbuf' option
+local function get_or_make_target_win(buf)
+    local current_win = vim.api.nvim_get_current_win()
+    local all_wins = vim.api.nvim_list_wins()
+
+    if #all_wins == 1 and vim.api.nvim_win_get_buf(current_win) == current_buf then
+        return vim.api.nvim_open_win(buf, false, { split = "above", win = -1 })
+    end
+
+    local target_win = vim.fn.bufwinid(buf)
+    if target_win ~= -1 then
+        return target_win
+    end
+
+    if current_win ~= vim.fn.bufwinid(current_buf) then
+        return vim.api.nvim_get_current_win()
+    end
+
+    -- vim.cmd.execute({"<C-w>p", bang = true})
+    vim.cmd.wincmd({"p"})
+    return vim.api.nvim_get_current_win()
+
 end
 
 ---@param line string
@@ -100,17 +130,9 @@ function M.enter(data, row)
         buf = vim.fn.bufadd(filename)
     end
 
-    local win = vim.fn.bufwinid(buf)
-
-    -- TODO: provide an option to reuse the last accessed window like emacs
-    if win == -1 then
-        win = vim.api.nvim_open_win(buf, true, {
-            split = "below",
-            win = 0,
-        })
-    else
-        vim.api.nvim_set_current_win(win)
-    end
+    local win = get_or_make_target_win(buf)
+    vim.api.nvim_win_set_buf(win, buf)
+    vim.api.nvim_set_current_win(win)
 
     local line = data.line and data.line.value
     if line == nil then
@@ -141,7 +163,7 @@ function M.set_extmark(row)
         invalidate = true, -- invalidate the extmark if the line gets deleted
     })
 
-    local win = get_or_make_win()
+    local win = get_or_make_error_win()
     vim.api.nvim_win_set_cursor(win, { row+1, 0 })
 
     -- FIXME: would be nice to center the the window around the cursor if its currently

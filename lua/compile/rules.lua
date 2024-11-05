@@ -284,6 +284,7 @@ M.gmake = Ct(
 -- ;;   [PROGRAM:]FILE:LINE[-ENDLINE]:[COL[-ENDCOL]:] MESSAGE
 -- ;; or
 -- ;;   [PROGRAM:]FILE:LINE[.COL][-ENDLINE[.ENDCOL]]: MESSAGE
+-- TODO: doesn't work if filename contains space but doesn't start with it
 M.gnu = Ct({
     [1] = V'without_program' + V'with_program',
 
