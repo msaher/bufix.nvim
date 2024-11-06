@@ -284,9 +284,8 @@ M.gmake = Ct(
 -- ;;   [PROGRAM:]FILE:LINE[-ENDLINE]:[COL[-ENDCOL]:] MESSAGE
 -- ;; or
 -- ;;   [PROGRAM:]FILE:LINE[.COL][-ENDLINE[.ENDCOL]]: MESSAGE
--- TODO: doesn't work if filename contains space but doesn't start with it
 M.gnu = Ct({
-    [1] = V'without_program' + V'with_program',
+    [1] = V'with_program' + V'without_program',
 
     without_program = V'yapping'^-1  * V'data',
     with_program =  V'program' * ":" * V'data',
@@ -295,16 +294,18 @@ M.gnu = Ct({
     yapping = blank * (P"in " + P"from" + "|"),
     program = (R("AZ", "az") * (R("AZ", "az", "09") + S".-_")^1),
 
-    -- captures filename.
-    -- Avoids entirely numerical filenames
-    -- type of files:
-    -- has space
-    -- has colon
-    -- has no space nor colon
-    filename = Cg_span(R"09"^0 * (1-(R"09"+"\n")) *
-                    -- three possible cases to match the rest of the filename
-                  (except"\n :"^1 + (P" " * (except"-/\n")^1) + (P":" * except":\n"^1))
-            , "filename"),
+
+    -- filenames cannot start with a digit
+    has_nondigit = R"09"^0 * (1-(R"09"+"\n")),
+    -- if part of the filename contains a space, ensure the next character is NOT dash
+    -- or slash or newline. This rejects rare cases
+    with_space = " " * except("-/\n"),
+    -- If part of the filename contains a colon, then esure what follows is NOT
+    -- a location nor a colon
+    with_colon = ":" * -V'location' * except(":\n"),
+    with_sanity = except(" :\n"),
+
+    filename = Cg_span(V'has_nondigit' * (V'with_space' + V'with_colon' + V'with_sanity')^0, "filename"),
 
     -- save some typing
     nums = R("09")^1 / tonumber,
