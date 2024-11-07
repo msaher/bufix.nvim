@@ -215,7 +215,7 @@ local function jump(step)
     if extmark ~= nil then
         i = extmark[1] + step
     else
-        i = 1
+        i = 0
     end
 
     while i ~= last_idx do
