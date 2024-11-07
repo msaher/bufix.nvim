@@ -52,8 +52,12 @@ Task.__index = Task
 
 ---@return Task
 function Task.new(bufname)
-    local self = setmetatable({}, Task)
-    self.bufname = bufname
+    local self = setmetatable({
+        bufname = bufname,
+        chan = nil,
+        last_cmd = nil,
+        last_cwd = nil,
+    }, Task)
     return self
 end
 
