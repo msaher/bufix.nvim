@@ -14,6 +14,8 @@ M.highlights = {
     type = "WarningMsg",
 }
 
+-- TODO: implement a stack system where multiple buffers can attach themselves
+-- as error buffers
 local current_buf = nil
 local cwd = nil
 local extmark_id = nil
@@ -204,7 +206,7 @@ local function jump(step)
 
     local last_idx
     if step < 0 then
-        last_idx = 0
+        last_idx = -1
     else
         last_idx = vim.api.nvim_buf_line_count(current_buf)
     end
