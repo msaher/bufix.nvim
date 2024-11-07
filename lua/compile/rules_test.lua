@@ -177,6 +177,10 @@ busted.describe("error patterns", function()
         -- ;; ruby (uses gnu)
         { rule = "gnu", line = "plain-exception.rb:7:in `fun': unhandled exception", want = {line = 7, filename = "plain-exception.rb"}},
         { rule = "gnu", line = "examples/test-unit.rb:10:in `test_assert_raise'", want = {line = 10, filename = "examples/test-unit.rb"}},
+        -- handle spaces correctly
+        { rule = "gnu", line = "memes/what are you referring to as gnu is in fact:17:gnu.", want = {line = 17, filename = "memes/what are you referring to as gnu is in fact"}},
+        -- does not match timestamps
+        { rule = "gnu", line = "Task finished at Wed Nov 6 20:00:02", want = nil},
 
         { rule = "cucumber", line = "Scenario: undefined step  # features/cucumber.feature:3", want = {line = 3, filename = "features/cucumber.feature"}},
         { rule = "cucumber", line = "      /home/gusev/.rvm/foo/bar.rb:500:in `_wrap_assertion'", want = {line = 500, filename = "/home/gusev/.rvm/foo/bar.rb"}},
