@@ -137,6 +137,7 @@ function Task:run(cmd, opts)
     local win = vim.fn.bufwinid(buf)
     if win == -1 then
         -- TODO: make this an opt
+        -- TODO: provide an option that uses vsplit for a certain threshold
         win = vim.api.nvim_open_win(buf, false, {
             split = "right",
             win = -1,
@@ -182,10 +183,14 @@ function Task:run(cmd, opts)
             local now = os.date("%a %b%e %H:%M:%S")
             local msg
             if exit_code == 0 then
-                msg = "Task finished at " .. now
+                msg = "Task finished"
             else
-                msg = "Task existed abnormally with code " .. exit_code .. " at " .. now
+                msg = "Task existed abnormally with code " .. exit_code
             end
+
+            vim.notify(msg, vim.log.levels.INFO)
+
+            msg = msg .. " at " .. now
             vim.api.nvim_buf_set_lines(buf, -1, -1, true, { "", msg })
             self.chan = nil
         end
