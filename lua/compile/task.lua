@@ -3,6 +3,27 @@ local errors = require("compile.errors")
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
+--- TODO: might want to put this somewhere else
+---@param buf number
+local function open_win_sensibly(buf)
+    local width = vim.api.nvim_win_get_width(0)
+    local height = vim.api.nvim_win_get_height(0)
+
+    local split
+    if height >= 80 then
+        split = "below"
+    elseif width >= 160 then
+        split = "right"
+    else
+        split = "below"
+    end
+
+    return vim.api.nvim_open_win(buf, false, {
+        split = split,
+        win = 0,
+    })
+end
+
 ---@param first_item string
 ---@param data string[]
 ---@param line_count number
@@ -104,12 +125,18 @@ function Task:_get_buf()
     return buf
 end
 
+---@class RunOpts
+---@field cwd string?
+---@field open_win fun(buf: number, task: Task)?
+
 function Task:rerun()
     if self.last_cmd ~= nil then
         self:run(self.last_cmd, { cwd = self.last_cwd })
     end
 end
 
+---@param cmd string
+---@param opts RunOpts?
 function Task:run(cmd, opts)
     -- first buffer with name `self.bufname`
     local buf = self:_get_buf()
@@ -140,12 +167,9 @@ function Task:run(cmd, opts)
 
     local win = vim.fn.bufwinid(buf)
     if win == -1 then
-        -- TODO: make this an opt
-        -- TODO: provide an option that uses vsplit for a certain threshold
-        win = vim.api.nvim_open_win(buf, false, {
-            split = "right",
-            win = -1,
-        })
+        local open_win = opts.open_win or open_win_sensibly
+        win = open_win(buf)
+
         vim.api.nvim_set_option_value("number", false, { win = win })
     end
 
