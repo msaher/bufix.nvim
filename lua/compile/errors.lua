@@ -35,7 +35,7 @@ function M.set_buf(buf)
     current_buf = buf
 
     -- remove previous autocmd if it exists
-    if autocmd_id ~= nil and vim.api.nvim_buf_is_valid(current_buf) then
+    if autocmd_id ~= nil then
         vim.api.nvim_del_autocmd(autocmd_id)
     end
 
@@ -44,7 +44,8 @@ function M.set_buf(buf)
         buffer = buf,
         callback = function(_)
             current_buf = nil
-            return true
+            autocmd_id = nil
+            return true -- deletes autocmd
         end,
     })
 
