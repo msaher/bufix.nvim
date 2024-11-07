@@ -297,12 +297,18 @@ M.gnu = Ct({
 
     -- filenames cannot start with a digit
     has_nondigit = R"09"^0 * (1-(R"09"+"\n")),
+
     -- if part of the filename contains a space, ensure the next character is NOT dash
-    -- or slash or newline. This rejects rare cases
-    with_space = " " * except("-/\n"),
+    -- or slash or newline. This rejects rare cases.
+    -- Further, ensure that what follows is NOT a timestamp.
+    -- This reject lines that contains "HH:MM:SS" where "MM" is interpreted as a line number
+    with_space = " " * -V'timestamp' * except("-/\n"),
+
     -- If part of the filename contains a colon, then esure what follows is NOT
     -- a location nor a colon
     with_colon = ":" * -V'location' * except(":\n"),
+
+    -- normal file content
     with_sanity = except(" :\n"),
 
     filename = Cg_span(V'has_nondigit' * (V'with_space' + V'with_colon' + V'with_sanity')^0, "filename"),
@@ -314,11 +320,14 @@ M.gnu = Ct({
     col = Cg_span(V'nums', "col"),
     col_end = Cg_span(V'nums', "col_end"),
 
-    location = V'location_format1' + V'location_format2',
+    location = (V'location_format1' + V'location_format2'),
 
     location_format1 = V'line' * (P"-" * V'line_end')^-1 * S":." * (V'col' * (P"-" * V'col_end' * P":")^-1)^-1,
     location_format2 = V'line' * (P"." * V'col')^-1 * (P"-" * V'line_end' * (P"." * V'col_end')^-1)^-1 * P":",
 
+    digit = R"09",
+    timestamp = V'digit'*V'digit' * ":" * V'digit'*V'digit', -- HH:MM
+    -- not_timestamp = -(R"09" * R"09"),
     type = V'warning' + V'info' + V'error',
 
     warning = (P"FutureWarning" + P"RuntimeWarning" + P"W" + S("Ww")*P"arning") * Cg_span(Cc"warning", "type"),
