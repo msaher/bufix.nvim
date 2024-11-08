@@ -14,6 +14,12 @@ local function open_win_sensibly(buf)
         split = "below"
     elseif width >= 160 then
         split = "right"
+    elseif #vim.api.nvim_list_wins() > 1 then
+        -- reuse last window if theres no space and there are other windows
+        vim.cmd.wincmd("p")
+        local win = vim.api.nvim_get_current_win()
+        vim.cmd.wincmd("p")
+        return win
     else
         split = "below"
     end
