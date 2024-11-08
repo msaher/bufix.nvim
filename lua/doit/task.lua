@@ -175,6 +175,7 @@ function Task:run(cmd, opts)
     if win == -1 then
         local open_win = opts.open_win or open_win_sensibly
         win = open_win(buf)
+        vim.api.nvim_win_set_buf(win, buf)
 
         vim.api.nvim_set_option_value("number", false, { win = win })
     end
