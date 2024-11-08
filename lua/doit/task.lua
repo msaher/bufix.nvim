@@ -30,6 +30,26 @@ local function open_win_sensibly(buf)
     })
 end
 
+-- TODO: export this
+local function goto_error_under_cursor()
+    local buf = vim.api.nvim_get_current_buf()
+    errors.set_buf(buf)
+
+    local win = vim.api.nvim_get_current_win()
+    local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
+    local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
+
+    local data = errors.match(line)
+    if data ~= nil then
+        errors.enter(data, row-1)
+    end
+
+end
+
+local function setup_mappings(buf)
+    vim.keymap.set("n", "<CR>", goto_error_under_cursor, { buffer = buf })
+end
+
 ---@param first_item string
 ---@param data string[]
 ---@param line_count number
@@ -98,24 +118,7 @@ function Task:_create_buf()
     vim.api.nvim_set_option_value("expandtab", false, { buf = buf })
     vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
 
-    vim.keymap.set("n", "<CR>", function()
-        -- must get the current buf manually instead of reusing outer buf
-        -- otherwise it breaks if the buffer was renamed and another job has
-        -- started that also called _create_buf()
-        local buf = vim.api.nvim_get_current_buf()
-        errors.set_buf(buf)
-
-        local win = vim.api.nvim_get_current_win()
-        local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
-        local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
-
-        local data = errors.match(line)
-        if data ~= nil then
-            errors.enter(data, row-1)
-        end
-    end,
-        { buffer = buf }
-    )
+    setup_mappings(buf)
 
     vim.api.nvim_buf_set_name(buf, self.bufname)
 
