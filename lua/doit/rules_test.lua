@@ -1,4 +1,4 @@
-local rules = require("compile.rules")
+local rules = require("doit.rules")
 local busted = require("plenary.busted")
 
 

@@ -1,6 +1,6 @@
 local M = {}
 
-local rules = require("compile.rules")
+local rules = require("doit.rules")
 
 -- to speed up searching
 local cache = vim.ringbuf(5)

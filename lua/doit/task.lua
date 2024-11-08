@@ -1,4 +1,4 @@
-local errors = require("compile.errors")
+local errors = require("doit.errors")
 
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
