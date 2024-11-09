@@ -302,45 +302,46 @@ function M.move_to_prev_error()
     move_to(-1)
 end
 
----TODO: rework this
----@return buf number?
----@return row number?
----@return data Capture?
-local function get_error_data_under_cursor()
-    local buf = vim.api.nvim_get_current_buf()
+---@return {data: Capture, row: number}?
+local function get_capture_under_cursor()
+    if current_buf == nil then
+        return
+    end
 
-    local win = vim.api.nvim_get_current_win()
+    local win = get_or_make_error_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
     local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
 
     local data = M.match(line)
     if data ~= nil then
-        return buf, row-1, data
+        return { data = data, row = row-1 }
     end
 
-    return nil, nil, nil
 end
 
 function M.goto_error_under_cursor()
-    local buf, row, data = get_error_data_under_cursor()
-    M.set_buf(buf)
+    local res = get_capture_under_cursor()
 
-    if data ~= nil then
-        M.enter(data, row)
+    if res ~= nil then
+        M.enter(res.data, res.row)
     end
 
 end
 
 function M.display_error_under_cursor()
-    local buf, row, data = get_error_data_under_cursor()
-    M.set_buf(buf)
+    local res = get_capture_under_cursor()
 
-    if data ~= nil then
-        M.display(data, row)
+    if res ~= nil then
+        M.display(res.data, res.row)
     end
 
 end
 
+---@param start number
+---@param step number
+local function jump_file(start, step)
+    local res = get_error_data_under_cursor()
+    local filename = data.filename
 end
 
 return M
