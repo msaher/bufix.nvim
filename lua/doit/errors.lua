@@ -264,6 +264,35 @@ end
 
 function M.prev()
     return jump(-1)
+---TODO: rework this
+---@return buf number?
+---@return row number?
+---@return data Capture?
+local function get_error_data_under_cursor()
+    local buf = vim.api.nvim_get_current_buf()
+
+    local win = vim.api.nvim_get_current_win()
+    local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
+    local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
+
+    local data = M.match(line)
+    if data ~= nil then
+        return buf, row-1, data
+    end
+
+    return nil, nil, nil
+end
+
+function M.goto_error_under_cursor()
+    local buf, row, data = get_error_data_under_cursor()
+    M.set_buf(buf)
+
+    if data ~= nil then
+        M.enter(data, row)
+    end
+
+end
+
 end
 
 return M
