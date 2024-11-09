@@ -283,8 +283,7 @@ end
 
 ---@param step number
 local function move_to(step)
-    -- assuming current win is the error win
-    local win = vim.api.nvim_get_current_win()
+    local win = get_or_make_error_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]-1
     local res = jump(step, row+step)
 
