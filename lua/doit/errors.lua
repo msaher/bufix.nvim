@@ -93,9 +93,12 @@ local function get_or_make_target_win(buf)
         return vim.api.nvim_get_current_win()
     end
 
-    -- vim.cmd.execute({"<C-w>p", bang = true})
+    -- focus on previous and go back
     vim.cmd.wincmd({"p"})
-    return vim.api.nvim_get_current_win()
+    local win = vim.api.nvim_get_current_win()
+    vim.cmd.wincmd({"p"})
+
+    return win
 
 end
 
@@ -123,7 +126,10 @@ end
 
 ---@param data Capture
 ---@param row number 0-base
-function M.enter(data, row)
+---@param opts? { focus: bool }
+function M.enter(data, row, opts)
+    opts = opts or {}
+
     local filename = data.filename.value
     local buf = vim.iter(vim.api.nvim_list_bufs())
         :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
@@ -135,7 +141,15 @@ function M.enter(data, row)
 
     local win = get_or_make_target_win(buf)
     vim.api.nvim_win_set_buf(win, buf)
-    vim.api.nvim_set_current_win(win)
+
+    local focus = opts.focus
+    if focus == nil then
+        focus = true
+    end
+
+    if focus then
+        vim.api.nvim_set_current_win(win)
+    end
 
     local line = data.line and data.line.value
     if line == nil then
@@ -146,7 +160,14 @@ function M.enter(data, row)
     col = col - 1 -- colums are 0-based
     pcall(vim.api.nvim_win_set_cursor, win, { line, col, })
 
+
     M.set_extmark(row)
+end
+
+---@param data Capture
+---@param row number 0-base
+function M.display(data, row)
+    M.enter(data, row, { focus = false})
 end
 
 ---@param row number
