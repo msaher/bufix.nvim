@@ -215,8 +215,9 @@ local function get_valid_extmark()
     return extmark
 end
 
----@param dir number
-local function jump(step)
+---@param step number
+---@param start number
+local function jump(step, start)
     if current_buf == nil then
         return
     end
@@ -232,19 +233,12 @@ local function jump(step)
         last_idx = vim.api.nvim_buf_line_count(current_buf)
     end
 
-    local extmark = get_valid_extmark()
-    if extmark ~= nil then
-        i = extmark[1] + step
-    else
-        i = 0
-    end
-
+    local i = start
     while i ~= last_idx do
         local line = vim.api.nvim_buf_get_lines(current_buf, i, i + 1, true)[1]
         local data = M.match(line)
         if data ~= nil then
-            M.enter(data, i)
-            return
+            return { data = data, row = i }
         end
 
         i = i + step
@@ -258,12 +252,35 @@ local function jump(step)
     end
 end
 
+---Like jump(), but start is set at row of the extmark
+---@param number
+---@return { data: Capture, row: number}?
+local function jump_extmark(step)
+    local extmark = get_valid_extmark()
+    local start
+    if extmark ~= nil then
+        start = extmark[1] + step
+    else
+        start = 0
+    end
+
+    return jump(step, start)
+end
+
 function M.next()
-    return jump(1)
+    local res = jump_extmark(1)
+    if res ~= nil then
+        M.enter(res.data, res.row)
+    end
 end
 
 function M.prev()
-    return jump(-1)
+    local res = jump_extmark(-1)
+    if res ~= nil then
+        M.enter(res.data, res.row)
+    end
+end
+
 ---TODO: rework this
 ---@return buf number?
 ---@return row number?
