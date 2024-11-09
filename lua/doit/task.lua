@@ -197,10 +197,7 @@ function Task:run(cmd, opts)
         },
         cwd = cwd,
         stdout_buffered = false, -- we'll buffer stdout ourselves
-        on_stdout = function(chan, data, name)
-            _ = name
-            _ = chan
-
+        on_stdout = function(_, data)
             local added
             first_item, added = pty_append_to_buf(buf, first_item, data, line_count)
             line_count = line_count + added
@@ -228,16 +225,15 @@ function Task:run(cmd, opts)
 
     vim.api.nvim_create_autocmd({ "BufDelete" }, {
         buffer = buf,
-        callback = function(data)
-            _ = data
+        callback = function(_)
             if self.chan ~= nil then
                 vim.fn.jobstop(self.chan)
             end
             self.chan = nil
-            buf = nil
 
             return true
         end,
+        desc = "doit: force stop task"
     })
 
     -- save last_cmd

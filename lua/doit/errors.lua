@@ -49,6 +49,7 @@ function M.set_buf(buf)
             autocmd_id = nil
             return true -- deletes autocmd
         end,
+        desc = "doit: remove buf from being the current error buf"
     })
 
 end
