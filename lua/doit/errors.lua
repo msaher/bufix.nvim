@@ -310,6 +310,16 @@ function M.goto_error_under_cursor()
 
 end
 
+function M.display_error_under_cursor()
+    local buf, row, data = get_error_data_under_cursor()
+    M.set_buf(buf)
+
+    if data ~= nil then
+        M.display(data, row)
+    end
+
+end
+
 end
 
 return M
