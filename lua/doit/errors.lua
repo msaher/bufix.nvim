@@ -381,7 +381,7 @@ local function move_to_file(step)
     local win = get_or_make_error_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]-1
     local skip_file = vim.tbl_get(get_capture_under_cursor() or {}, "data", "filename", "value")
-    local res = jump_to_file(step, row+step, skip_file)
+    local res = jump_to_file(step, row, skip_file)
 
     if res ~= nil then
         vim.api.nvim_win_set_cursor(win, {res.row+1, 0})
