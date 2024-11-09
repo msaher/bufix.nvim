@@ -217,6 +217,7 @@ end
 
 ---@param step number
 ---@param start number
+---@return { data: Capture, row: number}?
 local function jump(step, start)
     if current_buf == nil then
         return
@@ -336,11 +337,50 @@ function M.display_error_under_cursor()
 
 end
 
----@param start number
+---Like jump(), but tries to find a file different from skip_file
 ---@param step number
-local function jump_file(start, step)
-    local res = get_error_data_under_cursor()
-    local filename = data.filename
+---@param start number
+---@param skip_file string name of file to skip over
+---@return {data: Capture, row: number}?
+local function jump_to_file(step, start, skip_file)
+
+    local row = start
+    while true do
+        res = jump(step, row+step)
+        if res == nil then
+            return
+        elseif res.data.filename.value ~= skip_file then
+            return res
+        else
+            row = res.row
+        end
+    end
+
+end
+
+---@param step number
+---@param start number
+---@return {data: Capture, row: number}?
+local function move_to_file(step)
+    local win = get_or_make_error_win()
+    local row = vim.api.nvim_win_get_cursor(win)[1]-1
+    local skip_file = vim.tbl_get(get_capture_under_cursor() or {}, "data", "filename", "value")
+    local res = jump_to_file(step, row+step, skip_file)
+
+    if res ~= nil then
+        vim.api.nvim_win_set_cursor(win, {res.row+1, 0})
+    end
+
+end
+
+function M.move_to_next_file()
+    move_to_file(1)
+end
+
+function M.move_to_prev_file()
+    move_to_file(-1)
+end
+
 end
 
 return M
