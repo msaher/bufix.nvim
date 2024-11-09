@@ -108,6 +108,8 @@ function Task:_create_buf()
     vim.api.nvim_set_option_value("expandtab", false, { buf = buf })
     vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
 
+    vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
+
     self:setup_mappings(buf)
 
     vim.api.nvim_buf_set_name(buf, self.bufname)
