@@ -232,13 +232,13 @@ busted.describe("error patterns", function()
 
     busted.it("captures error information", function()
         for i, v in ipairs(cases) do
-            local got = rules[v.rule]:match(v.line)
-
-            -- discard spans; we don't care about that in tests
-            if got ~= nil then
-                got = vim.tbl_map(function(cap)
-                    return cap.value
-                end, got)
+            local cap = rules[v.rule]:match(v.line)
+            local got = nil
+            if cap ~= nil then
+                got = {}
+                for k, c in pairs(cap) do
+                    got[k] = c.value
+                end
             end
 
             assert(

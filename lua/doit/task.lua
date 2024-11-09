@@ -53,16 +53,7 @@ local function pty_append_to_buf(buf, first_item, data, line_count)
 
         -- highlight captures
         for i, line in ipairs(data) do
-            local cap = errors.match(line)
-            if cap ~= nil then
-                local idx = line_count + i - 1
-
-                for k, span in pairs(cap) do
-                    local byte_start = vim.str_byteindex(line, span.start - 1)
-                    local byte_finish = vim.str_byteindex(line, span.finish - 1)
-                    vim.api.nvim_buf_add_highlight(buf, -1, errors.highlights[k], idx, byte_start, byte_finish)
-                end
-            end
+            errors.highlight_line(line, line_count + i - 1)
         end
     end)
 

@@ -5,13 +5,11 @@ local rules = require("doit.rules")
 -- to speed up searching
 local cache = vim.ringbuf(5)
 
--- highlight
--- TODO: allow users to override this. Also create actual highlight grups
-M.highlights = {
-    filename = "Directory",
-    line = "ModeMsg",
-    col = "Question",
-    type = "WarningMsg",
+local highlights = {
+    filename = "DoitFilename",
+    line = "DoitLine",
+    col = "DoitCol",
+    type = "DoitMsgType",
 }
 
 -- TODO: implement a stack system where multiple buffers can attach themselves
@@ -21,6 +19,23 @@ local cwd = nil
 local extmark_id = nil
 local autocmd_id = nil
 local ns_id = vim.api.nvim_create_namespace("")
+
+---@param line string
+---@param idx number
+function M.highlight_line(line, idx)
+    local cap = M.match(line)
+    if cap == nil then
+        return
+    end
+
+    for k, span in pairs(cap) do
+        local byte_start = vim.str_byteindex(line, span.start - 1)
+        local byte_finish = vim.str_byteindex(line, span.finish - 1)
+        vim.api.nvim_buf_add_highlight(current_buf, -1, highlights[k], idx, byte_start, byte_finish)
+    end
+end
+
+
 
 ---@param buf number
 function M.set_buf(buf)
@@ -184,7 +199,7 @@ function M.set_extmark(row)
 
     extmark_id = vim.api.nvim_buf_set_extmark(current_buf, ns_id, row, 0, {
         sign_text = ">",
-        sign_hl_group = "TODO",
+        sign_hl_group = "DoitCurrent",
         invalidate = true, -- invalidate the extmark if the line gets deleted
     })
 
@@ -410,6 +425,14 @@ end
 
 function M.goto_prev_file()
     return M.goto_file(-1)
+end
+
+do
+    vim.api.nvim_set_hl(0, "DoitFilename", { link = "QuickfixLine", default = true })
+    vim.api.nvim_set_hl(0, "DoitLine", { link = "ModeMsg", default = true })
+    vim.api.nvim_set_hl(0, "DoitCol", { link = "Question", default = true })
+    vim.api.nvim_set_hl(0, "DoitType", { link = "WarningMsg", default = true })
+    vim.api.nvim_set_hl(0, "DoitCurrent", { link = "Removed", default = true })
 end
 
 return M
