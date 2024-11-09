@@ -281,6 +281,27 @@ function M.prev()
     end
 end
 
+---@param step number
+local function move_to(step)
+    -- assuming current win is the error win
+    local win = vim.api.nvim_get_current_win()
+    local row = vim.api.nvim_win_get_cursor(win)[1]-1
+    local res = jump(step, row+step)
+
+    if res ~= nil then
+        vim.api.nvim_win_set_cursor(win, {res.row+1, 0})
+    end
+
+end
+
+function M.move_to_next_error()
+    move_to(1)
+end
+
+function M.move_to_prev_error()
+    move_to(-1)
+end
+
 ---TODO: rework this
 ---@return buf number?
 ---@return row number?

@@ -91,6 +91,8 @@ end
 function Task:setup_mappings(buf)
     vim.keymap.set("n", "<CR>", errors.goto_error_under_cursor, { buffer = buf })
     vim.keymap.set("n", "<leader><CR>", errors.display_error_under_cursor, { buffer = buf })
+    vim.keymap.set("n", "gj", errors.move_to_next_error, { buffer = buf })
+    vim.keymap.set("n", "gk", errors.move_to_prev_error, { buffer = buf })
 end
 
 --- creates a buffer ready for receiving pty job stdout.
