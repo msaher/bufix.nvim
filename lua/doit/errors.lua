@@ -381,6 +381,34 @@ function M.move_to_prev_file()
     move_to_file(-1)
 end
 
+function M.goto_file(step)
+    local extmark = get_valid_extmark()
+
+    if extmark == nil then
+        local res = jump_extmark(step)
+        if res ~= nil then
+            M.enter(res.data, res.row)
+            return
+        end
+    end
+
+    local row = extmark[1]
+    local line = vim.api.nvim_buf_get_lines(current_buf, row, row+1, true)[1] -- 0-based
+    local skip_file = M.match(line).filename.value -- must succeed
+
+    local res = jump_to_file(step, row + step, skip_file)
+    if res ~= nil then
+        M.enter(res.data, res.row)
+    end
+
+end
+
+function M.goto_next_file()
+    return M.goto_file(1)
+end
+
+function M.goto_prev_file()
+    return M.goto_file(-1)
 end
 
 return M
