@@ -65,60 +65,55 @@ end
 ---@field chan number?
 ---@field last_cmd string?
 ---@field last_cwd string?
+---@field last_bufname string?
 local Task = {}
 Task.__index = Task
 
 ---@return Task
-function Task.new(bufname)
-    local self = setmetatable({
-        bufname = bufname,
-        chan = nil,
-        last_cmd = nil,
-        last_cwd = nil,
-    }, Task)
+function Task.new()
+    local self = setmetatable({}, Task)
     return self
 end
 
-function Task:setup_mappings(buf)
-    vim.keymap.set("n", "<CR>", errors.goto_error_under_cursor, { buffer = buf })
-    vim.keymap.set("n", "<leader><CR>", errors.display_error_under_cursor, { buffer = buf })
-    vim.keymap.set("n", "gj", errors.move_to_next_error, { buffer = buf })
-    vim.keymap.set("n", "gk", errors.move_to_prev_error, { buffer = buf })
-    vim.keymap.set("n", "]]", errors.move_to_next_file, { buffer = buf })
-    vim.keymap.set("n", "[[", errors.move_to_prev_file, { buffer = buf })
-    vim.keymap.set("n", "r", function() self:rerun() end, { buffer = buf })
-end
+-- function Task:setup_mappings(buf)
+--     vim.keymap.set("n", "<CR>", errors.goto_error_under_cursor, { buffer = buf })
+--     vim.keymap.set("n", "<leader><CR>", errors.display_error_under_cursor, { buffer = buf })
+--     vim.keymap.set("n", "gj", errors.move_to_next_error, { buffer = buf })
+--     vim.keymap.set("n", "gk", errors.move_to_prev_error, { buffer = buf })
+--     vim.keymap.set("n", "]]", errors.move_to_next_file, { buffer = buf })
+--     vim.keymap.set("n", "[[", errors.move_to_prev_file, { buffer = buf })
+--     vim.keymap.set("n", "r", function() self:rerun() end, { buffer = buf })
+-- end
 
 --- creates a buffer ready for receiving pty job stdout.
---- the buffer's name is self.buffname
+---@param bufname string
 ---@return number
-function Task:_create_buf()
-    buf = vim.api.nvim_create_buf(true, true)
+local function create_task_buf(bufname)
+    local buf = vim.api.nvim_create_buf(true, true)
 
     -- set buffer options
+    -- breaks otherwise because programs expect tab to be a certain width
     vim.api.nvim_set_option_value("expandtab", false, { buf = buf })
     vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
-    self:setup_mappings(buf)
-
-    vim.api.nvim_buf_set_name(buf, self.bufname)
-
     return buf
 end
 
+---@param bufname string
 ---@return number?
-function Task:_get_buf()
+local function get_buf_by_name(bufname)
     local buf = vim.iter(vim.api.nvim_list_bufs())
         :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
-        :find(function(b) return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == self.bufname end)
+        :find(function(b) return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == bufname end)
 
     return buf
 end
 
 ---@class RunOpts
 ---@field cwd string?
+---@field bufname string?
 ---@field open_win fun(buf: number, task: Task)?
 
 function Task:rerun()
@@ -130,8 +125,13 @@ end
 ---@param cmd string
 ---@param opts RunOpts?
 function Task:run(cmd, opts)
-    -- first buffer with name `self.bufname`
-    local buf = self:_get_buf()
+    opts = opts or {}
+    local bufname = opts.bufname or self.last_bufname or "*Task*"
+
+    local buf = nil
+    if self.last_bufname ~= nil then
+        buf = get_buf_by_name(self.last_bufname)
+    end
 
     if buf ~= nil then
         if self.chan ~= nil then
@@ -144,18 +144,18 @@ function Task:run(cmd, opts)
                 return
             end
         else
-            -- clear buffer
-            vim.api.nvim_buf_set_lines(buf, 0, -1, true, {})
+            vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
         end
     else
         -- we dont care if there's already a running job
         self.chan = nil
-        buf = self:_create_buf()
+        buf = create_task_buf(bufname)
     end
 
+    vim.api.nvim_buf_set_name(buf, bufname) -- update name
+
     -- if a cwd is not passed, use the current window's cwd
-    opts = opts or {}
-    local cwd = opts.cwd or vim.fn.getcwd(vim.api.nvim_get_current_win())
+    local cwd = opts.cwd or vim.fn.getcwd(0)
 
     local win = vim.fn.bufwinid(buf)
     if win == -1 then
@@ -194,10 +194,7 @@ function Task:run(cmd, opts)
             line_count = line_count + added
         end,
 
-        on_exit = function(chan, exit_code, event)
-            _ = chan
-            _ = event -- always "exit"
-
+        on_exit = function(_, exit_code)
             local now = os.date("%a %b %e %H:%M:%S")
             local msg
             if exit_code == 0 then
@@ -230,6 +227,7 @@ function Task:run(cmd, opts)
     -- save last_cmd
     self.last_cmd = cmd
     self.last_cwd = cwd
+    self.last_bufname = bufname
 
     -- set buf as error buffer
     errors.set_buf(buf)

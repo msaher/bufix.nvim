@@ -15,14 +15,13 @@ local highlights = {
 -- TODO: implement a stack system where multiple buffers can attach themselves
 -- as error buffers
 local current_buf = nil
-local cwd = nil
 local extmark_id = nil
 local autocmd_id = nil
 local ns_id = vim.api.nvim_create_namespace("")
 
 ---@param line string
 ---@param idx number
----@param buffer? number
+---@param buf? number
 function M.highlight_line(line, idx, buf)
     local cap = M.match(line)
     if cap == nil then
