@@ -173,7 +173,7 @@ function Task:run(cmd, opts)
 
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
         "Running in " .. cwd,
-        "Task started at " .. os.date("%a %b%e %H:%M:%S"),
+        "Task started at " .. os.date("%a %b %e %H:%M:%S"),
         "",
         cmd,
     })
@@ -198,7 +198,7 @@ function Task:run(cmd, opts)
             _ = chan
             _ = event -- always "exit"
 
-            local now = os.date("%a %b%e %H:%M:%S")
+            local now = os.date("%a %b %e %H:%M:%S")
             local msg
             if exit_code == 0 then
                 msg = "Task finished"

@@ -22,16 +22,19 @@ local ns_id = vim.api.nvim_create_namespace("")
 
 ---@param line string
 ---@param idx number
-function M.highlight_line(line, idx)
+---@param buffer? number
+function M.highlight_line(line, idx, buf)
     local cap = M.match(line)
     if cap == nil then
         return
     end
 
+    buf = buf or current_buf
+
     for k, span in pairs(cap) do
         local byte_start = vim.str_byteindex(line, span.start - 1)
         local byte_finish = vim.str_byteindex(line, span.finish - 1)
-        vim.api.nvim_buf_add_highlight(current_buf, -1, highlights[k], idx, byte_start, byte_finish)
+        vim.api.nvim_buf_add_highlight(buf, -1, highlights[k], idx, byte_start, byte_finish)
     end
 end
 
