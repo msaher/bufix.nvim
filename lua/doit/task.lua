@@ -187,9 +187,9 @@ function Task:_jobstart(cmd, buf, cwd, notify)
             end
             self.chan = nil
 
-            return true
         end,
-        desc = "doit: force stop task"
+        desc = "doit: force stop task",
+        once = true,
     })
 
 

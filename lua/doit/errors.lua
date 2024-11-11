@@ -69,9 +69,9 @@ function M.set_buf(buf)
         callback = function(_)
             current_buf = nil
             autocmd_id = nil
-            return true -- deletes autocmd
         end,
-        desc = "doit: remove buf from being the current error buf"
+        desc = "doit: remove buf from being the current error buf",
+        once = true,
     })
 
 end
