@@ -51,6 +51,11 @@ function M.set_buf(buf)
         error(string.format("buffer %d is not a valid buffer", buf))
     end
 
+    if extmark_id ~= nil then
+        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id or -1)
+        extmark_id = nil
+    end
+
     current_buf = buf
 
     -- remove previous autocmd if it exists
