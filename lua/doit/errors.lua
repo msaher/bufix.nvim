@@ -326,9 +326,7 @@ end
 
 ---@return {data: Capture, row: number}?
 local function get_capture_under_cursor()
-    if current_buf == nil then
-        return
-    end
+    M.set_buf(vim.api.nvim_get_current_buf())
 
     local win = get_or_make_error_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
