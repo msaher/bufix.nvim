@@ -3,35 +3,6 @@ local errors = require("doit.errors")
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
---- TODO: might want to put this somewhere else
----@param buf number
-local function open_win_sensibly(buf)
-    local width = vim.api.nvim_win_get_width(0)
-    local height = vim.api.nvim_win_get_height(0)
-
-    local split
-    if height >= 80 then
-        split = "below"
-    elseif width >= 160 then
-        split = "right"
-    elseif #vim.api.nvim_list_wins() > 1 then
-        -- reuse last window if theres no space and there are other windows
-        -- BUG: if the last window has been closed, then wincmd("p") does
-        -- nothing
-        vim.cmd.wincmd("p")
-        local win = vim.api.nvim_get_current_win()
-        vim.cmd.wincmd("p")
-        return win
-    else
-        split = "below"
-    end
-
-    return vim.api.nvim_open_win(buf, false, {
-        split = split,
-        win = 0,
-    })
-end
-
 ---@param first_item string
 ---@param data string[]
 ---@param line_count number
@@ -79,6 +50,35 @@ function Task.new(opts)
     local self = setmetatable(opts or {}, Task)
     return self
 end
+
+---@param buf number
+function Task.default_open_win(buf)
+    local width = vim.api.nvim_win_get_width(0)
+    local height = vim.api.nvim_win_get_height(0)
+
+    local split
+    if height >= 80 then
+        split = "below"
+    elseif width >= 160 then
+        split = "right"
+    elseif #vim.api.nvim_list_wins() > 1 then
+        -- reuse last window if theres no space and there are other windows
+        -- BUG: if the last window has been closed, then wincmd("p") does
+        -- nothing
+        vim.cmd.wincmd("p")
+        local win = vim.api.nvim_get_current_win()
+        vim.cmd.wincmd("p")
+        return win
+    else
+        split = "below"
+    end
+
+    return vim.api.nvim_open_win(buf, false, {
+        split = split,
+        win = 0,
+    })
+end
+
 
 ---Creates a buffer ready for receiving pty job stdout.
 ---@param task Task
@@ -231,8 +231,8 @@ function Task:run(cmd, opts)
 
     local win = vim.fn.bufwinid(buf)
     if win == -1 then
-        local open_win = opts.open_win or open_win_sensibly
-        win = open_win(buf)
+        local open_win = opts.open_win or vim.tbl_get(vim.g, "doit", "open_win") or Task.default_open_win
+        win = open_win(buf, self)
         vim.api.nvim_win_set_buf(win, buf)
 
         vim.api.nvim_set_option_value("number", false, { win = win })
@@ -246,7 +246,7 @@ function Task:run(cmd, opts)
     local notify = opts.notify or vim.tbl_get(vim.g, "doit", "notify") or "never"
     self:_jobstart(cmd, buf, cwd, notify)
 
-    -- save last_cmd
+    -- may reuse in next call to run()
     self.last_cmd = cmd
     self.last_cwd = cwd
     self.last_bufname = bufname
