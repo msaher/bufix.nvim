@@ -1,16 +1,19 @@
----@class Span<T>
+---@class Span
 ---@field start number
 ---@field finish number
----@field value T
+---@field value string | number
+
+--HACK: generics are not supported yet in lua-ls
+--https://github.com/LuaLS/lua-language-server/issues/1861
+--span value is string | number
 
 ---@class Capture
----@field filename Span<string>
----@field line? Span<number>
----@field line_end? Span<number>
----@field col? Span<number>
----@field col_end? Span<number>
----@field type? Span<number>
----@field type? Span<number>
+---@field filename Span
+---@field line? Span
+---@field line_end? Span
+---@field col? Span
+---@field col_end? Span
+---@field type? Span
 
 local lpeg = vim.lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
@@ -26,7 +29,6 @@ local rest_of_line = (1 - eol)^0
 local file_char = 1 - S(",:\n\t()\"'")
 local filename = file_char^1
 local dquote = P'"'
-local squote = P"'"
 
 -- from https://www.inf.puc-rio.br/~roberto/lpeg/
 local function anywhere(p)

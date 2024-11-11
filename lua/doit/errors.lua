@@ -123,7 +123,7 @@ end
 ---@param line string
 ---@return Capture?
 function M.match(line)
-    for k, rule in pairs(cache._items) do
+    for _, rule in pairs(cache._items) do
         local data = rule:match(line)
         if data ~= nil then
             return data
@@ -144,7 +144,7 @@ end
 
 ---@param data Capture
 ---@param row number 0-base
----@param opts? { focus: bool }
+---@param opts? { focus: boolean }
 function M.enter(data, row, opts)
     opts = opts or {}
 
@@ -272,7 +272,6 @@ local function jump(step, start)
 end
 
 ---Like jump(), but start is set at row of the extmark
----@param number
 ---@return { data: Capture, row: number}?
 local function jump_extmark(step)
     local extmark = get_valid_extmark()
@@ -364,7 +363,7 @@ local function jump_to_file(step, start, skip_file)
 
     local row = start
     while true do
-        res = jump(step, row+step)
+        local res = jump(step, row+step)
         if res == nil then
             return
         elseif res.data.filename.value ~= skip_file then
@@ -377,7 +376,6 @@ local function jump_to_file(step, start, skip_file)
 end
 
 ---@param step number
----@param start number
 ---@return {data: Capture, row: number}?
 local function move_to_file(step)
     local win = get_or_make_error_win()
@@ -413,6 +411,7 @@ function M.goto_file(step)
     local row = extmark[1]
     local line = vim.api.nvim_buf_get_lines(current_buf, row, row+1, true)[1] -- 0-based
     local skip_file = M.match(line).filename.value -- must succeed
+    ---@cast skip_file string
 
     local res = jump_to_file(step, row + step, skip_file)
     if res ~= nil then
