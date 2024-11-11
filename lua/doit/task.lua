@@ -70,25 +70,15 @@ local Task = {}
 Task.__index = Task
 
 ---@return Task
-function Task.new()
-    local self = setmetatable({}, Task)
+function Task.new(opts)
+    local self = setmetatable(opts or {}, Task)
     return self
 end
 
--- function Task:setup_mappings(buf)
---     vim.keymap.set("n", "<CR>", errors.goto_error_under_cursor, { buffer = buf })
---     vim.keymap.set("n", "<leader><CR>", errors.display_error_under_cursor, { buffer = buf })
---     vim.keymap.set("n", "gj", errors.move_to_next_error, { buffer = buf })
---     vim.keymap.set("n", "gk", errors.move_to_prev_error, { buffer = buf })
---     vim.keymap.set("n", "]]", errors.move_to_next_file, { buffer = buf })
---     vim.keymap.set("n", "[[", errors.move_to_prev_file, { buffer = buf })
---     vim.keymap.set("n", "r", function() self:rerun() end, { buffer = buf })
--- end
-
---- creates a buffer ready for receiving pty job stdout.
----@param bufname string
+---Creates a buffer ready for receiving pty job stdout.
+---@param task Task
 ---@return number
-local function create_task_buf(bufname)
+local function create_task_buf(task)
     local buf = vim.api.nvim_create_buf(true, true)
 
     -- set buffer options
@@ -97,6 +87,15 @@ local function create_task_buf(bufname)
     vim.api.nvim_set_option_value("tabstop", 8, { buf = buf })
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
+
+    local enable = vim.tbl_get(vim.g, "doit", "enable_default_keymaps")
+    if enable == nil then
+        enable = true
+    end
+    if enable then
+        errors.set_default_keymaps(buf)
+        vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
+    end
 
     return buf
 end
@@ -149,7 +148,7 @@ function Task:run(cmd, opts)
     else
         -- we dont care if there's already a running job
         self.chan = nil
-        buf = create_task_buf(bufname)
+        buf = create_task_buf(self)
     end
 
     vim.api.nvim_buf_set_name(buf, bufname) -- update name

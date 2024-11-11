@@ -328,7 +328,7 @@ local function get_capture_under_cursor()
 
     local win = get_or_make_error_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
-    local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, true)[1] -- 0-based
+    local line = vim.api.nvim_buf_get_lines(current_buf, row - 1, row, true)[1] -- 0-based
 
     local data = M.match(line)
     if data ~= nil then
@@ -427,6 +427,15 @@ end
 
 function M.goto_prev_file()
     return M.goto_file(-1)
+end
+
+function M.set_default_keymaps(buf)
+    vim.keymap.set("n", "<CR>", M.goto_error_under_cursor, { buffer = buf })
+    vim.keymap.set("n", "<leader><CR>", M.display_error_under_cursor, { buffer = buf })
+    vim.keymap.set("n", "gj", M.move_to_next_error, { buffer = buf })
+    vim.keymap.set("n", "gk", M.move_to_prev_error, { buffer = buf })
+    vim.keymap.set("n", "]]", M.move_to_next_file, { buffer = buf })
+    vim.keymap.set("n", "[[", M.move_to_prev_file, { buffer = buf })
 end
 
 do
