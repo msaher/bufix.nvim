@@ -253,7 +253,6 @@ function Task:run(cmd, opts)
 
     -- set buf as error buffer
     errors.set_buf(buf)
-    errors.set_cwd(cwd)
 end
 
 return Task

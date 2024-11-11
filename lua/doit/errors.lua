@@ -76,11 +76,6 @@ function M.set_buf(buf)
 
 end
 
----@param cwd string
-function M.set_cwd(cwd)
-    M.cwd = cwd
-end
-
 local function get_or_make_error_win()
     local win = vim.fn.bufwinid(current_buf)
     if win == -1 then
