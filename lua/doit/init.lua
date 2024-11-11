@@ -50,3 +50,41 @@ function M.prompt_for_cmd()
 
 end
 
+---termopen() wrapper that sets the opened terminal buffer
+---as the current error buffer
+---@param cmd string | string[] same as :h termopen
+---@param opts table? same as :h termopen
+---@param enable_default_keymaps? boolean
+function M.termopen(cmd, opts, enable_default_keymaps)
+    opts = opts or {}
+    local buf = vim.api.nvim_get_current_buf()
+    local errors = require("doit.errors")
+
+    local o = {
+        on_exit = function(chan, data, event)
+            if opts.on_exit then
+                opts.on_exit(chan, data, event)
+            end
+
+            local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+            for idx, line in ipairs(lines) do
+                errors.highlight_line(line, idx-1, buf)
+            end
+        end,
+    }
+
+    o = vim.tbl_extend("keep", o, opts)
+
+    vim.fn.termopen(cmd, o)
+
+    errors.set_buf(buf)
+
+    if enable_default_keymaps == nil then
+        enable_default_keymaps = true
+    end
+    if enable_default_keymaps then
+        errors.set_default_keymaps(buf)
+    end
+
+end
+
