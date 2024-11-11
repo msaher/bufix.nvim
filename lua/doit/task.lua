@@ -65,7 +65,7 @@ end
 ---@class Task
 ---@field bufname string?
 ---@field chan number?
----@field last_cmd string?
+---@field last_cmd (string | string[])?
 ---@field last_cwd string?
 ---@field last_bufname string?
 ---@field enable_default_keymaps boolean?
@@ -126,7 +126,7 @@ function Task:rerun()
     end
 end
 
----@param cmd string
+---@param cmd string | string[]
 ---@param opts RunOpts?
 function Task:run(cmd, opts)
     opts = opts or {}
