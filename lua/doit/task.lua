@@ -128,56 +128,10 @@ function Task:rerun()
 end
 
 ---@param cmd string | string[]
----@param opts RunOpts?
-function Task:run(cmd, opts)
-    opts = opts or {}
-    local bufname = opts.bufname or self.last_bufname or "*Task*"
-
-    local buf = nil
-    if self.last_bufname ~= nil then
-        buf = get_buf_by_name(self.last_bufname)
-    end
-
-    if buf ~= nil then
-        if self.chan ~= nil then
-            local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
-
-            if choice == 2 then -- yes
-                vim.fn.jobwait({ self.chan }, 1500)
-                self.chan = nil
-            else
-                return
-            end
-        else
-            vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
-        end
-    else
-        -- we dont care if there's already a running job
-        self.chan = nil
-        buf = create_task_buf(self)
-        if self.on_buf_create then
-            self.on_buf_create(buf, self)
-        end
-    end
-
-    vim.api.nvim_buf_set_name(buf, bufname) -- update name
-
-    -- if a cwd is not passed, use the current window's cwd
-    local cwd = opts.cwd or vim.fn.getcwd(0)
-
-    local win = vim.fn.bufwinid(buf)
-    if win == -1 then
-        local open_win = opts.open_win or open_win_sensibly
-        win = open_win(buf)
-        vim.api.nvim_win_set_buf(win, buf)
-
-        vim.api.nvim_set_option_value("number", false, { win = win })
-    end
-
-    -- change cwd of task window
-    vim.api.nvim_win_call(win, function()
-        vim.cmd("lcd " .. cwd)
-    end)
+---@param buf number
+---@param cwd string
+---@param notify ("never" | "on_error" | "always")
+function Task:_jobstart(cmd, buf, cwd, notify)
 
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
         "Running in " .. cwd,
@@ -212,7 +166,6 @@ function Task:run(cmd, opts)
                 msg = "Task existed abnormally with code " .. exit_code
             end
 
-            local notify = opts.notify or vim.tbl_get(vim.g, "doit", "notify") or "never"
             if notify == "always" then
                 vim.notify(msg, (exit_code == 0 and vim.log.levels.INFO) or vim.log.levels.ERROR)
             elseif notify == "on_error" and exit_code ~= 0 then
@@ -238,6 +191,82 @@ function Task:run(cmd, opts)
         end,
         desc = "doit: force stop task"
     })
+
+
+end
+
+---@param cmd string | string[]
+---@param opts RunOpts?
+function Task:run(cmd, opts)
+    opts = opts or {}
+    local bufname = opts.bufname or self.last_bufname or "*Task*"
+
+    local buf = nil
+    if self.last_bufname ~= nil then
+        buf = get_buf_by_name(self.last_bufname)
+    end
+
+    if buf == nil then
+        self.chan = nil
+        buf = create_task_buf(self)
+        if self.on_buf_create then
+            self.on_buf_create(buf, self)
+        end
+    elseif self.chan == nil then
+        vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
+    else
+        local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
+        if choice ~= 2 then -- if not yes
+            return
+        end
+
+        vim.fn.jobwait({ self.chan }, 1500)
+        self.chan = nil
+    end
+
+    -- if buf ~= nil then
+    --     if self.chan ~= nil then
+    --         local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
+    --
+    --         if choice == 2 then -- yes
+    --             vim.fn.jobwait({ self.chan }, 1500)
+    --             self.chan = nil
+    --         else
+    --             return
+    --         end
+    --     else
+    --         vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
+    --     end
+    -- else
+    --     -- we dont care if there's already a running job
+    --     self.chan = nil
+    --     buf = create_task_buf(self)
+    --     if self.on_buf_create then
+    --         self.on_buf_create(buf, self)
+    --     end
+    -- end
+
+    vim.api.nvim_buf_set_name(buf, bufname) -- update name
+
+    -- if a cwd is not passed, use the current window's cwd
+    local cwd = opts.cwd or vim.fn.getcwd(0)
+
+    local win = vim.fn.bufwinid(buf)
+    if win == -1 then
+        local open_win = opts.open_win or open_win_sensibly
+        win = open_win(buf)
+        vim.api.nvim_win_set_buf(win, buf)
+
+        vim.api.nvim_set_option_value("number", false, { win = win })
+    end
+
+    -- change cwd of task window
+    vim.api.nvim_win_call(win, function()
+        vim.cmd("lcd " .. cwd)
+    end)
+
+    local notify = opts.notify or vim.tbl_get(vim.g, "doit", "notify") or "never"
+    self:_jobstart(cmd, buf, cwd, notify)
 
     -- save last_cmd
     self.last_cmd = cmd
