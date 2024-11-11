@@ -66,9 +66,11 @@ end
 ---@field last_cmd string?
 ---@field last_cwd string?
 ---@field last_bufname string?
+---@field on_buf_create fun(buf: number, task: Task)?
 local Task = {}
 Task.__index = Task
 
+---@param opts? { on_buf_create: fun(buf: number, task: Task)? }
 ---@return Task
 function Task.new(opts)
     local self = setmetatable(opts or {}, Task)
@@ -149,6 +151,9 @@ function Task:run(cmd, opts)
         -- we dont care if there's already a running job
         self.chan = nil
         buf = create_task_buf(self)
+        if self.on_buf_create then
+            self.on_buf_create(buf, self)
+        end
     end
 
     vim.api.nvim_buf_set_name(buf, bufname) -- update name
