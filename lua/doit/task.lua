@@ -118,6 +118,7 @@ end
 ---@class RunOpts
 ---@field cwd string?
 ---@field bufname string?
+---@field notify ("never" | "on_error" | "always")?
 ---@field open_win fun(buf: number, task: Task)?
 
 function Task:rerun()
@@ -204,16 +205,23 @@ function Task:run(cmd, opts)
         on_exit = function(_, exit_code)
             local now = os.date("%a %b %e %H:%M:%S")
             local msg
+
             if exit_code == 0 then
                 msg = "Task finished"
             else
                 msg = "Task existed abnormally with code " .. exit_code
             end
 
-            vim.notify(msg, vim.log.levels.INFO)
+            local notify = opts.notify or vim.tbl_get(vim.g, "doit", "notify") or "never"
+            if notify == "always" then
+                vim.notify(msg, (exit_code == 0 and vim.log.levels.INFO) or vim.log.levels.ERROR)
+            elseif notify == "on_error" and exit_code ~= 0 then
+                vim.notify(msg, vim.log.levels.ERROR)
+            end
 
             msg = msg .. " at " .. now
             vim.api.nvim_buf_set_lines(buf, -1, -1, true, { "", msg })
+
             self.chan = nil
         end
     })
