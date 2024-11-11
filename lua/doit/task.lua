@@ -38,7 +38,7 @@ end
 ---@return string
 ---@return number
 local function pty_append_to_buf(buf, first_item, data, line_count)
-    -- as per :h on_stdout, the first and last items may be partial when
+    -- as per :h channel-lines, the first and last items may be partial when
     -- jobstart is passed the pty = true option.
     -- We set the first item as the first element and return the last item
     data[1] = first_item .. data[1]
