@@ -16,6 +16,8 @@ local function open_win_sensibly(buf)
         split = "right"
     elseif #vim.api.nvim_list_wins() > 1 then
         -- reuse last window if theres no space and there are other windows
+        -- BUG: if the last window has been closed, then wincmd("p") does
+        -- nothing
         vim.cmd.wincmd("p")
         local win = vim.api.nvim_get_current_win()
         vim.cmd.wincmd("p")
@@ -66,11 +68,12 @@ end
 ---@field last_cmd string?
 ---@field last_cwd string?
 ---@field last_bufname string?
+---@field enable_default_keymaps boolean?
 ---@field on_buf_create fun(buf: number, task: Task)?
 local Task = {}
 Task.__index = Task
 
----@param opts? { on_buf_create: fun(buf: number, task: Task)? }
+---@param opts? { enable_default_keymaps: boolean?, on_buf_create: fun(buf: number, task: Task)? }
 ---@return Task
 function Task.new(opts)
     local self = setmetatable(opts or {}, Task)
@@ -90,7 +93,7 @@ local function create_task_buf(task)
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
-    local enable = vim.tbl_get(vim.g, "doit", "enable_default_keymaps")
+    local enable = task.enable_default_keymaps or vim.tbl_get(vim.g, "doit", "enable_default_keymaps")
     if enable == nil then
         enable = true
     end
