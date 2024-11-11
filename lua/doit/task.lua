@@ -224,28 +224,6 @@ function Task:run(cmd, opts)
         self.chan = nil
     end
 
-    -- if buf ~= nil then
-    --     if self.chan ~= nil then
-    --         local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
-    --
-    --         if choice == 2 then -- yes
-    --             vim.fn.jobwait({ self.chan }, 1500)
-    --             self.chan = nil
-    --         else
-    --             return
-    --         end
-    --     else
-    --         vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
-    --     end
-    -- else
-    --     -- we dont care if there's already a running job
-    --     self.chan = nil
-    --     buf = create_task_buf(self)
-    --     if self.on_buf_create then
-    --         self.on_buf_create(buf, self)
-    --     end
-    -- end
-
     vim.api.nvim_buf_set_name(buf, bufname) -- update name
 
     -- if a cwd is not passed, use the current window's cwd
