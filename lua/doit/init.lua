@@ -26,10 +26,6 @@ end
 ---@param cmd string
 ---@param opts RunOpts
 function M.run(cmd, opts)
-    if opts.bufname == nil then
-        opts.bufname = vim.tbl_get(vim.g, "doit", "bufname")
-    end
-
     get_task():run(cmd, opts)
 end
 
