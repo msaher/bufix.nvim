@@ -68,7 +68,7 @@ function M.termopen(cmd, opts, enable_default_keymaps)
 
             local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
             for idx, line in ipairs(lines) do
-                errors.highlight_line(line, idx-1, buf)
+                errors.highlight_line(buf, line, idx-1)
             end
         end,
     }
