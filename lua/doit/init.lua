@@ -37,6 +37,14 @@ function M.rerun()
     get_task():rerun()
 end
 
+function M.next_error()
+    require("doit.errors").next_error()
+end
+
+function M.prev_error()
+    require("doit.errors").prev_error()
+end
+
 function M.prompt_for_cmd()
     local input = vim.fn.input({
         prompt = "Command to run: ",
