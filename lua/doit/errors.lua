@@ -27,11 +27,14 @@ local highlights = {
 -- and set that as the current_buf buf.
 
 -- I'm hesitant to implement this feature because users might find it confusing
-local current_buf = nil
-local extmark_id = nil
-local autocmd_id = nil
-local ns_id = vim.api.nvim_create_namespace("")
-local extmark_line = nil
+
+local state = {
+    current_buf = nil,
+    extmark_id = nil,
+    autocmd_id = nil,
+    ns_id = vim.api.nvim_create_namespace(""),
+    extmark_line = nil,
+}
 
 ---@param buf number
 ---@param line string
@@ -42,7 +45,7 @@ function M.highlight_line(buf, line, idx)
         return
     end
 
-    buf = buf or current_buf
+    buf = buf or state.current_buf
 
     for k, span in pairs(cap) do
         local byte_start = vim.str_byteindex(line, span.start - 1)
@@ -52,15 +55,15 @@ function M.highlight_line(buf, line, idx)
 end
 
 local function get_valid_extmark()
-    if extmark_id == nil then
+    if state.extmark_id == nil then
         return nil
     end
 
-    local extmark = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, { details = true})
+    local extmark = vim.api.nvim_buf_get_extmark_by_id(state.current_buf, state.ns_id, state.extmark_id, { details = true})
 
     if vim.tbl_isempty(extmark) or extmark[3].invalid then
-        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
-        extmark_id = nil
+        vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
+        state.extmark_id = nil
         return nil
     end
 
@@ -78,12 +81,12 @@ local function attach_term(buf)
 
                 -- HACK: terminal buffers may decide draw the same lines twice (weird)
                 -- so we have to check that the new line placed at extmark[1] is NOT the
-                -- same as extmark_line
+                -- same as state.extmark_line
                 local line  = vim.api.nvim_buf_get_lines(buf, extmark[1], extmark[1]+1, true)[1]
-                if extmark_line ~= line then
-                    -- vim.print({extmark_line = extmark_line, line = line,  first_idx = first_idx, last_idx = last_idx, extmark_idx = extmark[1], last_update_idx = last_update_idx })
-                    vim.api.nvim_buf_del_extmark(buf, ns_id, extmark_id)
-                    extmark_id = nil
+                if state.extmark_line ~= line then
+                    -- vim.print({state.extmark_line = state.extmark_line, line = line,  first_idx = first_idx, last_idx = last_idx, state.extmark_idx = extmark[1], last_update_idx = last_update_idx })
+                    vim.api.nvim_buf_del_extmark(buf, state.ns_id, state.extmark_id)
+                    state.extmark_id = nil
                 end
             end
         end
@@ -95,7 +98,7 @@ end
 function M.set_buf(buf)
 
     -- dont do anything if the same buf is passed
-    if current_buf == buf then
+    if state.current_buf == buf then
         return
     end
 
@@ -103,24 +106,24 @@ function M.set_buf(buf)
         error(string.format("buffer %d is not a valid buffer", buf))
     end
 
-    if extmark_id ~= nil then
-        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
-        extmark_id = nil
+    if state.extmark_id ~= nil then
+        vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
+        state.extmark_id = nil
     end
 
-    current_buf = buf
+    state.current_buf = buf
 
     -- remove previous autocmd if it exists
-    if autocmd_id ~= nil then
-        vim.api.nvim_del_autocmd(autocmd_id)
+    if state.autocmd_id ~= nil then
+        vim.api.nvim_del_autocmd(state.autocmd_id)
     end
 
-    -- clear current_buf when the buffer gets deleted
-    autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
+    -- clear state.current_buf when the buffer gets deleted
+    state.autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
         buffer = buf,
         callback = function(_)
-            current_buf = nil
-            autocmd_id = nil
+            state.current_buf = nil
+            state.autocmd_id = nil
         end,
         desc = "doit: remove buf from being the current error buf",
         once = true,
@@ -134,9 +137,9 @@ function M.set_buf(buf)
 end
 
 local function get_or_make_error_win()
-    local win = vim.fn.bufwinid(current_buf)
+    local win = vim.fn.bufwinid(state.current_buf)
     if win == -1 then
-        win = vim.api.nvim_open_win(current_buf, false, {
+        win = vim.api.nvim_open_win(state.current_buf, false, {
             split = "below",
         })
     end
@@ -155,7 +158,7 @@ local function get_or_make_target_win(buf)
     local current_win = vim.api.nvim_get_current_win()
     local all_wins = vim.api.nvim_list_wins()
 
-    if #all_wins == 1 and vim.api.nvim_win_get_buf(current_win) == current_buf then
+    if #all_wins == 1 and vim.api.nvim_win_get_buf(current_win) == state.current_buf then
         return vim.api.nvim_open_win(buf, false, { split = "above", win = -1 })
     end
 
@@ -164,7 +167,7 @@ local function get_or_make_target_win(buf)
         return target_win
     end
 
-    if current_win ~= vim.fn.bufwinid(current_buf) then
+    if current_win ~= vim.fn.bufwinid(state.current_buf) then
         return vim.api.nvim_get_current_win()
     end
 
@@ -247,22 +250,22 @@ end
 
 ---@param row number
 function M.set_extmark(row)
-    if current_buf == nil then
+    if state.current_buf == nil then
         return
     end
 
     -- clean up previous extmark
-    if extmark_id ~= nil then
-        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
+    if state.extmark_id ~= nil then
+        vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
     end
 
-    extmark_id = vim.api.nvim_buf_set_extmark(current_buf, ns_id, row, 0, {
+    state.extmark_id = vim.api.nvim_buf_set_extmark(state.current_buf, state.ns_id, row, 0, {
         sign_text = ">",
         sign_hl_group = "DoitCurrent",
         invalidate = true, -- invalidate the extmark if the line gets deleted
     })
 
-    extmark_line = vim.api.nvim_buf_get_lines(current_buf, row, row+1, true)[1]
+    state.extmark_line = vim.api.nvim_buf_get_lines(state.current_buf, row, row+1, true)[1]
 
     local win = get_or_make_error_win()
     vim.api.nvim_win_set_cursor(win, { row+1, 0 })
@@ -280,7 +283,7 @@ end
 ---@param start number
 ---@return { data: Capture, row: number}?
 local function jump(step, start)
-    if current_buf == nil then
+    if state.current_buf == nil then
         return
     end
 
@@ -292,12 +295,12 @@ local function jump(step, start)
     if step < 0 then
         last_idx = -1
     else
-        last_idx = vim.api.nvim_buf_line_count(current_buf)
+        last_idx = vim.api.nvim_buf_line_count(state.current_buf)
     end
 
     local i = start
     while i ~= last_idx do
-        local line = vim.api.nvim_buf_get_lines(current_buf, i, i + 1, true)[1]
+        local line = vim.api.nvim_buf_get_lines(state.current_buf, i, i + 1, true)[1]
         local data = M.match(line)
         if data ~= nil then
             return { data = data, row = i }
@@ -368,7 +371,7 @@ local function get_capture_under_cursor()
 
     local win = get_or_make_error_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
-    local line = vim.api.nvim_buf_get_lines(current_buf, row - 1, row, true)[1] -- 0-based
+    local line = vim.api.nvim_buf_get_lines(state.current_buf, row - 1, row, true)[1] -- 0-based
 
     local data = M.match(line)
     if data ~= nil then
@@ -450,7 +453,7 @@ function M.goto_file(step)
     end
 
     local row = extmark[1]
-    local line = vim.api.nvim_buf_get_lines(current_buf, row, row+1, true)[1] -- 0-based
+    local line = vim.api.nvim_buf_get_lines(state.current_buf, row, row+1, true)[1] -- 0-based
     local skip_file = M.match(line).filename.value -- must succeed
     ---@cast skip_file string
 
