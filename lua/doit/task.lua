@@ -122,6 +122,7 @@ end
 ---@field cwd string?
 ---@field bufname string?
 ---@field notify ("never" | "on_error" | "always")?
+---@field kill_running boolean?
 ---@field open_win fun(buf: number, task: Task)?
 
 function Task:rerun()
@@ -218,9 +219,11 @@ function Task:run(cmd, opts)
     elseif self.chan == nil then
         vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
     else
-        local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
-        if choice ~= 2 then -- if not yes
-            return
+        if not opts.kill_running then
+            local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
+            if choice ~= 2 then -- if not yes
+                return
+            end
         end
 
         vim.fn.jobwait({ self.chan }, 1500)
