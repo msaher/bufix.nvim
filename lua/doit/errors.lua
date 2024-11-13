@@ -328,14 +328,14 @@ local function jump_extmark(step)
     return jump(step, start)
 end
 
-function M.next()
+function M.next_error()
     local res = jump_extmark(1)
     if res ~= nil then
         M.enter(res.data, res.row)
     end
 end
 
-function M.prev()
+function M.prev_error()
     local res = jump_extmark(-1)
     if res ~= nil then
         M.enter(res.data, res.row)
