@@ -2,7 +2,6 @@ local rules = require("doit.rules")
 local busted = require("plenary.busted")
 
 
--- TODO: use vim.tbl_equal instead
 local function tbl_equal(a, b)
     if a == b then return true end
 
