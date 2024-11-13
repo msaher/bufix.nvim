@@ -122,6 +122,8 @@ function M.set_buf(buf)
     state.autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
         buffer = buf,
         callback = function(_)
+            vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
+            state.extmark_id = nil
             state.current_buf = nil
             state.autocmd_id = nil
         end,
