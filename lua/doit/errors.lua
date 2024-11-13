@@ -12,8 +12,21 @@ local highlights = {
     type = "DoitMsgType",
 }
 
--- TODO: implement a stack system where multiple buffers can attach themselves
--- as error buffers
+-- TODO: implement a stack system where multiple buffers can register themselves
+-- as error buffers. Image a scenario where
+-- 1. bufA is set as the error buffer via M.set_buf()
+-- 2. bufB is set as the error buffer via M.set_buf()
+-- 3. bufB is deleted
+--
+-- The current behaviour: next() and previous() won't work
+-- New behaviour: next() and previos() will automatically call M.set_buf(bufA)
+--
+-- An easy way to achieve is to make set_buf() sets a buffer variable vim.b[buf].doit_errorbuf = true
+-- then when jump_extmark() sees that the current_buf is nil, it will find
+-- the first buf in vim.api.nvim_list_bufs() with vim.b.doit_errorbuf is true
+-- and set that as the current_buf buf.
+
+-- I'm hesitant to implement this feature because users might find it confusing
 local current_buf = nil
 local extmark_id = nil
 local autocmd_id = nil
@@ -91,7 +104,7 @@ function M.set_buf(buf)
     end
 
     if extmark_id ~= nil then
-        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id or -1)
+        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
         extmark_id = nil
     end
 
