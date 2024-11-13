@@ -21,7 +21,7 @@ local function tbl_equal(a, b)
         end
     end
 
-    -- make "a" has all keys "b" has
+    -- ensure "a" has all keys "b" has
     for k in pairs(b) do
         if a[k] == nil then
             return false

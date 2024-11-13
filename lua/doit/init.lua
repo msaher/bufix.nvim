@@ -49,7 +49,7 @@ function M.prompt_for_cmd()
     })
 
     if input ~= nil and input ~= "" then
-        get_task():run(input, {bufname = "*" .. input .. "*"})
+        get_task():run(input)
     end
 
 end
