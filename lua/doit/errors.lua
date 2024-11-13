@@ -18,11 +18,12 @@ local current_buf = nil
 local extmark_id = nil
 local autocmd_id = nil
 local ns_id = vim.api.nvim_create_namespace("")
+local extmark_line = nil
 
+---@param buf number
 ---@param line string
 ---@param idx number
----@param buf? number
-function M.highlight_line(line, idx, buf)
+function M.highlight_line(buf, line, idx)
     local cap = M.match(line)
     if cap == nil then
         return
@@ -37,6 +38,44 @@ function M.highlight_line(line, idx, buf)
     end
 end
 
+local function get_valid_extmark()
+    if extmark_id == nil then
+        return nil
+    end
+
+    local extmark = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, { details = true})
+
+    if vim.tbl_isempty(extmark) or extmark[3].invalid then
+        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
+        extmark_id = nil
+        return nil
+    end
+
+    return extmark
+end
+
+---auto remove the extmark when :terminal redraws
+---@param buf number
+local function attach_term(buf)
+    vim.api.nvim_buf_attach(buf, false, {
+        on_lines = function(_, _, _, first_idx, last_idx, last_update_idx)
+            -- remove extmark if the line it was on has changed
+            local extmark = get_valid_extmark()
+            if extmark ~= nil and extmark[1] >= first_idx and extmark[1] < last_idx then
+
+                -- HACK: terminal buffers may decide draw the same lines twice (weird)
+                -- so we have to check that the new line placed at extmark[1] is NOT the
+                -- same as extmark_line
+                local line  = vim.api.nvim_buf_get_lines(buf, extmark[1], extmark[1]+1, true)[1]
+                if extmark_line ~= line then
+                    -- vim.print({extmark_line = extmark_line, line = line,  first_idx = first_idx, last_idx = last_idx, extmark_idx = extmark[1], last_update_idx = last_update_idx })
+                    vim.api.nvim_buf_del_extmark(buf, ns_id, extmark_id)
+                    extmark_id = nil
+                end
+            end
+        end
+    })
+end
 
 
 ---@param buf number
@@ -73,6 +112,11 @@ function M.set_buf(buf)
         desc = "doit: remove buf from being the current error buf",
         once = true,
     })
+
+    local buftype = vim.api.nvim_get_option_value('buftype', { buf = buf })
+    if buftype == 'terminal' then
+        attach_term(buf)
+    end
 
 end
 
@@ -205,6 +249,8 @@ function M.set_extmark(row)
         invalidate = true, -- invalidate the extmark if the line gets deleted
     })
 
+    extmark_line = vim.api.nvim_buf_get_lines(current_buf, row, row+1, true)[1]
+
     local win = get_or_make_error_win()
     vim.api.nvim_win_set_cursor(win, { row+1, 0 })
 
@@ -215,22 +261,6 @@ function M.set_extmark(row)
     --     vim.cmd.normal({"zz", bang = true })
     -- end)
 
-end
-
-local function get_valid_extmark()
-    if extmark_id == nil then
-        return nil
-    end
-
-    local extmark = vim.api.nvim_buf_get_extmark_by_id(current_buf, ns_id, extmark_id, { details = true})
-
-    if vim.tbl_isempty(extmark) or extmark[3].invalid then
-        vim.api.nvim_buf_del_extmark(current_buf, ns_id, extmark_id)
-        extmark_id = nil
-        return nil
-    end
-
-    return extmark
 end
 
 ---@param step number

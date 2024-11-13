@@ -88,3 +88,4 @@ function M.termopen(cmd, opts, enable_default_keymaps)
 
 end
 
+return M

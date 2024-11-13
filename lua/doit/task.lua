@@ -26,7 +26,7 @@ local function pty_append_to_buf(buf, first_item, data, line_count)
 
         -- highlight captures
         for i, line in ipairs(data) do
-            errors.highlight_line(line, line_count + i - 1)
+            errors.highlight_line(buf, line, line_count + i - 1)
         end
     end)
 
@@ -101,6 +101,9 @@ local function create_task_buf(task)
         errors.set_default_keymaps(buf)
         vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
     end
+
+    -- set buf as error buffer
+    errors.set_buf(buf)
 
     return buf
 end
@@ -251,8 +254,6 @@ function Task:run(cmd, opts)
     self.last_cwd = cwd
     self.last_bufname = bufname
 
-    -- set buf as error buffer
-    errors.set_buf(buf)
 end
 
 return Task
