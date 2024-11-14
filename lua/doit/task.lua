@@ -93,7 +93,7 @@ local function create_task_buf(task)
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
-    local enable = task.enable_default_keymaps or vim.tbl_get(vim.g, "doit", "enable_default_keymaps")
+    local enable = task.enable_default_keymaps
     if enable == nil then
         enable = true
     end
@@ -123,7 +123,7 @@ end
 ---@field bufname string?
 ---@field notify ("never" | "on_error" | "always")?
 ---@field kill_running boolean?
----@field open_win fun(buf: number, task: Task)?
+---@field open_win (fun(buf: number, task: Task): number)?
 
 function Task:rerun()
     if self.last_cmd ~= nil then
@@ -237,7 +237,7 @@ function Task:run(cmd, opts)
 
     local win = vim.fn.bufwinid(buf)
     if win == -1 then
-        local open_win = opts.open_win or vim.tbl_get(vim.g, "doit", "open_win") or Task.default_open_win
+        local open_win = opts.open_win or Task.default_open_win
         win = open_win(buf, self)
         vim.api.nvim_win_set_buf(win, buf)
 
@@ -249,7 +249,7 @@ function Task:run(cmd, opts)
         vim.cmd("lcd " .. cwd)
     end)
 
-    local notify = opts.notify or vim.tbl_get(vim.g, "doit", "notify") or "never"
+    local notify = opts.notify or "never"
     self:_jobstart(cmd, buf, cwd, notify)
 
     -- may reuse in next call to run()

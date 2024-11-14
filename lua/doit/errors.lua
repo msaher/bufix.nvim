@@ -93,7 +93,6 @@ local function attach_term(buf)
     })
 end
 
-
 ---@param buf number
 function M.set_buf(buf)
 
