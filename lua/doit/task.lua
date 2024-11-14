@@ -39,7 +39,6 @@ end
 ---@field last_cmd (string | string[])?
 ---@field last_cwd string?
 ---@field last_bufname string?
----@field enable_default_keymaps boolean?
 ---@field on_buf_create fun(buf: number, task: Task)?
 local Task = {}
 Task.__index = Task
@@ -82,8 +81,9 @@ end
 
 ---Creates a buffer ready for receiving pty job stdout.
 ---@param task Task
+---@param keymaps boolean?
 ---@return number
-local function create_task_buf(task)
+local function create_task_buf(task, keymaps)
     local buf = vim.api.nvim_create_buf(true, true)
 
     -- set buffer options
@@ -93,11 +93,7 @@ local function create_task_buf(task)
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
-    local enable = task.enable_default_keymaps
-    if enable == nil then
-        enable = true
-    end
-    if enable then
+    if keymaps then
         errors.set_default_keymaps(buf)
         vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
     end
@@ -124,7 +120,7 @@ end
 ---@field notify ("never" | "on_error" | "always")?
 ---@field kill_running boolean?
 ---@field open_win (fun(buf: number, task: Task): number)?
-
+---@field enable_default_keymaps boolean?
 function Task:rerun()
     if self.last_cmd ~= nil then
         self:run(self.last_cmd, { cwd = self.last_cwd })
@@ -204,6 +200,9 @@ end
 function Task:run(cmd, opts)
     opts = opts or {}
     local bufname = opts.bufname or self.last_bufname or "*Task*"
+    if opts.enable_default_keymaps == nil then
+        opts.enable_default_keymaps = true
+    end
 
     local buf = nil
     if self.last_bufname ~= nil then
@@ -212,7 +211,7 @@ function Task:run(cmd, opts)
 
     if buf == nil then
         self.chan = nil
-        buf = create_task_buf(self)
+        buf = create_task_buf(self, opts.enable_default_keymaps)
         if self.on_buf_create then
             self.on_buf_create(buf, self)
         end
