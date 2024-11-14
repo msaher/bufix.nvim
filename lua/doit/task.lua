@@ -40,13 +40,15 @@ end
 ---@field last_cwd string?
 ---@field last_bufname string?
 ---@field on_buf_create fun(buf: number, task: Task)?
+---@field enable_default_keymaps boolean
 local Task = {}
 Task.__index = Task
 
----@param opts? { enable_default_keymaps: boolean?, on_buf_create: fun(buf: number, task: Task)? }
 ---@return Task
-function Task.new(opts)
-    local self = setmetatable(opts or {}, Task)
+function Task.new()
+    local self = setmetatable({
+        enable_default_keymaps = true
+    }, Task)
     return self
 end
 
@@ -112,19 +114,6 @@ local function get_buf_by_name(bufname)
         :find(function(b) return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == bufname end)
 
     return buf
-end
-
----@class RunOpts
----@field cwd string?
----@field bufname string?
----@field notify ("never" | "on_error" | "always")?
----@field kill_running boolean?
----@field open_win (fun(buf: number, task: Task): number)?
----@field enable_default_keymaps boolean?
-function Task:rerun()
-    if self.last_cmd ~= nil then
-        self:run(self.last_cmd, { cwd = self.last_cwd })
-    end
 end
 
 ---@param cmd string | string[]
@@ -195,13 +184,22 @@ function Task:_jobstart(cmd, buf, cwd, notify)
 
 end
 
+---@class RunOpts
+---@field cwd string?
+---@field bufname string?
+---@field notify ("never" | "on_error" | "always")?
+---@field kill_running boolean?
+---@field open_win (fun(buf: number, task: Task): number)?
+---@field enable_default_keymaps boolean?
+
 ---@param cmd string | string[]
 ---@param opts RunOpts?
 function Task:run(cmd, opts)
     opts = opts or {}
     local bufname = opts.bufname or self.last_bufname or "*Task*"
-    if opts.enable_default_keymaps == nil then
-        opts.enable_default_keymaps = true
+
+    if opts.enable_default_keymaps ~= nil then
+        self.enable_default_keymaps = opts.enable_default_keymaps
     end
 
     local buf = nil
@@ -211,7 +209,7 @@ function Task:run(cmd, opts)
 
     if buf == nil then
         self.chan = nil
-        buf = create_task_buf(self, opts.enable_default_keymaps)
+        buf = create_task_buf(self, self.enable_default_keymaps)
         if self.on_buf_create then
             self.on_buf_create(buf, self)
         end
@@ -256,6 +254,12 @@ function Task:run(cmd, opts)
     self.last_cwd = cwd
     self.last_bufname = bufname
 
+end
+
+function Task:rerun()
+    if self.last_cmd ~= nil then
+        self:run(self.last_cmd, { cwd = self.last_cwd })
+    end
 end
 
 return Task
