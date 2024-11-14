@@ -76,7 +76,7 @@ end
 ---@param buf number
 local function attach_term(buf)
     vim.api.nvim_buf_attach(buf, false, {
-        on_lines = function(_, _, _, first_idx, last_idx, last_update_idx)
+        on_lines = function(_, _, _, first_idx, last_idx)
             -- remove extmark if the line it was on has changed
             local extmark = get_valid_extmark()
             if extmark ~= nil and extmark[1] >= first_idx and extmark[1] < last_idx then
@@ -123,8 +123,11 @@ function M.set_buf(buf)
     state.autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
         buffer = buf,
         callback = function(_)
-            vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
-            state.extmark_id = nil
+            if state.extmark_id ~= nil then
+                vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
+                state.extmark_id = nil
+                state.extmark_line = nil
+            end
             state.current_buf = nil
             state.autocmd_id = nil
         end,
