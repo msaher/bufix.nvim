@@ -332,14 +332,14 @@ local function jump_extmark(step)
     return jump(step, start)
 end
 
-function M.next_error()
+function M.goto_next()
     local res = jump_extmark(1)
     if res ~= nil then
         M.enter(res.data, res.row)
     end
 end
 
-function M.prev_error()
+function M.goto_prev()
     local res = jump_extmark(-1)
     if res ~= nil then
         M.enter(res.data, res.row)
@@ -358,11 +358,11 @@ local function move_to(step)
 
 end
 
-function M.move_to_next_error()
+function M.move_to_next()
     move_to(1)
 end
 
-function M.move_to_prev_error()
+function M.move_to_prev()
     move_to(-1)
 end
 
@@ -476,8 +476,8 @@ end
 function M.set_default_keymaps(buf)
     vim.keymap.set("n", "<CR>", M.goto_error_under_cursor, { buffer = buf })
     vim.keymap.set("n", "<leader><CR>", M.display_error_under_cursor, { buffer = buf })
-    vim.keymap.set("n", "gj", M.move_to_next_error, { buffer = buf })
-    vim.keymap.set("n", "gk", M.move_to_prev_error, { buffer = buf })
+    vim.keymap.set("n", "gj", M.move_to_next, { buffer = buf })
+    vim.keymap.set("n", "gk", M.move_to_prev, { buffer = buf })
     vim.keymap.set("n", "]]", M.move_to_next_file, { buffer = buf })
     vim.keymap.set("n", "[[", M.move_to_prev_file, { buffer = buf })
 end
