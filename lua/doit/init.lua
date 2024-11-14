@@ -27,3 +27,4 @@ function M.prompt_for_cmd(opts)
     end
 end
 
+return M
