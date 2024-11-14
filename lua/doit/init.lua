@@ -2,7 +2,7 @@ local M = {}
 
 M.task = require("doit.task").new() -- default task. Covers 99% of use cases
 
--- completion function
+-- completion function for prompt_for_cmd()
 -- credit goes to https://github.com/ej-shafran/compile-mode.nvim
 vim.cmd[[
 function! DoitInputComplete(ArgLead, CmdLine, CursorPos)
