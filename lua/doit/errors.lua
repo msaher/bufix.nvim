@@ -30,6 +30,26 @@ local highlights = {
 
 -- I'm hesitant to implement this feature because users might find it confusing
 
+-- TODO: try to use sum types for added safety to prevent mistakes
+-- merge extmark and extmark_line into a single tuple
+-- merge current_buf and autocmd_id into a single tuple
+-- rust inspired psuedo code:
+-- enum State {
+--  Initial,
+--  withBuf(current_buf, autocmd_id),
+--  WithExtmark(current_buf, autocmd_id, extmark_id, extmark_line)
+-- }
+-- maybe a type annotation like this could help @field type "Initial" | "WithBuf" | "WithExtmark"
+-- and then a few helper functions for state transitions
+
+---@class State
+---@field current_buf? number
+---@field extmark_id? number
+---@field extmark_line? string
+---@field autocmd_id? number
+---@field ns_id number
+
+---@type State
 local state = {
     current_buf = nil,
     extmark_id = nil,
