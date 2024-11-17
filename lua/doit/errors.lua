@@ -172,9 +172,9 @@ function M.set_buf(buf)
     local buftype = vim.api.nvim_get_option_value('buftype', { buf = buf })
     if buftype == 'terminal' then
         attach_term(buf)
-    else
-        attach(buf)
     end
+
+    attach(buf)
 
 end
 
