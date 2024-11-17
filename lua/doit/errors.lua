@@ -61,13 +61,13 @@ local state = {
 ---@param buf number
 ---@param line string
 ---@param idx number
-function M.highlight_line(buf, line, idx)
+local function highlight_line(buf, line, idx)
+
     local cap = M.match(line)
     if cap == nil then
+        vim.api.nvim_buf_clear_namespace(buf, -1, idx, idx+1)
         return
     end
-
-    buf = buf or state.current_buf
 
     for k, span in pairs(cap) do
         local byte_start = vim.str_byteindex(line, span.start - 1)
@@ -91,6 +91,20 @@ local function get_valid_extmark()
 
     return extmark
 end
+
+local function attach(buf)
+    vim.api.nvim_buf_attach(buf, false, {
+        on_lines = function(_, _, _, first_idx, last_idx, last_update_idx)
+            local lines = vim.api.nvim_buf_get_lines(buf, first_idx, last_update_idx, false)
+            for i, line in ipairs(lines) do
+                i = i-1
+                highlight_line(buf, line, first_idx+i)
+            end
+            vim.print(lines)
+        end
+    })
+end
+
 
 ---auto remove the extmark when :terminal redraws
 ---@param buf number
@@ -158,6 +172,8 @@ function M.set_buf(buf)
     local buftype = vim.api.nvim_get_option_value('buftype', { buf = buf })
     if buftype == 'terminal' then
         attach_term(buf)
+    else
+        attach(buf)
     end
 
 end

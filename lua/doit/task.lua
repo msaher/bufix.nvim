@@ -23,11 +23,6 @@ local function pty_append_to_buf(buf, first_item, data, line_count)
 
     vim.schedule(function()
         vim.api.nvim_buf_set_lines(buf, -1, -1, true, data)
-
-        -- highlight captures
-        for i, line in ipairs(data) do
-            errors.highlight_line(buf, line, line_count + i - 1)
-        end
     end)
 
     return first_item, #data
