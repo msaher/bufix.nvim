@@ -528,7 +528,7 @@ end
 
 function M.set_default_keymaps(buf)
     vim.keymap.set("n", "<CR>", M.goto_error_under_cursor, { buffer = buf })
-    vim.keymap.set("n", "<leader><CR>", M.display_error_under_cursor, { buffer = buf })
+    vim.keymap.set("n", "g<CR>", M.display_error_under_cursor, { buffer = buf })
     vim.keymap.set("n", "gj", M.move_to_next, { buffer = buf })
     vim.keymap.set("n", "gk", M.move_to_prev, { buffer = buf })
     vim.keymap.set("n", "]]", M.move_to_next_file, { buffer = buf })
