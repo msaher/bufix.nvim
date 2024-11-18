@@ -1,14 +1,11 @@
-local errors = require("doit.errors")
-
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
 ---@param first_item string
 ---@param data string[]
----@param line_count number
 ---@return string
 ---@return number
-local function pty_append_to_buf(buf, first_item, data, line_count)
+local function pty_append_to_buf(buf, first_item, data)
     -- as per :h channel-lines, the first and last items may be partial when
     -- jobstart is passed the pty = true option.
     -- We set the first item as the first element and return the last item
@@ -91,12 +88,12 @@ local function create_task_buf(task, keymaps)
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
     if keymaps then
-        errors.set_default_keymaps(buf)
+        require("doit.errors").set_default_keymaps(buf)
         vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
     end
 
     -- set buf as error buffer
-    errors.set_buf(buf)
+    require("doit.errors").set_buf(buf)
 
     return buf
 end
@@ -136,7 +133,7 @@ function Task:_jobstart(cmd, buf, cwd, notify)
         stdout_buffered = false, -- we'll buffer stdout ourselves
         on_stdout = function(_, data)
             local added
-            first_item, added = pty_append_to_buf(buf, first_item, data, line_count)
+            first_item, added = pty_append_to_buf(buf, first_item, data)
             line_count = line_count + added
         end,
 
