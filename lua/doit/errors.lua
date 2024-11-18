@@ -137,6 +137,10 @@ function M.set_buf(buf)
         return
     end
 
+    if buf == 0 then
+        buf = vim.api.nvim_get_current_buf()
+    end
+
     if not vim.api.nvim_buf_is_valid(buf) then
         error(string.format("buffer %d is not a valid buffer", buf))
     end
