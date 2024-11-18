@@ -77,18 +77,18 @@ local function get_valid_extmark()
 end
 
 ---Used for highlighting
-local function attach(buf)
+local function attach_highlights(buf)
 
     -- we process the entire buffer manually first.
     -- because nvim_buf_attach()'s second argument for sending the entire buffer
     -- is ignored in lua
-    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    for i, line in ipairs(lines) do
+    local all_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    for i, line in ipairs(all_lines) do
         highlight_line(buf, line, i-1)
     end
 
     vim.api.nvim_buf_attach(buf, false, {
-        on_lines = function(_, _, _, first_idx, last_idx, last_update_idx)
+        on_lines = function(_, _, _, first_idx, _, last_update_idx)
             vim.print({first_idx = first_idx, last_idx = first_idx, last_update_idx = last_update_idx})
             local lines = vim.api.nvim_buf_get_lines(buf, first_idx, last_update_idx, false)
             for i, line in ipairs(lines) do
