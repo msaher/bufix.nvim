@@ -101,10 +101,14 @@ end
 
 
 ---auto remove the extmark when :terminal redraws
+---Only makes sense when buf is state.current_buf
 ---@param buf number
 local function attach_term(buf)
     vim.api.nvim_buf_attach(buf, false, {
         on_lines = function(_, _, _, first_idx, last_idx)
+            if buf ~= state.current_buf then
+                return
+            end
             -- remove extmark if the line it was on has changed
             local extmark = get_valid_extmark()
             if extmark ~= nil and extmark[1] >= first_idx and extmark[1] < last_idx then
@@ -123,6 +127,25 @@ local function attach_term(buf)
     })
 end
 
+local function attach(buf)
+    attach_highlights(buf)
+    local buftype = vim.api.nvim_get_option_value('buftype', { buf = buf })
+    if buftype == 'terminal' then
+        attach_term(buf)
+    end
+end
+
+---@param buf number
+function M.regsiter_buf(buf)
+    if state.current_buf == nil then
+        M.set_buf(buf)
+    elseif not vim.b[buf].doit_errorbuf then
+        buf = (buf == 0) and vim.api.nvim_get_current_buf() or buf
+        vim.b[buf].doit_errorbuf = true
+        attach(buf)
+    end
+end
+
 ---@param buf number
 function M.set_buf(buf)
     -- dont do anything if the same buf is passed
@@ -130,10 +153,7 @@ function M.set_buf(buf)
         return
     end
 
-    if buf == 0 then
-        buf = vim.api.nvim_get_current_buf()
-    end
-
+    buf = (buf == 0) and vim.api.nvim_get_current_buf() or buf
     if not vim.api.nvim_buf_is_valid(buf) then
         error(string.format("buffer %d is not a valid buffer", buf))
     end
@@ -141,14 +161,15 @@ function M.set_buf(buf)
     if state.extmark_id ~= nil then
         vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
         state.extmark_id = nil
+        state.extmark_line = nil
     end
-
-    state.current_buf = buf
 
     -- remove previous autocmd if it exists
     if state.autocmd_id ~= nil then
         vim.api.nvim_del_autocmd(state.autocmd_id)
     end
+
+    state.current_buf = buf
 
     -- clear state.current_buf when the buffer gets deleted
     state.autocmd_id = vim.api.nvim_create_autocmd({ "BufDelete" }, {
@@ -167,7 +188,7 @@ function M.set_buf(buf)
             local next_buf = vim.iter(vim.api.nvim_list_bufs())
                 :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
                 :filter(function(b) return vim.b[b].doit_errorbuf == true end)
-                :find(function(b) return state.curent_buf ~= b end)
+                :find(function(b) return state.current_buf ~= b end)
 
             if next_buf ~= nil then
                 M.set_buf(next_buf)
@@ -178,16 +199,8 @@ function M.set_buf(buf)
         once = true,
     })
 
-    -- mark as error buffer
     vim.b[buf].doit_errorbuf = true
-
-    local buftype = vim.api.nvim_get_option_value('buftype', { buf = buf })
-    if buftype == 'terminal' then
-        attach_term(buf)
-    end
-
     attach(buf)
-
 end
 
 local function get_or_make_error_win()
