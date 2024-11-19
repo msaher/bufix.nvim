@@ -128,7 +128,7 @@ M.cmake_info = Ct(
     Cg_span(Cc"info", "type") * -- type is always info
     P"  " * (P" *"^-1) *  -- match two spaces and optionally a space with an asterisk
     Cg_span((1 - S" :")^1, "filename") * P":" *
-    Cg_span(digits/tonumber, "line")*I
+    Cg_span(digits/tonumber, "line")
 )
 
 M.comma = Ct(
@@ -224,7 +224,7 @@ M.irix = Ct(
         ":"
     )^-1 * P(" ")^-1 *
 
-    Cg_span(except",\": \n\t"^1, "filename") *I*
+    Cg_span(except",\": \n\t"^1, "filename") *
 
     (P", line " + P":") * P(" ")^-1 * Cg_span(digits / tonumber, "line")
 )
@@ -271,7 +271,7 @@ M.gcc_include = Ct(
 
 M["ruby_Test::Unit"] = Ct(
     blank * P"["^-1 *
-    Cg_span(except(":")^1, "filename") * ":" *
+    Cg_span(except(":{(")^1, "filename") * ":" *
     Cg_span(digits / tonumber, "line") * ":" *
     P"in"
 )
@@ -345,7 +345,7 @@ M.cucumber = Ct(
         "      " +
         anywhere(" # ")
     ) *
-    Cg_span(except("(:")^1, "filename") * ":" *
+    Cg_span(except(" (:")^1, "filename") * ":" *
     Cg_span(digits / tonumber, "line")
 
 )
