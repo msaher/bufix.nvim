@@ -199,8 +199,10 @@ function M.set_buf(buf)
         once = true,
     })
 
-    vim.b[buf].doit_errorbuf = true
-    attach(buf)
+    if not vim.b[buf].doit_errorbuf then
+        vim.b[buf].doit_errorbuf = true
+        attach(buf)
+    end
 end
 
 local function get_or_make_error_win()
