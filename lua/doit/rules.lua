@@ -127,8 +127,8 @@ M.cmake = Ct(
 M.cmake_info = Ct(
     Cg_span(Cc"info", "type") * -- type is always info
     P"  " * (P" *"^-1) *  -- match two spaces and optionally a space with an asterisk
-    Cg_span((1 - P":")^1, "filename") * P":" *
-    Cg_span(digits/tonumber, "line")
+    Cg_span((1 - S" :")^1, "filename") * P":" *
+    Cg_span(digits/tonumber, "line")*I
 )
 
 M.comma = Ct(
