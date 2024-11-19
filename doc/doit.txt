@@ -1,0 +1,194 @@
+*doit* 				 A command runner inspired by emacs `M-x compile`
+
+================================================================================
+`prompt_for_cmd(opts)`					   *doit.prompt_for_cmd*
+
+Prompts the user for a command to run in the default task |doit-task|.
+
+    Parameters: ~
+      • {opts}   See |doit-task-run|
+
+================================================================================
+Task                                                                 *doit.task*
+
+A task object represents a process that may or may not be running. In 99% of
+cases you don't have to create a task yourself because a default one was
+created for you. You can access it like this: >lua
+    local task = require("doit").task
+    task:run("echo hello world")
+    -- ...
+    task:rerun()
+<
+If you'd like to run multiple tasks, then navigate to the task buffer, and
+rename it using `:file` |:file_f|.
+
+You can create a task object if you really want to >lua
+    local task = require("doit.task").new()
+    task:run("echo hello I made a task object")
+<
+Tasks do not run in a |:terminal|, which makes them avoid terminal reflow
+issues at the cost of interactivity.
+
+task:run({cmd}, {opts})                                          *doit.task:run*
+    Runs {cmd} as a task.
+
+    Parameters: ~
+      • {cmd}     string or list of strings. If its a string, then it runs it
+                  in 'shell' just like |jobstart|.
+      • {opts}    Optional parameters.
+                  • cwd : Working directory of the task. If not set, then it
+                    uses the working directory of the current window.
+                  • bufname : Buffer name of the task. Defaults to "*Task*"
+                  • enable_default_keymaps : Defaults to true. See keymaps
+                    below.
+                  • kill_current : Don't prmopt if a task is already running,
+                    but kill it instead. Defaults to false.
+                  • notify : how to notify when the task terminates (uses
+                    |vim.notify()|). Possible values:
+                      • "always" : Always notify
+                      • "on_error" : only notify when the task exists
+                        abnormally
+                      • "never" : never notify (used by default)
+                  • open_win : Lua callback that returns the window number
+                    that the task buffer will be placed in. accepts:
+                    • buf : buffer number of the task buffer
+                    • task : the task object.
+                  • on_buf_create : Lua callback that runs after the task
+                    buffer is created. Accepts
+                    • buf : buffer number of the task buffer
+                    • task : the task object.
+
+    When default keymaps are enabled. These buffer local keymaps
+    are set on the task buffer: >lua
+        local e = require("doit.errors")
+        vim.keymap.set("n", "<CR>", e.goto_error_under_cursor, { buffer = buf })
+        vim.keymap.set("n", "g<CR>", e.display_error_under_cursor, { buffer = buf })
+        vim.keymap.set("n", "gj", e.move_to_next, { buffer = buf })
+        vim.keymap.set("n", "gk", e.move_to_prev, { buffer = buf })
+        vim.keymap.set("n", "]]", e.move_to_next_file, { buffer = buf })
+        vim.keymap.set("n", "[[", e.move_to_prev_file, { buffer = buf })
+        vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
+    <
+
+If you'd like to use your own mappings, set "enable_default_keymaps" to false
+and add your own mappings in "on_buf_create" >lua
+    task:run("ls -l", {
+        enable_default_keymaps = false,
+        on_buf_create = function(buf, task)
+            -- your mappings here
+            vim.keymap.set("n", "q", "<CMD>:bd<CR>", { buffer = buf })
+            vim.keymap.set("n", "gr", function() task:rerun() end, { buffer = buf})
+        end,
+    })
+<
+
+task:rerun()                                                   *doit.task:rerun*
+
+Reruns the last task.
+
+================================================================================
+Errors                                                             *doit.errors*
+
+`require("doit.errors")` provides an interface that allows any buffer to act
+like a |quickfix| list. |doit.task| internally use this interface, and other
+plugins can make use of it too. All they need to do is call
+"errors.register_buf()" or "errors.set_buf()". |doit.errors.set_buf|,
+|doit.errors.register_buf|.
+
+|:terminal| buffers can also register themselves as error buffers. If you
+always want terminal buffers to register as error buffers, then add this
+autocmd >lua
+    vim.api.nvim_create_autocmd("TermOpen", {
+        callback = function(ctx)
+            require("doit.errors").register_buf(ctx.buf)
+            require("doit.errors").set_default_keymaps(ctx.buf)
+        end,
+    })
+<
+
+errors.goto_next()                                       *errors.doit.goto_next*
+    Go to the next error
+
+errors.goto_prev()                                       *errors.doit.goto_prev*
+    Go to the previous error
+
+errors.goto_next_file()                             *errors.doit.goto_next_file*
+    Go to the next error
+
+errors.goto_prev_file()                             *errors.doit.goto_prev_file*
+    Go to the prevous error
+
+errors.move_to_next()                                 *errors.doit.move_to_next*
+    Move cursor to next error line
+
+errors.move_to_prev()                                 *errors.doit.move_to_prev*
+    Move cursor to previous error line
+
+errors.goto_error_under_cursor()           *doit.errors.goto_error_under_cursor*
+    Go to the error under the cursor
+
+errors.display_error_under_cursor()     *doit.errors.display_error_under_cursor*
+    Visit file containg the error, but do focus on its window
+
+errors.set_default_keymaps({buf})              *doit.errors.set_default_keymaps*
+    Sets these keymaps: >lua
+        vim.keymap.set("n", "<CR>", errors.goto_error_under_cursor,     { buffer = buf })
+        vim.keymap.set("n", "g<CR>", errors.display_error_under_cursor, { buffer = buf })
+        vim.keymap.set("n", "gj", errors.move_to_next,                  { buffer = buf })
+        vim.keymap.set("n", "gk", errors.move_to_prev,                  { buffer = buf })
+        vim.keymap.set("n", "]]", errors.move_to_next_file,             { buffer = buf })
+        vim.keymap.set("n", "[[", errors.move_to_prev_file,             { buffer = buf })
+    <
+    Good idea to use this in combination with |doit.errors.register_buf|
+
+errors.set_buf({buf})                                      *doit.errors.set_buf*
+    Makes {buf} the current error buffer.
+
+    functions that operate on the current error buffer : ~
+      • errors.goto_error_under_cursor()
+      • errors.display_error_under_cursor()
+      • errors.move_to_next()
+      • errors.move_to_prev()
+      • errors.move_to_next_file()
+      • errors.move_to_prev_file()
+
+errors.register_buf({buf})                            *doit.errors.register_buf*
+    If there's no error buffer, then sets {buf} as the error buffer.
+    Otherwise, it adds error highlighting and sets `b:doit_errorbuf = true`.
+    When the current error buffer gets deleted, {buf} becomes a potential
+    candidate to be the next error buffer.
+
+================================================================================
+Highlights                                           *doit-hl* *doit-highlights*
+
+The following highlights are provided:
+
+DoitTaskSuccess
+    highlight group for when the task finishes successfully
+
+DoitTaskAbnormal
+    highlight group for when task exists abnormally
+
+DoitFilename
+  highlight group for filename
+
+DoitLine
+  highlight group for line number
+
+DoitLineEnd
+  highlight group for ending line number
+
+DoitCol
+  highlight group for column number
+
+DoitColEnd
+  highlight group for ending column number
+
+DoitType
+  highlight group for error type
+
+DoitCurrent
+  highlight group signcolumn arrow pointing at current error
+
+==============================================================================
+ vim:tw=78:ts=8:sw=4:sts=4:et:ft=help:norl:
