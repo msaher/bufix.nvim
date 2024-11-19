@@ -89,12 +89,10 @@ local function attach_highlights(buf)
 
     vim.api.nvim_buf_attach(buf, false, {
         on_lines = function(_, _, _, first_idx, _, last_update_idx)
-            vim.print({first_idx = first_idx, last_idx = first_idx, last_update_idx = last_update_idx})
             local lines = vim.api.nvim_buf_get_lines(buf, first_idx, last_update_idx, false)
             for i, line in ipairs(lines) do
                 highlight_line(buf, line, first_idx+i-1)
             end
-            vim.print(lines)
         end
     })
 end
