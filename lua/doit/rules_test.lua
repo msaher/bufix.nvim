@@ -181,6 +181,8 @@ busted.describe("error patterns", function()
         -- does not match timestamps
         { rule = "gnu", line = "Task finished at Wed Nov 6 20:00:02", want = nil},
 
+        { rule ="gnu", line = "tests-clean.el:94:    (lua \"/usr/local/bin/lua: core/database.lua:20: assertion failed!\nstack traceback:\n\t\" 21 nil 20 \"core/database.lua\"", want = {line = 94, filename = "tests-clean.el"}},
+
         { rule = "cucumber", line = "Scenario: undefined step  # features/cucumber.feature:3", want = {line = 3, filename = "features/cucumber.feature"}},
         { rule = "cucumber", line = "      /home/gusev/.rvm/foo/bar.rb:500:in `_wrap_assertion'", want = {line = 500, filename = "/home/gusev/.rvm/foo/bar.rb"}},
 
