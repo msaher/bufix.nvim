@@ -306,7 +306,7 @@ end
 ---@param data Capture
 ---@param row number 0-base
 ---@param opts? { focus: boolean }
-function M.enter(data, row, opts)
+local function enter(data, row, opts)
     opts = opts or {}
 
     local filename = data.filename.value
@@ -346,7 +346,7 @@ end
 ---@param data Capture
 ---@param row number 0-base
 function M.display(data, row)
-    M.enter(data, row, { focus = false})
+    enter(data, row, { focus = false})
 end
 
 ---@param step number
@@ -404,14 +404,14 @@ end
 function M.goto_next()
     local res = jump_extmark(1)
     if res ~= nil then
-        M.enter(res.data, res.row)
+        enter(res.data, res.row)
     end
 end
 
 function M.goto_prev()
     local res = jump_extmark(-1)
     if res ~= nil then
-        M.enter(res.data, res.row)
+        enter(res.data, res.row)
     end
 end
 
@@ -454,7 +454,7 @@ function M.goto_error_under_cursor()
     local res = get_capture_under_cursor()
 
     if res ~= nil then
-        M.enter(res.data, res.row)
+        enter(res.data, res.row)
     end
 
 end
@@ -517,7 +517,7 @@ function M.goto_file(step)
     if extmark == nil then
         local res = jump_extmark(step)
         if res ~= nil then
-            M.enter(res.data, res.row)
+            enter(res.data, res.row)
             return
         end
     end
@@ -529,7 +529,7 @@ function M.goto_file(step)
 
     local res = jump_to_file(step, row + step, skip_file)
     if res ~= nil then
-        M.enter(res.data, res.row)
+        enter(res.data, res.row)
     end
 
 end
