@@ -270,6 +270,38 @@ local function get_or_make_target_win(buf)
 
 end
 
+---@param row number
+local function set_extmark(row)
+    if state.current_buf == nil then
+        return
+    end
+
+    -- clean up previous extmark
+    if state.extmark_id ~= nil then
+        vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
+    end
+
+    state.extmark_id = vim.api.nvim_buf_set_extmark(state.current_buf, state.ns_id, row, 0, {
+        sign_text = ">",
+        sign_hl_group = "DoitCurrent",
+        invalidate = true, -- invalidate the extmark if the line gets deleted
+    })
+
+    state.extmark_line = vim.api.nvim_buf_get_lines(state.current_buf, row, row+1, true)[1]
+
+    local win = get_or_make_error_win()
+    vim.api.nvim_win_set_cursor(win, { row+1, 0 })
+
+    -- FIXME: would be nice to center the the window around the cursor if its currently
+    -- focused on the last visible line. However, this needs scroll information
+    -- which neovim currently doesn't expose
+    -- vim.api.nvim_win_call(win, function()
+    --     vim.cmd.normal({"zz", bang = true })
+    -- end)
+
+end
+
+
 -- TODO: make this private
 ---@param data Capture
 ---@param row number 0-base
@@ -308,44 +340,13 @@ function M.enter(data, row, opts)
     pcall(vim.api.nvim_win_set_cursor, win, { line, col, })
 
 
-    M.set_extmark(row)
+    set_extmark(row)
 end
 
 ---@param data Capture
 ---@param row number 0-base
 function M.display(data, row)
     M.enter(data, row, { focus = false})
-end
-
----@param row number
-function M.set_extmark(row)
-    if state.current_buf == nil then
-        return
-    end
-
-    -- clean up previous extmark
-    if state.extmark_id ~= nil then
-        vim.api.nvim_buf_del_extmark(state.current_buf, state.ns_id, state.extmark_id)
-    end
-
-    state.extmark_id = vim.api.nvim_buf_set_extmark(state.current_buf, state.ns_id, row, 0, {
-        sign_text = ">",
-        sign_hl_group = "DoitCurrent",
-        invalidate = true, -- invalidate the extmark if the line gets deleted
-    })
-
-    state.extmark_line = vim.api.nvim_buf_get_lines(state.current_buf, row, row+1, true)[1]
-
-    local win = get_or_make_error_win()
-    vim.api.nvim_win_set_cursor(win, { row+1, 0 })
-
-    -- FIXME: would be nice to center the the window around the cursor if its currently
-    -- focused on the last visible line. However, this needs scroll information
-    -- which neovim currently doesn't expose
-    -- vim.api.nvim_win_call(win, function()
-    --     vim.cmd.normal({"zz", bang = true })
-    -- end)
-
 end
 
 ---@param step number
