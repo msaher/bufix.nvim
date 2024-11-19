@@ -294,17 +294,17 @@ M.gnu = Ct({
     data = V'filename' * ":" * V'location' * P":"^-1 * blank * V'type'^-1,
 
     yapping = blank * (P"in " + P"from" + "|"),
-    program = (R("AZ", "az") * (R("AZ", "az", "09") + S".-_")^1),
+    program = (R("AZ", "az") * (R("AZ", "az") + S".-_")^1),
 
 
     -- filenames cannot start with a digit
-    has_nondigit = R"09"^0 * (1-(R"09"+"\n")),
+    non_digit = (1-(R"09"+"\n")),
 
     -- if part of the filename contains a space, ensure the next character is NOT dash
-    -- or slash or newline. This rejects rare cases.
+    -- or slash or newline or a another space. This rejects rare cases.
     -- Further, ensure that what follows is NOT a timestamp.
     -- This reject lines that contains "HH:MM:SS" where "MM" is interpreted as a line number
-    with_space = " " * -V'timestamp' * except("-/\n"),
+    with_space = " " * -V'timestamp' * except(" -/\n"),
 
     -- If part of the filename contains a colon, then esure what follows is NOT
     -- a location nor a colon
@@ -313,7 +313,7 @@ M.gnu = Ct({
     -- normal file content
     with_sanity = except(" :\n"),
 
-    filename = Cg_span(V'has_nondigit' * (V'with_space' + V'with_colon' + V'with_sanity')^0, "filename"),
+    filename = Cg_span(V'non_digit' * (V'with_space' + V'with_colon' + V'with_sanity')^0, "filename"),
 
     -- save some typing
     nums = R("09")^1 / tonumber,
