@@ -516,7 +516,7 @@ function M.move_to_prev_file()
     move_to_file(-1)
 end
 
-function M.goto_file(step)
+local function goto_file(step)
     local extmark = get_valid_extmark()
 
     if extmark == nil then
@@ -540,11 +540,11 @@ function M.goto_file(step)
 end
 
 function M.goto_next_file()
-    return M.goto_file(1)
+    return goto_file(1)
 end
 
 function M.goto_prev_file()
-    return M.goto_file(-1)
+    return goto_file(-1)
 end
 
 function M.set_default_keymaps(buf)
