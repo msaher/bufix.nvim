@@ -58,14 +58,14 @@ local M = {}
 
 M.absoft = Ct(
     ((S"eE" * P"rror on") + (S"wW"*P"arning on"))^-1 * blank *
-        S"Ll" * P"ine" * blank *
-        Cg_span(digits / tonumber, "line") * blank *
-        P"of" * blank *
-        dquote^-1 * Cg_span(filename, "filename") * dquote^-1
+    S"Ll" * P"ine" * blank *
+    Cg_span(digits / tonumber, "line") * blank *
+    P"of" * blank *
+    dquote^-1 * Cg_span(filename, "filename") * dquote^-1
 )
 
 M.ada = Ct(
-    (P"warning: " * Cg_span(Cc"warning", "type"))^-1 *
+    (P"warning: " * Cg_span(Cc"W", "type"))^-1 *
     (any-P" at ")^0 * P" at " * Cg_span(filename, "filename") *
     P(":") * Cg_span(digits / tonumber, "line") * -1
 )
@@ -88,7 +88,7 @@ M.ant = Ct({
         P":" * Cg_span(digits / tonumber, "line_end") *
         P":" * Cg_span(digits / tonumber, "col_end"))^-1 *
         -- optional " warning" keyword. If it exists,
-        (":" * P" warning" * Cg_span(Cc("warning"), "type"))^-1,
+        (":" * P" warning" * Cg_span(Cc"W", "type"))^-1,
 
 
     bracket_part = blank * P"[" * (any - S"] \n")^1 * P"]" * blank,
@@ -100,7 +100,7 @@ M.bash = Ct(
 
 M.borland = Ct(
     -- check type
-    (P"Error" + ("Warning" * Cg_span(Cc("warning"), "type"))) * " " *
+    (P"Error" + ("Warning" * Cg_span(Cc"W", "type"))) * " " *
 
     ((S"FEW"*digits) * blank)^-1 *
 
@@ -119,13 +119,13 @@ M.python_tracebacks_and_caml = Ct(
 )
 
 M.cmake = Ct(
-    P"CMake " * (P"Error" + P"Warning" * Cg_span(Cc"warning", "type")) *
+    P"CMake " * (P"Error" + P"Warning" * Cg_span(Cc"W", "type")) *
     P" at " * Cg_span(filename, "filename") * P":" *
     Cg_span(digits/tonumber, "line")
 )
 
 M.cmake_info = Ct(
-    Cg_span(Cc"info", "type") * -- type is always info
+    Cg_span(Cc"I", "type") * -- type is always info
     P"  " * (P" *"^-1) *  -- match two spaces and optionally a space with an asterisk
     Cg_span((1 - S" :")^1, "filename") * P":" *
     Cg_span(digits/tonumber, "line")
@@ -135,13 +135,13 @@ M.comma = Ct(
     dquote * Cg_span(filename, "filename") * dquote *
     P", line " * Cg_span(digits/tonumber, "line") *
     ((S".(" + P" pos ") * Cg_span(digits/tonumber, "col") * P")"^-1)^-1 *
-    S":.,; (-" * blank * Cg_span("warning", "type")^-1
+    S":.,; (-" * blank * (P"warning" * Cg_span(Cc"W", "type"))^-1
 )
 
- -- Must be before edg-1, so that MSVC's longer messages are
- -- considered before EDG.
- -- The message may be a "warning", "error", or "fatal error" with
- -- an error code, or "see declaration of" without an error code.
+-- Must be before edg-1, so that MSVC's longer messages are
+-- considered before EDG.
+-- The message may be a "warning", "error", or "fatal error" with
+-- an error code, or "see declaration of" without an error code.
 M.msft = Ct(
     -- Optional number followed by ">"
     (digits * P(">"))^-1 *
@@ -155,7 +155,7 @@ M.msft = Ct(
     blank * P(":") * blank *
     -- optional "see declaration"
     (P("see declaration") +
-    P("warning") * Cg_span(Cc("warning"), "type"))^-1 -- optional warning
+    P("warning") * Cg_span(Cc"W", "type"))^-1 -- optional warning
     -- + P("error") * -[[ Cg_span(Cc("error"), "type") --]])^-1 -- optional error
 )
 
@@ -163,7 +163,7 @@ M.edg_1 = Ct(
     Cg_span((except(" (\n"))^1, "filename") *
     "(" * Cg_span(digits / tonumber, "line") * ")" *
     ": " *
-    ("error" + Cg_span("warning", "type") + "remark" * Cg_span(Cc"info", "type"))  -- error/warning/remark
+    (P"error" + P"warning" * Cg_span(Cc"W", "type") + "remark" * Cg_span(Cc"I", "type"))  -- error/warning/remark
 )
 
 M.edg_2 = Ct(
@@ -177,23 +177,23 @@ M.epc = Ct(
 )
 
 M.ftnchek = Ct(
-    ("Warning " * Cg_span(Cc"warning", "type") * (1-P"line")^1)^-1 * -- optional warning
+    ("Warning " * Cg_span(Cc"W", "type") * (1-P"line")^1)^-1 * -- optional warning
     anywhere("line") * S" \n" * Cg_span(digits/tonumber, "line") * S" \n" *
     ("col " * Cg_span(digits/tonumber, "col") * S" \n")^-1 * -- optional column
     "file " * Cg_span(except(" :;\n")^1, "filename")
 )
 
 M.gradle_kotlin = Ct(
-    (P"w"*Cg_span(Cc"warning", "type"))^-1 * except(":")^-1 * ": " *
-        P"file://" * Cg_span(except":"^1, "filename") *
-        ":" * Cg_span(digits/tonumber, "line") *
-        ":" * Cg_span(digits/tonumber, "col")
+    (P"w"*Cg_span(Cc"W", "type"))^-1 * except(":")^-1 * ": " *
+    P"file://" * Cg_span(except":"^1, "filename") *
+    ":" * Cg_span(digits/tonumber, "line") *
+    ":" * Cg_span(digits/tonumber, "col")
 )
 
 M.iar = Ct(
     dquote * Cg_span((1 - dquote)^0, "filename") * dquote *
     "," * Cg_span(digits / tonumber, "line") * blank *
-    (P("Warning") * Cg_span(Cc("warning"), "type"))^-1
+    (P("Warning") * Cg_span(Cc"W", "type"))^-1
 )
 
 M.ibm = Ct(
@@ -201,8 +201,8 @@ M.ibm = Ct(
     "(" * Cg_span(digits / tonumber, "line") * -- row number
     ":" * Cg_span(digits / tonumber, "col") * -- column number
     ") :" *
-    -- optional warning or ifnormation
-    (Cg_span("warning", "type") + Cg_span("info", "type"))^-1
+    -- optional warning or information
+    (P"warning" * Cg_span(Cc"W", "type") + P"info" * Cg_span(Cc"I", "type"))^-1
 )
 
 -- NOTE: In htop the uptime part matches (same behaviour as emacs)
@@ -217,8 +217,8 @@ M.irix = Ct(
         (
         S"Ss"*"evere"                              +
         S"Ee"*"rror"                               +
-        S"Ww"*"arning" * Cg_span(Cc("warning"), "type") +
-        S"Ii"*"nfo"    * Cg_span(Cc("info"), "type")
+        S"Ww"*"arning" * Cg_span(Cc"W", "type") +
+        S"Ii"*"nfo"    * Cg_span(Cc"I", "type")
         ) *
 
         (" " * digit^1)^-1 * -- optional numeric code after error type
@@ -232,7 +232,7 @@ M.irix = Ct(
 
 
 M.java = Ct(
-    ((S(" \t")^1 * "at ") + ("==" * digits * "==" * blank * ("at" + "by" * Cg_span(Cc"warning", "type"))))^1 * blank *
+    ((S(" \t")^1 * "at ") + ("==" * digits * "==" * blank * ("at" + "by" * Cg_span(Cc"W", "type"))))^1 * blank *
     -- search for (filename:line) anywhere
     anywhere("(" * Cg_span(except("):")^0, "filename") * ":" * Cg_span(digits/tonumber, "line") * ")" * -1)
 )
@@ -246,18 +246,18 @@ M.jikes_file = Ct(
 M.jikes_line = Ct(
     blank * Cg_span(digits/tonumber, "line") * P"." * blank * rest_of_line * eol *
     blank * P"<" * P"-"^0 * P">" * eol *
-    P"*** " * (P"Error" + P"Warning" * Cg_span(Cc"warning", "type"))
+    P"*** " * (P"Error" + P"Warning" * Cg_span(Cc"W", "type"))
 )
 
 
 M.maven = Ct(
-    ("[ERROR]" + "[WARNING]"*Cg_span(Cc"warning", "type") + "INFO"*Cg_span(Cc"info", "type"))^-1 * blank *
+    ("[ERROR]" + "[WARNING]"*Cg_span(Cc"W", "type") + "INFO"*Cg_span(Cc"I", "type"))^-1 * blank *
     Cg_span(except(" \n[:")^1, "filename") * ":" *
     "[" * Cg_span(digits/tonumber, "line") * "," * Cg_span(digits/tonumber, "col") * "]"
 )
 
 M.clang_include = Ct(
-    Cg_span(Cc"info", "type") * -- always info
+    Cg_span(Cc"I", "type") * -- always info
     P"In file included from " * Cg_span(except(":\n")^1, "filename") * ":" * Cg_span(digits/tonumber, "line") * ":" * -1
 )
 
@@ -278,7 +278,7 @@ M["ruby_Test::Unit"] = Ct(
 )
 
 M.gmake = Ct(
-    Cg_span(Cc"info", "type") * -- always info
+    Cg_span(Cc"I", "type") * -- always info
     except(":")^1 * ":" * " *** " *
     "[" *
     Cg_span(except(":")^1, "filename") * ":" *
@@ -335,8 +335,8 @@ M.gnu = Ct({
     -- not_timestamp = -(R"09" * R"09"),
     type = V'warning' + V'info' + V'error',
 
-    warning = (P"FutureWarning" + P"RuntimeWarning" + P"W" + S("Ww")*P"arning") * Cg_span(Cc"warning", "type"),
-    info = ((S"Ii"*"nfo" * (P"rmation" + P"l"^-1)^-1) + P"I:" + (P"[ skipping " * except("]")^1 * "]") + P"instantiated from" + P"required from" + S"Nn"*"ote") * Cg_span(Cc"info", "type"),
+    warning = (P"FutureWarning" + P"RuntimeWarning" + P"W" + S("Ww")*P"arning") * Cg_span(Cc"W", "type"),
+    info = ((S"Ii"*"nfo" * (P"rmation" + P"l"^-1)^-1) + P"I:" + (P"[ skipping " * except("]")^1 * "]") + P"instantiated from" + P"required from" + S"Nn"*"ote") * Cg_span(Cc"I", "type"),
     error = S"Ee"*"rror",
 })
 
@@ -352,7 +352,7 @@ M.cucumber = Ct(
 )
 
 M.lcc = Ct(
-    (P"E" + P"W" * Cg_span(Cc"warning", "type")) * ", " *
+    (P"E" + P"W" * Cg_span(Cc"W", "type")) * ", " *
     Cg_span(except("^(\n")^1, "filename") * "(" *
     Cg_span(digits/tonumber, "line") * "," * blank *
     Cg_span(digits/tonumber, "col")
@@ -362,7 +362,7 @@ M.makepp = Ct({
     [1] = V'prefix' * blank * V'path',
     prefix = P"makepp" *
         (
-            (P": warning" * Cg_span(Cc"warning", "type") * ":" * except("`")^0) +
+            (P": warning" * Cg_span(Cc"W", "type") * ":" * except("`")^0) +
             (P": Scanning") +
             (P": " * S"Rr"*"eloading") +
             (P": " * S"Ll"*"oading") +
@@ -457,8 +457,8 @@ M.sun = Ct(
     anywhere(": ") *
     (
         "ERROR" +
-        "WARNING" * Cg_span(Cc"warning", "type") +
-        "REMARK" * Cg_span(Cc"info", "type")
+        "WARNING" * Cg_span(Cc"W", "type") +
+        "REMARK" * Cg_span(Cc"I", "type")
     ) *
     (1-P("File = "))^0 * -- optional yapping
     "File = " * Cg_span((1-P",")^1, "filename") * ", " *
@@ -481,7 +481,7 @@ M.watcom = Ct(
     ": " *
     (
         P"Error! E" * digits +
-        P"Warning! W" * digits * Cg_span(Cc"warning", "type")
+        P"Warning! W" * digits * Cg_span(Cc"W", "type")
     )
     * ":"
 
