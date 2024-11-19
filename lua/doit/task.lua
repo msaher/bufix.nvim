@@ -144,7 +144,7 @@ function Task:_jobstart(cmd, buf, cwd, notify)
             if exit_code == 0 then
                 msg = "Task finished"
             else
-                msg = "Task existed abnormally with code " .. exit_code
+                msg = "Task exited abnormally with code " .. exit_code
             end
 
             if notify == "always" then
