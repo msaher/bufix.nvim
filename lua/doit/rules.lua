@@ -205,6 +205,8 @@ M.ibm = Ct(
     (Cg_span("warning", "type") + Cg_span("info", "type"))^-1
 )
 
+-- In htop the uptime part matches (same behaviour as emacs)
+-- "                         Uptime: 05:00:38" <-- match
 M.irix = Ct(
     -- prefix: alphanumeric characters, dashes, underscores, slashes, spaces, followed by ": "
     ((R("AZ", "az", "09") + S("-_/ ")) - ":")^1 * ": " *
@@ -218,13 +220,13 @@ M.irix = Ct(
         S"Ii"*"nfo"    * Cg_span(Cc("info"), "type")
         ) *
 
-        (blank * digit^1)^-1 * -- optional numeric code after error type
+        (" " * digit^1)^-1 * -- optional numeric code after error type
         ":"
-    )^-1 * blank *
+    )^-1 * P(" ")^-1 *
 
-    Cg_span(except",\": \n\t"^1, "filename") *
+    Cg_span(except",\": \n\t"^1, "filename") *I*
 
-    (P", line " + P":")* blank * Cg_span(digits / tonumber, "line")
+    (P", line " + P":") * P(" ")^-1 * Cg_span(digits / tonumber, "line")
 )
 
 
