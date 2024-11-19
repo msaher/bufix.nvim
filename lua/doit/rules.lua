@@ -205,8 +205,9 @@ M.ibm = Ct(
     (Cg_span("warning", "type") + Cg_span("info", "type"))^-1
 )
 
--- In htop the uptime part matches (same behaviour as emacs)
+-- NOTE: In htop the uptime part matches (same behaviour as emacs)
 -- "                         Uptime: 05:00:38" <-- match
+-- This can be fixed by disallowing digit only filenames
 M.irix = Ct(
     -- prefix: alphanumeric characters, dashes, underscores, slashes, spaces, followed by ": "
     ((R("AZ", "az", "09") + S("-_/ ")) - ":")^1 * ": " *
@@ -326,7 +327,7 @@ M.gnu = Ct({
 
     location = (V'location_format1' + V'location_format2'),
 
-    location_format1 = V'line' * (P"-" * V'line_end')^-1 * S":." * (V'col' * (P"-" * V'col_end' * P":")^-1)^-1,
+    location_format1 = V'line' * (P"-" * V'line_end')^-1 * S":." * (V'col' * (P"-" * V'col_end')^-1 * P":")^-1,
     location_format2 = V'line' * (P"." * V'col')^-1 * (P"-" * V'line_end' * (P"." * V'col_end')^-1)^-1 * P":",
 
     digit = R"09",
