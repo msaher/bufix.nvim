@@ -42,12 +42,35 @@ local state = {
     extmark_line = nil,
 }
 
+---@param line string
+---@return Capture?
+local function match(line)
+    for _, rule in pairs(cache._items) do
+        local data = rule:match(line)
+        if data ~= nil then
+            return data
+        end
+    end
+
+    for k, rule in pairs(M.rules) do
+        local data = rule:match(line)
+        if data ~= nil then
+            cache:push(rule)
+            vim.print(k)
+            return data
+        end
+    end
+
+    return nil
+end
+
+
 ---@param buf number
 ---@param line string
 ---@param idx number
 local function highlight_line(buf, line, idx)
 
-    local cap = M.match(line)
+    local cap = match(line)
     if cap == nil then
         vim.api.nvim_buf_clear_namespace(buf, -1, idx, idx+1)
         return
@@ -247,28 +270,7 @@ local function get_or_make_target_win(buf)
 
 end
 
----@param line string
----@return Capture?
-function M.match(line)
-    for _, rule in pairs(cache._items) do
-        local data = rule:match(line)
-        if data ~= nil then
-            return data
-        end
-    end
-
-    for k, rule in pairs(M.rules) do
-        local data = rule:match(line)
-        if data ~= nil then
-            cache:push(rule)
-            vim.print(k)
-            return data
-        end
-    end
-
-    return nil
-end
-
+-- TODO: make this private
 ---@param data Capture
 ---@param row number 0-base
 ---@param opts? { focus: boolean }
@@ -368,7 +370,7 @@ local function jump(step, start)
     local i = start
     while i ~= last_idx do
         local line = vim.api.nvim_buf_get_lines(state.current_buf, i, i + 1, true)[1]
-        local data = M.match(line)
+        local data = match(line)
         if data ~= nil then
             return { data = data, row = i }
         end
@@ -440,7 +442,7 @@ local function get_capture_under_cursor()
     local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
     local line = vim.api.nvim_buf_get_lines(state.current_buf, row - 1, row, true)[1] -- 0-based
 
-    local data = M.match(line)
+    local data = match(line)
     if data ~= nil then
         return { data = data, row = row-1 }
     end
@@ -521,7 +523,7 @@ function M.goto_file(step)
 
     local row = extmark[1]
     local line = vim.api.nvim_buf_get_lines(state.current_buf, row, row+1, true)[1] -- 0-based
-    local skip_file = M.match(line).filename.value -- must succeed
+    local skip_file = match(line).filename.value -- must succeed
     ---@cast skip_file string
 
     local res = jump_to_file(step, row + step, skip_file)
