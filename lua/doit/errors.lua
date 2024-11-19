@@ -134,7 +134,7 @@ local function attach(buf)
 end
 
 ---@param buf number
-function M.regsiter_buf(buf)
+function M.register_buf(buf)
     if state.current_buf == nil then
         M.set_buf(buf)
     elseif not vim.b[buf].doit_errorbuf then
