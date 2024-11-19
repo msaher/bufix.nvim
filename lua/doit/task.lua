@@ -230,6 +230,15 @@ function Task:run(cmd, opts)
         win = open_win(buf, self)
         vim.api.nvim_win_set_buf(win, buf)
 
+        -- add matches
+        vim.api.nvim_win_call(win, function()
+            vim.fn.matchadd("DoitTaskSuccess", [[Task \zsfinished\ze]])
+
+            vim.fn.matchadd("DoitTaskAbnormal", [[Task exited \zsabnormally\ze with code \d\+]])
+            vim.fn.matchadd("DoitTaskAbnormal", [[Task exited abnormally with code \zs\d\+\ze]])
+        end)
+
+
         vim.api.nvim_set_option_value("number", false, { win = win })
     end
 
@@ -252,6 +261,11 @@ function Task:rerun()
     if self.last_cmd ~= nil then
         self:run(self.last_cmd, { cwd = self.last_cwd })
     end
+end
+
+do
+    vim.api.nvim_set_hl(0, "DoitTaskSuccess", { link = "Title", default = true })
+    vim.api.nvim_set_hl(0, "DoitTaskAbnormal", { link = "WarningMsg", default = true })
 end
 
 return Task
