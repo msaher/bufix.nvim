@@ -1,7 +1,5 @@
 local M = {}
 
-M.rules = require("doit.rules")
-
 -- to speed up searching
 local cache = vim.ringbuf(5)
 
@@ -51,8 +49,9 @@ local function match(line)
             return data
         end
     end
+    local rules = require("doit.rules")
 
-    for k, rule in pairs(M.rules) do
+    for k, rule in pairs(rules) do
         local data = rule:match(line)
         if data ~= nil then
             cache:push(rule)
