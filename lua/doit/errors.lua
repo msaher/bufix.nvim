@@ -571,12 +571,12 @@ end
 
 do
     vim.api.nvim_set_hl(0, "DoitFilename", { link = "QuickfixLine", default = true })
-    vim.api.nvim_set_hl(0, "DoitLine", { link = "ModeMsg", default = true })
-    vim.api.nvim_set_hl(0, "DoitLineEnd", { link = "Title", default = true })
-    vim.api.nvim_set_hl(0, "DoitCol", { link = "Question", default = true })
-    vim.api.nvim_set_hl(0, "DoitColEnd", { link = "Directory", default = true })
-    vim.api.nvim_set_hl(0, "DoitType", { link = "WarningMsg", default = true })
-    vim.api.nvim_set_hl(0, "DoitCurrent", { link = "Removed", default = true })
+    vim.api.nvim_set_hl(0, "DoitLine",     { link = "ModeMsg",      default = true })
+    vim.api.nvim_set_hl(0, "DoitLineEnd",  { link = "Title",        default = true })
+    vim.api.nvim_set_hl(0, "DoitCol",      { link = "Question",     default = true })
+    vim.api.nvim_set_hl(0, "DoitColEnd",   { link = "Directory",    default = true })
+    vim.api.nvim_set_hl(0, "DoitType",     { link = "WarningMsg",   default = true })
+    vim.api.nvim_set_hl(0, "DoitCurrent",  { link = "Removed",      default = true })
 end
 
 return M

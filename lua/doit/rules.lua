@@ -1,12 +1,3 @@
----@class Span
----@field start number
----@field finish number
----@field value string | number
-
---HACK: generics are not supported yet in lua-ls
---https://github.com/LuaLS/lua-language-server/issues/1861
---span value is string | number
-
 local lpeg = vim.lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local C, Cg, Ct, Cc, Cp = lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.Cc, lpeg.Cp
