@@ -541,7 +541,7 @@ local function goto_file(step)
     local skip_file = match(line).filename.value -- must succeed
     ---@cast skip_file string
 
-    local res = jump_to_file(step, row + step, skip_file)
+    local res = jump_to_file(step, row, skip_file)
     if res ~= nil then
         enter(res.data, res.row)
     end
