@@ -12,6 +12,8 @@ local highlights = {
     type = "DoitMsgType",
 }
 
+local locus_ns = vim.api.nvim_create_namespace("")
+
 -- TODO: try to use sum types for added safety to prevent mistakes
 -- merge extmark and extmark_line into a single tuple
 -- merge current_buf and autocmd_id into a single tuple
@@ -312,7 +314,6 @@ local function set_extmark(row)
 end
 
 
--- TODO: make this private
 ---@param data Capture
 ---@param row number 0-base
 ---@param opts? { focus: boolean }
@@ -340,17 +341,42 @@ local function enter(data, row, opts)
         vim.api.nvim_set_current_win(win)
     end
 
-    local line = data.line and data.line.value
+    local line = vim.tbl_get(data, "line", "value")
     if line == nil then
         return
     end
-
     ---@cast line number
 
-    local col = data.col and data.col.value or 1
+    local col = vim.tbl_get(data, "col", "value") or 1
     col = col - 1 -- colums are 0-based
-    pcall(vim.api.nvim_win_set_cursor, win, { line, col, })
 
+    local set_cursor = function()
+        vim.api.nvim_win_set_cursor(win, { line, col })
+        line = line - 1 -- back to 0-base again.
+        local end_col = vim.tbl_get(data, "end_col", "value")
+
+        if end_col == nil then
+            end_col = vim.api.nvim_buf_get_lines(buf, line, line + 1, false)[1]:len()
+        else
+            end_col = end_col -1
+        end
+
+        vim.highlight.range(buf, locus_ns, "DoitLocus", { line, col } , { line, end_col }, {
+            regtype = 'v',
+            inclusive = true,
+        })
+
+        vim.defer_fn(function()
+            vim.api.nvim_buf_clear_namespace(buf, locus_ns, line, line+1)
+        end, 500)
+
+    end
+
+    -- wrap in a pcall because the call to
+    -- nvim_win_set_cursor() may fail.
+    -- This happens when nvim isn't allowed to edit the buffer, and thus
+    -- nvim opens an empty buffer with the same name
+    pcall(set_cursor)
 
     set_extmark(row)
 end
@@ -577,6 +603,7 @@ do
     vim.api.nvim_set_hl(0, "DoitColEnd",   { link = "Directory",    default = true })
     vim.api.nvim_set_hl(0, "DoitType",     { link = "WarningMsg",   default = true })
     vim.api.nvim_set_hl(0, "DoitCurrent",  { link = "Removed",      default = true })
+    vim.api.nvim_set_hl(0, "DoitLocus",    { link = "Visual",       default = true })
 end
 
 return M
