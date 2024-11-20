@@ -253,9 +253,12 @@ function Task:run(cmd, opts)
 end
 
 function Task:rerun()
-    if self.last_cmd ~= nil then
-        self:run(self.last_cmd, { cwd = self.last_cwd })
+    if self.last_cmd == nil then
+        vim.notify("nothing to rerun", vim.log.levels.INFO)
+        return
     end
+
+    self:run(self.last_cmd, { cwd = self.last_cwd })
 end
 
 do
