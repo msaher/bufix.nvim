@@ -26,25 +26,22 @@ local function pty_append_to_buf(buf, first_item, data)
 end
 
 ---@class Task
----@field bufname string?
 ---@field chan number?
 ---@field last_cmd (string | string[])?
 ---@field last_cwd string?
 ---@field last_bufname string?
----@field on_buf_create fun(buf: number, task: Task)?
----@field enable_default_keymaps boolean
+---@field on_task_buf fun(task: Task, buf: number)?
 local Task = {}
 Task.__index = Task
 
 ---@return Task
 function Task.new()
-    local self = setmetatable({
-        enable_default_keymaps = true
-    }, Task)
+    local self = setmetatable({}, Task)
     return self
 end
 
 ---@param buf number
+---@return number
 function Task.default_open_win(buf)
     local width = vim.api.nvim_win_get_width(0)
     local height = vim.api.nvim_win_get_height(0)
@@ -61,11 +58,13 @@ function Task.default_open_win(buf)
         vim.cmd.wincmd("p")
         local win = vim.api.nvim_get_current_win()
         vim.cmd.wincmd("p")
+        ---@cast win number
         return win
     else
         split = "below"
     end
 
+    ---@diagnostic disable-next-line return-type-mismatch
     return vim.api.nvim_open_win(buf, false, {
         split = split,
         win = 0,
@@ -75,9 +74,8 @@ end
 
 ---Creates a buffer ready for receiving pty job stdout.
 ---@param task Task
----@param keymaps boolean?
 ---@return number
-local function create_task_buf(task, keymaps)
+local function create_task_buf(task)
     local buf = vim.api.nvim_create_buf(true, true)
 
     -- set buffer options
@@ -87,13 +85,17 @@ local function create_task_buf(task, keymaps)
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
-    if keymaps then
-        require("doit.errors").set_default_keymaps(buf)
-        vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
-    end
+    require("doit.errors").set_default_keymaps(buf)
+    vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
 
     -- set buf as error buffer
+    ---@cast buf number
     require("doit.errors").set_buf(buf)
+
+    local on_buf = task.on_task_buf or require("doit").config.on_task_buf
+    if on_buf ~= nil then
+        on_buf(task, buf)
+    end
 
     return buf
 end
@@ -113,6 +115,7 @@ end
 ---@param cwd string
 ---@param notify ("never" | "on_error" | "always")
 function Task:_jobstart(cmd, buf, cwd, notify)
+
 
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
         "Running in " .. cwd,
@@ -179,20 +182,17 @@ end
 ---@class RunOpts
 ---@field cwd string?
 ---@field bufname string?
----@field notify ("never" | "on_error" | "always")?
 ---@field kill_running boolean?
 ---@field open_win (fun(buf: number, task: Task): number)?
----@field enable_default_keymaps boolean?
+---@field notify ("never" | "on_error" | "always")?
 
 ---@param cmd string | string[]
 ---@param opts RunOpts?
 function Task:run(cmd, opts)
     opts = opts or {}
-    local bufname = opts.bufname or self.last_bufname or "*Task*"
+    local config = require("doit").config
 
-    if opts.enable_default_keymaps ~= nil then
-        self.enable_default_keymaps = opts.enable_default_keymaps
-    end
+    local bufname = opts.bufname or self.last_bufname or config.bufname
 
     local buf = nil
     if self.last_bufname ~= nil then
@@ -201,14 +201,12 @@ function Task:run(cmd, opts)
 
     if buf == nil then
         self.chan = nil
-        buf = create_task_buf(self, self.enable_default_keymaps)
-        if self.on_buf_create then
-            self.on_buf_create(buf, self)
-        end
+        buf = create_task_buf(self)
     elseif self.chan == nil then
         vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
     else
-        if not opts.kill_running then
+        local kill = opts.kill_running or config.kill_running
+        if not kill then
             local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
             if choice ~= 2 then -- if not yes
                 return
@@ -226,7 +224,7 @@ function Task:run(cmd, opts)
 
     local win = vim.fn.bufwinid(buf)
     if win == -1 then
-        local open_win = opts.open_win or Task.default_open_win
+        local open_win = opts.open_win or require("doit").config.open_win
         win = open_win(buf, self)
         vim.api.nvim_win_set_buf(win, buf)
 
@@ -247,8 +245,8 @@ function Task:run(cmd, opts)
         vim.cmd("lcd " .. cwd)
     end)
 
-    local notify = opts.notify or "never"
-    self:_jobstart(cmd, buf, cwd, notify)
+    local noitfy = opts.notify or require("doit").config.notify
+    self:_jobstart(cmd, buf, cwd, noitfy)
 
     -- may reuse in next call to run()
     self.last_cmd = cmd
@@ -273,15 +271,6 @@ end
 -- Thank you!
 vim.cmd[[
 function! DoitInputComplete(ArgLead, CmdLine, CursorPos)
-    let HasNoSpaces = a:CmdLine =~ '^\S\+$'
-    let Results = getcompletion('!' . a:CmdLine, 'cmdline')
-    let TransformedResults = map(Results, 'HasNoSpaces ? v:val : a:CmdLine[:strridx(a:CmdLine, " ") - 1] . " " . v:val')
-    return TransformedResults
-endfunction
-]]
-
-vim.cmd[[
-function! DoitCliComplete(ArgLead, CmdLine, CursorPos)
     let HasNoSpaces = a:CmdLine =~ '^\S\+$'
     let Results = getcompletion('!' . a:CmdLine, 'cmdline')
     let TransformedResults = map(Results, 'HasNoSpaces ? v:val : a:CmdLine[:strridx(a:CmdLine, " ") - 1] . " " . v:val')
