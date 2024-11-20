@@ -78,6 +78,8 @@ local function highlight_line(buf, line, idx)
     for k, span in pairs(cap) do
         local byte_start = vim.str_byteindex(line, span.start - 1)
         local byte_finish = vim.str_byteindex(line, span.finish - 1)
+        ---@cast byte_start number
+        ---@cast byte_finish number
         vim.api.nvim_buf_add_highlight(buf, -1, highlights[k], idx, byte_start, byte_finish)
     end
 end
