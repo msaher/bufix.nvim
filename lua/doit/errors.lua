@@ -162,6 +162,7 @@ function M.register_buf(buf)
     if state.current_buf == nil then
         M.set_buf(buf)
     elseif not vim.b[buf].doit_errorbuf then
+        ---@diagnostic disable-next-line: cast-local-type
         buf = (buf == 0) and vim.api.nvim_get_current_buf() or buf
         vim.b[buf].doit_errorbuf = true
         attach(buf)
@@ -175,6 +176,7 @@ function M.set_buf(buf)
         return
     end
 
+    ---@diagnostic disable-next-line: cast-local-type
     buf = (buf == 0) and vim.api.nvim_get_current_buf() or buf
     if not vim.api.nvim_buf_is_valid(buf) then
         error(string.format("buffer %d is not a valid buffer", buf))
@@ -191,6 +193,7 @@ function M.set_buf(buf)
         vim.api.nvim_del_autocmd(state.autocmd_id)
     end
 
+    ---@cast buf number
     state.current_buf = buf
 
     -- clear state.current_buf when the buffer gets deleted
@@ -230,9 +233,11 @@ end
 local function get_or_make_error_win()
     local win = vim.fn.bufwinid(state.current_buf)
     if win == -1 then
+        ---@diagnostic disable-next-line: cast-local-type
         win = vim.api.nvim_open_win(state.current_buf, false, {
             split = "below",
         })
+
     end
 
     return win
@@ -335,6 +340,8 @@ local function enter(data, row, opts)
     if line == nil then
         return
     end
+
+    ---@cast line number
 
     local col = data.col and data.col.value or 1
     col = col - 1 -- colums are 0-based
@@ -443,6 +450,7 @@ local function get_capture_under_cursor()
         return
     end
 
+    ---@cast buf number
     M.set_buf(buf)
 
     local win = get_or_make_error_win()
