@@ -25,6 +25,36 @@ local function pty_append_to_buf(buf, first_item, data)
     return first_item, #data
 end
 
+---@return boolean true if user exited with esc
+local function save_some_buffers()
+    local buffers = vim.iter(vim.api.nvim_list_bufs())
+        :filter(function(b)
+            return vim.api.nvim_buf_is_loaded(b)
+        end)
+        :filter(function(b)
+            return vim.api.nvim_get_option_value('modified', { buf = b })
+        end)
+        :totable()
+
+    for _, bufnum in ipairs(buffers) do
+        local bufname = vim.api.nvim_buf_get_name(bufnum):gsub("^" .. vim.env.HOME, "~")
+        local ans = vim.fn.confirm("Save changes to " .. bufname .. "?", "&Yes\n&No\n&Quit")
+
+        if ans == 1 then     -- yes
+			vim.cmd.bufdo { args = { "write" }, range = { bufnum }, mods = { silent = true } }
+        -- elseif ans == 2 then -- no
+        --     continue
+        elseif ans == 3 then -- quit (skip all buffers)
+			break
+        elseif ans == 0 then -- exit
+            return true
+		end
+
+    end
+
+    return false
+end
+
 ---@class Task
 ---@field chan number?
 ---@field last_cmd (string | string[])?
@@ -182,12 +212,20 @@ end
 ---@field kill_running boolean?
 ---@field open_win (fun(buf: number, task: Task): number)?
 ---@field notify ("never" | "on_error" | "always")?
+---@field ask_about_save boolean?
 
 ---@param cmd string | string[]
 ---@param opts RunOpts?
 function Task:run(cmd, opts)
     opts = opts or {}
     local config = require("doit").config
+
+    if opts.ask_about_save or config.ask_about_save then
+        local exit = save_some_buffers()
+        if exit then
+            return
+        end
+    end
 
     local bufname = opts.bufname or self.last_bufname or config.bufname
 

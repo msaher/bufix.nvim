@@ -21,6 +21,9 @@ local default_config = {
     end,
 
     ---@type boolean
+    ask_about_save = true,
+
+    ---@type boolean
     want_error_keymaps = true,
 
     ---@type table
