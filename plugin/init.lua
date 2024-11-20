@@ -38,11 +38,22 @@ do
 
 
         run = {
-            impl = function(args)
+            impl = function(args, ctx)
+                local opts = {}
+
+                local smods = ctx.smods
+                if smods.unsilent then
+                    opts.notify = 'always'
+                elseif smods.silent then
+                    opts.notify = 'on_error'
+                elseif ctx.emsg_silent then
+                    opts.notify = 'never'
+                end
+
                 if #args == 0 then
-                    require("doit.task"):prompt_for_cmd()
+                    require("doit.task"):prompt_for_cmd(opts)
                 else
-                    require("doit.task"):run(table.concat(args, " "))
+                    require("doit.task"):run(table.concat(args, " "), opts)
                 end
             end,
             complete = function(arg_lead)
