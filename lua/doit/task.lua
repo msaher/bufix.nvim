@@ -113,9 +113,9 @@ end
 ---@param notify ("never" | "on_error" | "always")
 function Task:_jobstart(cmd, buf, cwd, notify)
 
-
+    local modeline = "vim: filetype=doit:path+=" .. cwd:gsub("^" .. vim.env.HOME, "~")
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
-        "Running in " .. cwd,
+        modeline,
         "Task started at " .. os.date("%a %b %e %H:%M:%S"),
         "",
         cmd,
