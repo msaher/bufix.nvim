@@ -7,14 +7,6 @@
 --https://github.com/LuaLS/lua-language-server/issues/1861
 --span value is string | number
 
----@class Capture
----@field filename Span
----@field line? Span
----@field line_end? Span
----@field col? Span
----@field col_end? Span
----@field type? Span
-
 local lpeg = vim.lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local C, Cg, Ct, Cc, Cp = lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.Cc, lpeg.Cp
@@ -32,8 +24,13 @@ local dquote = P'"'
 
 -- from https://www.inf.puc-rio.br/~roberto/lpeg/
 local function anywhere(p)
-  return P{ p + 1 * lpeg.V(1) }
+    return P{ p + 1 * lpeg.V(1) }
 end
+
+local I = lpeg.P(function (s,i)
+    vim.print(i)
+    return true
+end)
 
 local function except(set)
     return 1-S(set)
