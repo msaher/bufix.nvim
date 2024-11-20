@@ -85,9 +85,6 @@ local function create_task_buf(task)
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
-    require("doit.errors").set_default_keymaps(buf)
-    vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
-
     -- set buf as error buffer
     ---@cast buf number
     require("doit.errors").set_buf(buf)

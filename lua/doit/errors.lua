@@ -155,6 +155,10 @@ local function attach(buf)
     if buftype == 'terminal' then
         attach_term(buf)
     end
+
+    if require("doit").config.want_error_keymaps then
+        M.set_default_keymaps(buf)
+    end
 end
 
 ---@param buf number
@@ -557,12 +561,12 @@ function M.goto_prev_file()
 end
 
 function M.set_default_keymaps(buf)
-    vim.keymap.set("n", "<CR>", M.goto_error_under_cursor, { buffer = buf })
+    vim.keymap.set("n", "<CR>" , M.goto_error_under_cursor,    { buffer = buf })
     vim.keymap.set("n", "g<CR>", M.display_error_under_cursor, { buffer = buf })
-    vim.keymap.set("n", "gj", M.move_to_next, { buffer = buf })
-    vim.keymap.set("n", "gk", M.move_to_prev, { buffer = buf })
-    vim.keymap.set("n", "]]", M.move_to_next_file, { buffer = buf })
-    vim.keymap.set("n", "[[", M.move_to_prev_file, { buffer = buf })
+    vim.keymap.set("n", "gj"   , M.move_to_next,               { buffer = buf })
+    vim.keymap.set("n", "gk"   , M.move_to_prev,               { buffer = buf })
+    vim.keymap.set("n", "]]"   , M.move_to_next_file,          { buffer = buf })
+    vim.keymap.set("n", "[["   , M.move_to_prev_file,          { buffer = buf })
 end
 
 do

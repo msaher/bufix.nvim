@@ -20,6 +20,9 @@ local default_config = {
         vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
     end,
 
+    ---@type boolean
+    want_error_keymaps = true,
+
     ---@type table
     rules = {},
 
