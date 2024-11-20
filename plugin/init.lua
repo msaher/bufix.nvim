@@ -23,11 +23,32 @@ local split_mapping = {
     }
 }
 
----@return {split: string, win: number}
-local function get_win_config(smods)
+---@return (fun(buf: number, task: Task): number)?
+local function get_open_win(smods)
     local mode = smods.horizontal and "horizontal" or smods.vertical and "vertical"
-    local config = mode and split_mapping[mode][smods.split] or nil
-    return config or mode and split_mapping[mode].default()
+    if not mode then
+        return
+    end
+    local config = split_mapping[mode][smods.split] or split_mapping[mode].default()
+
+    return function(buf)
+        return vim.api.nvim_open_win(buf, false, {
+            split = config.split,
+            win = config.win,
+        })
+    end
+end
+
+---@return ("never" | "on_error" | "always")?
+local function get_notify_config(smods)
+    if smods.unsilent then
+        return 'always'
+    elseif smods.silent then
+        return 'on_error'
+    elseif smods.emsg_silent then
+        return 'never'
+    end
+
 end
 
 ---@type table<string, Subcommand>
@@ -68,25 +89,8 @@ local subcommand_tbl = {
         impl = function(args, ctx)
             local opts = {}
 
-            local smods = ctx.smods
-            if smods.unsilent then
-                opts.notify = 'always'
-            elseif smods.silent then
-                opts.notify = 'on_error'
-            elseif ctx.emsg_silent then
-                opts.notify = 'never'
-            end
-
-            local win_config = get_win_config(ctx.smods)
-
-            if win_config then
-                opts.open_win = function(buf)
-                    return vim.api.nvim_open_win(buf, false, {
-                        split = win_config.split,
-                        win = win_config.win
-                    })
-                end
-            end
+            opts.notify = get_notify_config(ctx.smods)
+            opts.open_win = get_open_win(ctx.smods)
 
             if #args == 0 then
                 require("doit.task"):prompt_for_cmd(opts)
