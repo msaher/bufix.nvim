@@ -83,7 +83,7 @@ do
         -- Get the subcommand's arguments, if any
         local args = #fargs > 1 and vim.list_slice(fargs, 2, #fargs) or {}
         local subcommand = subcommand_tbl[subcommand_key]
-        if not subcommand then
+        if not subcommand and not opts.smods.emsg_silent then
             vim.notify("Doit: Unknown command: " .. subcommand_key, vim.log.levels.ERROR)
             return
         end
