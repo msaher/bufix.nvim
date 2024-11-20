@@ -2,6 +2,34 @@
 ---@field impl fun(args:string[], opts: table) command implementation
 ---@field complete? fun(sub_arg_lead: string, sub_cmdline: string?): string[]  Command completions callback, taking the lead of the subcommand's arguments
 
+local split_mapping = {
+    horizontal = {
+        aboveleft = {split = "above", win = 0},
+        belowright = {split = "below", win = 0},
+        topleft = {split = "above", win = -1},
+        botright = {split = "below", win = -1},
+        default = function()
+            return {split = vim.o.splitbelow and "below" or "above", win = 0}
+        end
+    },
+    vertical = {
+        aboveleft = {split = "left", win = 0},
+        belowright = {split = "right", win = 0},
+        topleft = {split = "left", win = -1},
+        botright = {split = "right", win = -1},
+        default = function()
+            return {split = vim.o.splitright and "right" or "left", win = 0}
+        end
+    }
+}
+
+---@return {split: string, win: number}
+local function get_win_config(smods)
+    local mode = smods.horizontal and "horizontal" or smods.vertical and "vertical"
+    local config = mode and split_mapping[mode][smods.split] or nil
+    return config or mode and split_mapping[mode].default()
+end
+
 ---@type table<string, Subcommand>
 local subcommand_tbl = {
 
@@ -49,45 +77,13 @@ local subcommand_tbl = {
                 opts.notify = 'never'
             end
 
-            local split = ""
-            local win = 0
-            if smods.horizontal then
-                if smods.split == "aboveleft" then
-                    split = "above"
-                elseif smods.split == "belowright" then
-                    split = "below"
-                elseif smods.split == "topleft" then
-                    split = "above"
-                    win = -1
-                elseif smods.split == "botright" then
-                    split = "below"
-                    win = -1
-                else
-                    split = vim.o.splitbelow and "below" or "above"
-                end
+            local win_config = get_win_config(ctx.smods)
 
-            elseif smods.vertical then
-                if smods.split == "aboveleft" then
-                    split = "left"
-                elseif smods.split == "belowright" then
-                    split = "right"
-                elseif smods.split == "topleft" then
-                    split = "left"
-                    win = -1
-                elseif smods.split == "botright" then
-                    split = "right"
-                    win = -1
-                else
-                    split = vim.o.splitright and "right" or "left"
-                end
-
-            end
-
-            if split ~= "" then
+            if win_config then
                 opts.open_win = function(buf)
                     return vim.api.nvim_open_win(buf, false, {
-                        split = split,
-                        win = win
+                        split = win_config.split,
+                        win = win_config.win
                     })
                 end
             end
