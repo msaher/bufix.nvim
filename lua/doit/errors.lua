@@ -522,8 +522,8 @@ local function goto_file(step)
         local res = jump_extmark(step)
         if res ~= nil then
             enter(res.data, res.row)
-            return
         end
+        return
     end
 
     local row = extmark[1]
