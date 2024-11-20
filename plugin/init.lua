@@ -49,6 +49,49 @@ local subcommand_tbl = {
                 opts.notify = 'never'
             end
 
+            local split = ""
+            local win = 0
+            if smods.horizontal then
+                if smods.split == "aboveleft" then
+                    split = "above"
+                elseif smods.split == "belowright" then
+                    split = "below"
+                elseif smods.split == "topleft" then
+                    split = "above"
+                    win = -1
+                elseif smods.split == "botright" then
+                    split = "below"
+                    win = -1
+                else
+                    split = vim.o.splitbelow and "below" or "above"
+                end
+
+            elseif smods.vertical then
+                if smods.split == "aboveleft" then
+                    split = "left"
+                elseif smods.split == "belowright" then
+                    split = "right"
+                elseif smods.split == "topleft" then
+                    split = "left"
+                    win = -1
+                elseif smods.split == "botright" then
+                    split = "right"
+                    win = -1
+                else
+                    split = vim.o.splitright and "right" or "left"
+                end
+
+            end
+
+            if split ~= "" then
+                opts.open_win = function(buf)
+                    return vim.api.nvim_open_win(buf, false, {
+                        split = split,
+                        win = win
+                    })
+                end
+            end
+
             if #args == 0 then
                 require("doit.task"):prompt_for_cmd(opts)
             else
