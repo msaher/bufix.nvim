@@ -55,8 +55,11 @@ end
 local subcommand_tbl = {
 
     rerun = {
-        impl = function()
-            require("doit.task"):rerun()
+        impl = function(_, ctx)
+            local opts = {}
+            opts.notify = get_notify_config(ctx.smods)
+            opts.open_win = get_open_win(ctx.smods)
+            require("doit.task"):rerun(opts)
         end,
     },
 
