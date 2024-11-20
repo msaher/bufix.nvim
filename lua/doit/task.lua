@@ -248,7 +248,7 @@ function Task:run(cmd, opts)
             end
         end
 
-        vim.fn.jobwait({ self.chan }, 1500)
+        vim.fn.jobwait({ self.chan }, 1000)
         self.chan = nil
     end
 
