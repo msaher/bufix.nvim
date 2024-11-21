@@ -69,6 +69,12 @@ local subcommand_tbl = {
         end,
     },
 
+    interrupt = {
+        impl = function()
+            require("doit.task"):interrupt()
+        end,
+    },
+
     next = {
         impl = function()
             require("doit.nav").goto_next()
