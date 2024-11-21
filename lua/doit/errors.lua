@@ -335,6 +335,11 @@ local function set_cursor(buf, win, line, col, end_col)
         return
     end
 
+    local duration = require("doit").config.locus_highlight_duration
+    if duration <= 0 then
+        return
+    end
+
     line = line - 1 -- back to 0-base again.
     if end_col == nil then
         end_col = vim.api.nvim_buf_get_lines(buf, line, line + 1, false)[1]:len()
@@ -357,7 +362,7 @@ local function set_cursor(buf, win, line, col, end_col)
 
     state.locus_timer = vim.defer_fn(function()
         vim.api.nvim_buf_clear_namespace(buf, state.locus_ns, line, line+1)
-    end, 500)
+    end, duration)
 
 end
 

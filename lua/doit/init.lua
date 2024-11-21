@@ -26,6 +26,9 @@ local default_config = {
     ---@type boolean
     want_error_keymaps = true,
 
+    ---@type number in milliseconds
+    locus_highlight_duration = 500,
+
     ---@type table
     rules = {},
 
