@@ -143,7 +143,8 @@ end
 ---@param cwd string
 ---@param notify ("never" | "on_error" | "always")
 ---@param stdin string?
-function Task:_jobstart(cmd, buf, cwd, notify, stdin)
+---@param on_exit fun(job_id: number, exit_code: number, event_type, buf: number, task: Task)?
+function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
 
     local modeline = "vim: filetype=doit:path+=" .. cwd:gsub("^" .. vim.env.HOME, "~")
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
@@ -181,7 +182,7 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin)
             line_count = line_count + added
         end,
 
-        on_exit = function(_, exit_code)
+        on_exit = function(chan, exit_code, event_type)
             local now = os.date("%a %b %e %H:%M:%S")
             local msg
 
@@ -201,6 +202,12 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin)
             vim.api.nvim_buf_set_lines(buf, -1, -1, true, { "", msg })
 
             self.chan = nil
+
+            on_exit = on_exit or require("doit").config.on_exit
+            if on_exit then
+                on_exit(chan, exit_code, event_type, buf, self)
+            end
+
         end
     })
 

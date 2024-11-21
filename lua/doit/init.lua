@@ -20,6 +20,9 @@ local default_config = {
         vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
     end,
 
+    ---@type fun(job_id: number, exit_code: number, event_type: string, buf: number, task: Task)?
+    on_exit = nil,
+
     ---@type boolean
     ask_about_save = true,
 
@@ -47,6 +50,7 @@ local default_config = {
 ---@field locus_highlight_duration? number
 ---@field prompt_cmd_with_vim_ui? boolean
 ---@field rules? table
+---@field on_exit? fun(job_id: number, exit_code: number, event_type, buf: number, task: Task)
 
 ---@type DoitFullConfig
 M.config = default_config
