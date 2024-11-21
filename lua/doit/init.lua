@@ -12,9 +12,6 @@ local default_config = {
     ---@type string
     buffer_name = "*Task*",
 
-    ---@type boolean
-    kill_running = false,
-
     ---@type fun(task: Task, buf: number)?
     on_task_buf = nil,
 
@@ -23,6 +20,9 @@ local default_config = {
 
     ---@type boolean
     ask_about_save = true,
+
+    ---@type boolean
+    always_terminate = false,
 
     ---@type boolean
     want_navbuf_keymaps = true,
@@ -48,7 +48,7 @@ local default_config = {
 ---@field notify? "never" | "on_error" | "always"
 ---@field open_win? fun(buf: number, task: Task): number
 ---@field buffer_name? string
----@field kill_running? boolean
+---@field always_terminate? boolean
 ---@field on_task_buf? fun(buf: number, task: Task)
 ---@field on_exit? fun(job_id: number, exit_code: number, event_type, buf: number, task: Task)
 ---@field ask_about_save? boolean

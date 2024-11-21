@@ -266,7 +266,7 @@ end
 ---@class RunOpts
 ---@field cwd string?
 ---@field buffer_name string?
----@field kill_running boolean?
+---@field always_terminate boolean?
 ---@field open_win (fun(buf: number, task: Task): number)?
 ---@field notify ("never" | "on_error" | "always")?
 ---@field ask_about_save boolean?
@@ -298,8 +298,8 @@ function Task:run(cmd, opts)
     elseif self.chan == nil then
         vim.api.nvim_buf_set_lines(buf, 0, -1, true, {}) -- clear buffer
     else
-        local kill = opts.kill_running or config.kill_running
-        if not kill then
+        local terminate = opts.always_terminate or config.always_terminate
+        if not terminate then
             local choice = vim.fn.confirm("A task process is running; kill it?", "&No\n&Yes")
             if choice ~= 2 then -- if not yes
                 return
