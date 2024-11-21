@@ -2,6 +2,7 @@
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
 local SIGFAULT = 139
+local SIGINT = 130
 local SIGTERM = 143
 
 
@@ -10,6 +11,7 @@ local exit_messages = {
     [0] = "Task finished",
     -- HACK: a program may exit with 139 but not necessarily segfault.
     [SIGFAULT] = "Task segmentation fault (core dumped)",
+    [SIGINT] = "Task interrupt",
     [SIGTERM] = "Task terminated",
 }
 
@@ -112,6 +114,22 @@ function Task.default_open_win(buf)
         split = split,
         win = 0,
     })
+end
+
+---@param win number
+local function matchadd(win)
+    vim.api.nvim_win_call(win, function()
+        vim.fn.matchadd("DoitTaskSuccess", [[Task \zsfinished\ze]])
+
+        vim.fn.matchadd("DoitTaskAbnormal", [[Task exited \zsabnormally\ze with code \d\+]])
+        vim.fn.matchadd("DoitTaskAbnormal", [[Task exited abnormally with code \zs\d\+\ze]])
+
+        vim.fn.matchadd("DoitTaskSegfault", [[Task \zssegmentation fault\ze (core dumped) at]])
+
+        vim.fn.matchadd("DoitTaskTerminate", [[Task \zsterminated\ze at]])
+
+        vim.fn.matchadd("DoitTaskInterrupt", [[Task \zsinterrupt\ze at]])
+    end)
 end
 
 
@@ -299,18 +317,7 @@ function Task:run(cmd, opts)
         local open_win = opts.open_win or require("doit").config.open_win
         win = open_win(buf, self)
         vim.api.nvim_win_set_buf(win, buf)
-
-        -- add matches
-        vim.api.nvim_win_call(win, function()
-            vim.fn.matchadd("DoitTaskSuccess", [[Task \zsfinished\ze]])
-
-            vim.fn.matchadd("DoitTaskAbnormal", [[Task exited \zsabnormally\ze with code \d\+]])
-            vim.fn.matchadd("DoitTaskAbnormal", [[Task exited abnormally with code \zs\d\+\ze]])
-
-            vim.fn.matchadd("DoitTaskSegfault", [[Task \zssegmentation fault\ze (core dumped)]])
-            vim.fn.matchadd("DoitTaskTerminate", [[Task \zsterminated\ze at]])
-        end)
-
+        matchadd(win)
 
         vim.api.nvim_set_option_value("number", false, { win = win })
     end
@@ -394,6 +401,7 @@ do
     vim.api.nvim_set_hl(0, "DoitTaskAbnormal",  { link = "WarningMsg", default = true })
     vim.api.nvim_set_hl(0, "DoitTaskSegfault",  { link = "WarningMsg", default = true })
     vim.api.nvim_set_hl(0, "DoitTaskTerminate", { link = "WarningMsg", default = true })
+    vim.api.nvim_set_hl(0, "DoitTaskInterrupt", { link = "WarningMsg", default = true })
 end
 
 
