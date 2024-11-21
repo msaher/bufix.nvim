@@ -61,6 +61,7 @@ end
 ---@field last_cwd string?
 ---@field last_buffer_name string?
 ---@field on_task_buf fun(task: Task, buf: number)?
+---@field last_stdin string?
 local Task = {}
 Task.__index = Task
 
@@ -141,7 +142,8 @@ end
 ---@param buf number
 ---@param cwd string
 ---@param notify ("never" | "on_error" | "always")
-function Task:_jobstart(cmd, buf, cwd, notify)
+---@param stdin string?
+function Task:_jobstart(cmd, buf, cwd, notify, stdin)
 
     local modeline = "vim: filetype=doit:path+=" .. cwd:gsub("^" .. vim.env.HOME, "~")
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
@@ -152,6 +154,18 @@ function Task:_jobstart(cmd, buf, cwd, notify)
     })
     local line_count = 4
     local first_item = ""
+
+    if stdin then
+        -- NOTE: always run in shell in stdin is set
+        -- If we really want to send stdin to nonshell cmds
+        -- we'll have to use chansend() and chanclose() after calling
+        -- jobstart()
+        if type(cmd) == "table" then
+            cmd = table.concat(cmd, " ")
+        end
+
+        cmd = cmd .. "<<EOF\n" .. stdin .. "\nEOF"
+    end
 
     self.chan = vim.fn.jobstart(cmd, {
         pty = true,        -- run in a pty. Avoids lazy behvaiour and quirks
@@ -281,12 +295,13 @@ function Task:run(cmd, opts)
     end)
 
     local noitfy = opts.notify or require("doit").config.notify
-    self:_jobstart(cmd, buf, cwd, noitfy)
+    self:_jobstart(cmd, buf, cwd, noitfy, opts.stdin)
 
     -- may reuse in next call to run()
     self.last_cmd = cmd
     self.last_cwd = cwd
     self.last_buffer_name = buffer_name
+    self.last_stdin = opts.stdin -- only reused by rerun()
 
 end
 
@@ -299,6 +314,7 @@ function Task:rerun(opts)
 
     opts = opts or {}
     opts.cwd = self.last_cwd
+    opts.stdin = self.last_stdin
 
     self:run(self.last_cmd, opts)
 end
