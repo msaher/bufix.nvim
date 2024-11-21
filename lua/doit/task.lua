@@ -153,7 +153,7 @@ local function create_task_buf(task)
     local config = require("doit").config
     if config.want_task_keymaps then
         vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
-        vim.keymap.set("n", "<C-c>", function() task:stop() end, { buffer = buf })
+        vim.keymap.set("n", "<C-c>", function() task:interrupt() end, { buffer = buf })
     end
 
     local on_buf = task.on_task_buf or config.on_task_buf
