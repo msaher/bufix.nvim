@@ -43,16 +43,11 @@ end
 local function save_some_buffers()
     local buffers = vim.iter(vim.api.nvim_list_bufs())
         :filter(function(b)
-            return vim.api.nvim_buf_is_loaded(b)
-        end)
-        :filter(function(b)
-            return vim.api.nvim_get_option_value('modified', { buf = b })
-        end)
-        :filter(function(b)
-            return vim.api.nvim_buf_get_name(b) ~= ""
-        end)
-        :filter(function(b)
-            return vim.api.nvim_get_option_value('buflisted', { buf = b })
+            return
+                vim.api.nvim_buf_is_loaded(b)
+                and vim.api.nvim_get_option_value('modified', { buf = b })
+                and vim.api.nvim_buf_get_name(b) ~= ""
+                and vim.api.nvim_get_option_value('buflisted', { buf = b })
         end)
         :totable()
 
