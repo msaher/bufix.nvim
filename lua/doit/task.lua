@@ -1,6 +1,18 @@
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
+local SIGFAULT = 139
+local SIGTERM = 143
+
+
+-- BUG: probably doesn't work the same way on windows
+local exit_messages = {
+    [0] = "Task finished",
+    -- HACK: a program may exit with 139 but not necessarily segfault.
+    [SIGFAULT] = "Task segmentation fault (core dumped)",
+    [SIGTERM] = "Task terminated",
+}
+
 ---@param first_item string
 ---@param data string[]
 ---@return string
@@ -191,17 +203,9 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
 
         on_exit = function(chan, exit_code, event_type)
             local now = os.date(time_format)
-            local msg
 
-            if exit_code == 0 then
-                msg = "Task finished"
-            elseif exit_code == 139 then -- segfault
-                -- HACK: a program may exit with 139 but not necessarily segfault.
-                -- BUG: probably doesn't work on windows
-                msg = "Task segmentation fault (core dumped)"
-            elseif exit_code == 143 then -- segterm
-                msg = "Task terminated"
-            else
+            local msg = exit_messages[exit_code]
+            if not msg then
                 msg = "Task exited abnormally with code " .. exit_code
             end
 
