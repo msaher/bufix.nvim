@@ -15,10 +15,8 @@ local default_config = {
     ---@type boolean
     kill_running = false,
 
-    ---@type fun(task: Task, buf: number)
-    on_task_buf = function(task, buf)
-        vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
-    end,
+    ---@type fun(task: Task, buf: number)?
+    on_task_buf = nil,
 
     ---@type fun(job_id: number, exit_code: number, event_type: string, buf: number, task: Task)?
     on_exit = nil,
@@ -28,6 +26,9 @@ local default_config = {
 
     ---@type boolean
     want_error_keymaps = true,
+
+    ---@type boolean
+    want_task_keymaps = false,
 
     ---@type number in milliseconds
     locus_highlight_duration = 500,

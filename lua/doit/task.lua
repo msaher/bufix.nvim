@@ -120,7 +120,12 @@ local function create_task_buf(task)
     ---@cast buf number
     require("doit.errors").set_buf(buf)
 
-    local on_buf = task.on_task_buf or require("doit").config.on_task_buf
+    local config = require("doit").config
+    if config.want_task_keymaps then
+        vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf })
+    end
+
+    local on_buf = task.on_task_buf or config.on_task_buf
     if on_buf ~= nil then
         on_buf(task, buf)
     end
