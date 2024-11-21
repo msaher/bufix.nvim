@@ -47,6 +47,9 @@ local state = {
     ---@type table? uv_timer_t
     locus_timer = nil,
 
+    ---@type fun()
+    locus_cancel = nil
+
 }
 
 ---@param line string
@@ -350,9 +353,8 @@ local function set_cursor(buf, win, line, col, end_col)
     -- remove current highlight if it exists
     if state.locus_timer ~= nil and state.locus_timer:is_active() then
         -- wrap in pcall because timer might've closed already
-        pcall(function () state.locus_timer:close() end)
-        pcall(vim.api.nvim_buf_clear_namespace, buf, state.locus_ns, 0, -1)
-        state.locus_timer = nil
+        pcall(function() state.locus_timer:close() end)
+        pcall(state.locus_cancel)
     end
 
     vim.highlight.range(buf, state.locus_ns, "DoitLocus", { line, col } , { line, end_col }, {
@@ -360,9 +362,12 @@ local function set_cursor(buf, win, line, col, end_col)
         inclusive = true,
     })
 
-    state.locus_timer = vim.defer_fn(function()
+    state.locus_cancel = function()
         vim.api.nvim_buf_clear_namespace(buf, state.locus_ns, line, line+1)
-    end, duration)
+        state.locus_timer = nil
+    end
+
+    state.locus_timer = vim.defer_fn(state.locus_cancel, duration)
 
 end
 
@@ -383,6 +388,8 @@ local function enter(data, row, opts)
     end
 
     local win = get_or_make_target_win(buf)
+    -- TODO: if cwd of navbuf isn't same as target win then maybe
+    -- call lcd
     vim.api.nvim_win_set_buf(win, buf)
 
     local focus = opts.focus
