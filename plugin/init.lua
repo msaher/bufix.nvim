@@ -55,11 +55,11 @@ end
 local subcommand_tbl = {
 
     rerun = {
-        impl = function(_, ctx)
-            local opts = {}
-            opts.notify = get_notify_config(ctx.smods)
-            opts.open_win = get_open_win(ctx.smods)
-            require("doit.task"):rerun(opts)
+        impl = function(_, opts)
+            local run_opts = {}
+            run_opts.notify = get_notify_config(opts.smods)
+            run_opts.open_win = get_open_win(opts.smods)
+            require("doit.task"):rerun(run_opts)
         end,
     },
 
@@ -89,16 +89,26 @@ local subcommand_tbl = {
 
 
     run = {
-        impl = function(args, ctx)
-            local opts = {}
+        impl = function(args, opts)
+            local run_opts = {}
+            run_opts.notify = get_notify_config(opts.smods)
+            run_opts.open_win = get_open_win(opts.smods)
 
-            opts.notify = get_notify_config(ctx.smods)
-            opts.open_win = get_open_win(ctx.smods)
+            if opts.range ~= 0 then
+                local line1 = opts.line1-1 -- 0-index
+                local line2 = opts.line2
+                if line2 then
+                    line2 = line2-1
+                else
+                    line2 = line1
+                end
+                run_opts.stdin = table.concat(vim.api.nvim_buf_get_lines(0, line1, line2+1, false), "\n")
+            end
 
             if #args == 0 then
-                require("doit.task"):prompt_for_cmd(opts)
+                require("doit.task"):prompt_for_cmd(run_opts)
             else
-                require("doit.task"):run(table.concat(args, " "), opts)
+                require("doit.task"):run(table.concat(args, " "), run_opts)
             end
         end,
         complete = function(arg_lead)
@@ -138,6 +148,7 @@ end
 
 vim.api.nvim_create_user_command("Doit", cmd, {
     nargs = "*",
+    range = true,
     desc = "Doit commands",
     complete = function(arg_lead, cmdline, _)
         -- Get the subcommand.
