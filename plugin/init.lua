@@ -63,6 +63,12 @@ local subcommand_tbl = {
         end,
     },
 
+    stop = {
+        impl = function()
+            require("doit.task"):stop()
+        end,
+    },
+
     next = {
         impl = function()
             require("doit.errors").goto_next()

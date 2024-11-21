@@ -30,6 +30,9 @@ local default_config = {
     ---@type boolean
     want_task_keymaps = true,
 
+    ---@type string
+    time_format = "%a %b %e %H:%M:%S",
+
     ---@type number in milliseconds
     locus_highlight_duration = 500,
 
@@ -47,11 +50,14 @@ local default_config = {
 ---@field buffer_name? string
 ---@field kill_running? boolean
 ---@field on_task_buf? fun(buf: number, task: Task)
+---@field on_exit? fun(job_id: number, exit_code: number, event_type, buf: number, task: Task)
 ---@field ask_about_save? boolean
+---@field want_task_keymaps? boolean
+---@field want_error_keymaps? boolean
+---@field time_format string?
 ---@field locus_highlight_duration? number
 ---@field prompt_cmd_with_vim_ui? boolean
 ---@field rules? table
----@field on_exit? fun(job_id: number, exit_code: number, event_type, buf: number, task: Task)
 
 ---@type DoitFullConfig
 M.config = default_config

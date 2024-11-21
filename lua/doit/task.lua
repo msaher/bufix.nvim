@@ -151,11 +151,12 @@ end
 ---@param stdin string?
 ---@param on_exit fun(job_id: number, exit_code: number, event_type, buf: number, task: Task)?
 function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
+    local time_format = require("doit").config.time_format
 
     local modeline = "vim: filetype=doit:path+=" .. cwd:gsub("^" .. vim.env.HOME, "~")
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, {
         modeline,
-        "Task started at " .. os.date("%a %b %e %H:%M:%S"),
+        "Task started at " .. os.date(time_format),
         "",
         cmd,
     })
@@ -189,7 +190,7 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
         end,
 
         on_exit = function(chan, exit_code, event_type)
-            local now = os.date("%a %b %e %H:%M:%S")
+            local now = os.date(time_format)
             local msg
 
             if exit_code == 0 then
