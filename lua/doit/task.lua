@@ -195,6 +195,12 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
 
             if exit_code == 0 then
                 msg = "Task finished"
+            elseif exit_code == 139 then -- segfault
+                -- HACK: a program may exit with 139 but not necessarily segfault.
+                -- BUG: probably doesn't work on windows
+                msg = "Task segmentation fault (core dumped)"
+            elseif exit_code == 143 then -- segterm
+                msg = "Task terminated"
             else
                 msg = "Task exited abnormally with code " .. exit_code
             end
@@ -230,8 +236,6 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
         desc = "doit: force stop task",
         once = true,
     })
-
-
 end
 
 ---@class RunOpts
@@ -298,6 +302,9 @@ function Task:run(cmd, opts)
 
             vim.fn.matchadd("DoitTaskAbnormal", [[Task exited \zsabnormally\ze with code \d\+]])
             vim.fn.matchadd("DoitTaskAbnormal", [[Task exited abnormally with code \zs\d\+\ze]])
+
+            vim.fn.matchadd("DoitTaskSegfault", [[Task \zssegmentation fault\ze (core dumped)]])
+            vim.fn.matchadd("DoitTaskTerminate", [[Task \zsterminated\ze at]])
         end)
 
 
@@ -332,11 +339,6 @@ function Task:rerun(opts)
     opts.stdin = self.last_stdin
 
     self:run(self.last_cmd, opts)
-end
-
-do
-    vim.api.nvim_set_hl(0, "DoitTaskSuccess", { link = "Title", default = true })
-    vim.api.nvim_set_hl(0, "DoitTaskAbnormal", { link = "WarningMsg", default = true })
 end
 
 function Task:stop()
@@ -382,6 +384,14 @@ function Task:prompt_for_cmd(opts)
     end
 
 end
+
+do
+    vim.api.nvim_set_hl(0, "DoitTaskSuccess",   { link = "Title",      default = true })
+    vim.api.nvim_set_hl(0, "DoitTaskAbnormal",  { link = "WarningMsg", default = true })
+    vim.api.nvim_set_hl(0, "DoitTaskSegfault",  { link = "WarningMsg", default = true })
+    vim.api.nvim_set_hl(0, "DoitTaskTerminate", { link = "WarningMsg", default = true })
+end
+
 
 local task = Task.new()
 
