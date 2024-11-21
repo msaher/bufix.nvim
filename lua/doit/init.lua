@@ -10,7 +10,7 @@ local default_config = {
 
     ---TODO: maybe make this a function
     ---@type string
-    bufname = "*Task*",
+    buffer_name = "*Task*",
 
     ---@type boolean
     kill_running = false,
@@ -40,7 +40,7 @@ local default_config = {
 ---@class DoitConfig
 ---@field notify? "never" | "on_error" | "always"
 ---@field open_win? fun(buf: number, task: Task): number
----@field bufname? string
+---@field buffer_name? string
 ---@field kill_running? boolean
 ---@field on_task_create? fun(buf: number, task: Task)
 ---@field rules? table

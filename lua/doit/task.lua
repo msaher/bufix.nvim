@@ -37,8 +37,8 @@ local function save_some_buffers()
         :totable()
 
     for _, bufnum in ipairs(buffers) do
-        local bufname = vim.api.nvim_buf_get_name(bufnum):gsub("^" .. vim.env.HOME, "~")
-        local ans = vim.fn.confirm("Save changes to " .. bufname .. "?", "&Yes\n&No\n&Quit")
+        local buffer_name = vim.api.nvim_buf_get_name(bufnum):gsub("^" .. vim.env.HOME, "~")
+        local ans = vim.fn.confirm("Save changes to " .. buffer_name .. "?", "&Yes\n&No\n&Quit")
 
         if ans == 1 then     -- yes
 			vim.cmd.bufdo { args = { "write" }, range = { bufnum }, mods = { silent = true } }
@@ -59,7 +59,7 @@ end
 ---@field chan number?
 ---@field last_cmd (string | string[])?
 ---@field last_cwd string?
----@field last_bufname string?
+---@field last_buffer_name string?
 ---@field on_task_buf fun(task: Task, buf: number)?
 local Task = {}
 Task.__index = Task
@@ -127,12 +127,12 @@ local function create_task_buf(task)
     return buf
 end
 
----@param bufname string
+---@param buffer_name string
 ---@return number?
-local function get_buf_by_name(bufname)
+local function get_buf_by_name(buffer_name)
     local buf = vim.iter(vim.api.nvim_list_bufs())
         :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
-        :find(function(b) return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == bufname end)
+        :find(function(b) return vim.fs.basename(vim.api.nvim_buf_get_name(b)) == buffer_name end)
 
     return buf
 end
@@ -208,7 +208,7 @@ end
 
 ---@class RunOpts
 ---@field cwd string?
----@field bufname string?
+---@field buffer_name string?
 ---@field kill_running boolean?
 ---@field open_win (fun(buf: number, task: Task): number)?
 ---@field notify ("never" | "on_error" | "always")?
@@ -227,11 +227,11 @@ function Task:run(cmd, opts)
         end
     end
 
-    local bufname = opts.bufname or self.last_bufname or config.bufname
+    local buffer_name = opts.buffer_name or self.last_buffer_name or config.buffer_name
 
     local buf = nil
-    if self.last_bufname ~= nil then
-        buf = get_buf_by_name(self.last_bufname)
+    if self.last_buffer_name ~= nil then
+        buf = get_buf_by_name(self.last_buffer_name)
     end
 
     if buf == nil then
@@ -252,7 +252,7 @@ function Task:run(cmd, opts)
         self.chan = nil
     end
 
-    vim.api.nvim_buf_set_name(buf, bufname) -- update name
+    vim.api.nvim_buf_set_name(buf, buffer_name) -- update name
 
     -- if a cwd is not passed, use the current window's cwd
     local cwd = opts.cwd or vim.fn.getcwd(0)
@@ -286,7 +286,7 @@ function Task:run(cmd, opts)
     -- may reuse in next call to run()
     self.last_cmd = cmd
     self.last_cwd = cwd
-    self.last_bufname = bufname
+    self.last_buffer_name = buffer_name
 
 end
 
