@@ -48,6 +48,9 @@ local function save_some_buffers()
         :filter(function(b)
             return vim.api.nvim_get_option_value('modified', { buf = b })
         end)
+        :filter(function(b)
+            return vim.api.nvim_get_option_value('buflisted', { buf = b })
+        end)
         :totable()
 
     for _, bufnum in ipairs(buffers) do
