@@ -619,6 +619,29 @@ function M.goto_prev_file()
     return goto_file(-1)
 end
 
+function M.send_to_qflist()
+    if not state.current_buf then
+        return
+    end
+
+    local lines = vim.api.nvim_buf_get_lines(state.current_buf, 0, -1, false)
+    local quickfix_data = vim.iter(lines)
+        :map(match)
+        :map(function(cap)
+            return {
+                filename = vim.tbl_get(cap, "filename", "value"),
+                lnum     = vim.tbl_get(cap, "line", "value"),
+                lnum_end = vim.tbl_get(cap, "line_end", "value"),
+                col      = vim.tbl_get(cap, "col", "value"),
+                col_end  = vim.tbl_get(cap, "col_end", "value"),
+                type     = vim.tbl_get(cap, "type", "value"),
+            }
+        end)
+        :totable()
+
+    vim.fn.setqflist(quickfix_data)
+end
+
 function M.set_default_keymaps(buf)
     vim.keymap.set("n", "<CR>" , M.goto_error_under_cursor,    { buffer = buf })
     vim.keymap.set("n", "g<CR>", M.display_error_under_cursor, { buffer = buf })
@@ -626,6 +649,13 @@ function M.set_default_keymaps(buf)
     vim.keymap.set("n", "gk"   , M.move_to_prev,               { buffer = buf })
     vim.keymap.set("n", "]]"   , M.move_to_next_file,          { buffer = buf })
     vim.keymap.set("n", "[["   , M.move_to_prev_file,          { buffer = buf })
+
+    vim.keymap.set("n", "<C-q>", function()
+        M.send_to_qflist()
+        vim.cmd.copen()
+    end,
+    { buffer = buf })
+
 end
 
 do
