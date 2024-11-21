@@ -25,24 +25,28 @@ local highlights = {
 -- and then a few helper functions for state transitions
 
 ---@class State
----@field current_buf? number
----@field extmark_id? number
----@field extmark_line? string
----@field autocmd_id? number
----@field ns_id number
----@field locus_ns number
----@field locus_timer? table uv_timer_t
-
----@type State
 local state = {
+    ---@type number?
     current_buf = nil,
+
+    ---@type number?
     extmark_id = nil,
+
+    ---@type number?
     autocmd_id = nil,
+
+    ---@type number
     ns_id = vim.api.nvim_create_namespace(""),
+
+    ---@type string?
     extmark_line = nil,
 
+    ---@type number
     locus_ns = vim.api.nvim_create_namespace(""),
+
+    ---@type table? uv_timer_t
     locus_timer = nil,
+
 }
 
 ---@param line string
