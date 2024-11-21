@@ -12,8 +12,6 @@ local highlights = {
     type = "DoitMsgType",
 }
 
-local locus_ns = vim.api.nvim_create_namespace("")
-
 -- TODO: try to use sum types for added safety to prevent mistakes
 -- merge extmark and extmark_line into a single tuple
 -- merge current_buf and autocmd_id into a single tuple
@@ -32,6 +30,8 @@ local locus_ns = vim.api.nvim_create_namespace("")
 ---@field extmark_line? string
 ---@field autocmd_id? number
 ---@field ns_id number
+---@field locus_ns number
+---@field locus_timer? table uv_timer_t
 
 ---@type State
 local state = {
@@ -40,6 +40,9 @@ local state = {
     autocmd_id = nil,
     ns_id = vim.api.nvim_create_namespace(""),
     extmark_line = nil,
+
+    locus_ns = vim.api.nvim_create_namespace(""),
+    locus_timer = nil,
 }
 
 ---@param line string
@@ -313,6 +316,47 @@ local function set_extmark(row)
 
 end
 
+---@param buf number
+---@param win number
+---@param line number 1-base
+---@param col number 1-base
+---@param end_col number? 1-base
+local function set_cursor(buf, win, line, col, end_col)
+    -- nvim_win_set_cursor() may fail.
+    -- This happens when nvim isn't allowed to edit the buffer, and thus
+    -- nvim opens an empty buffer with the same name
+    col = col - 1 -- colums are 0-based
+    local ok = pcall(vim.api.nvim_win_set_cursor, win, { line, col })
+    if not ok then
+        return
+    end
+
+    line = line - 1 -- back to 0-base again.
+    if end_col == nil then
+        end_col = vim.api.nvim_buf_get_lines(buf, line, line + 1, false)[1]:len()
+    else
+        end_col = end_col - 1
+    end
+
+    -- remove current highlight if it exists
+    if state.locus_timer ~= nil and state.locus_timer:is_active() then
+        -- wrap in pcall because timer might've closed already
+        pcall(function () state.locus_timer:close() end)
+        pcall(vim.api.nvim_buf_clear_namespace, buf, state.locus_ns, 0, -1)
+        state.locus_timer = nil
+    end
+
+    vim.highlight.range(buf, state.locus_ns, "DoitLocus", { line, col } , { line, end_col }, {
+        regtype = 'v',
+        inclusive = true,
+    })
+
+    state.locus_timer = vim.defer_fn(function()
+        vim.api.nvim_buf_clear_namespace(buf, state.locus_ns, line, line+1)
+    end, 500)
+
+end
+
 
 ---@param data Capture
 ---@param row number 0-base
@@ -348,36 +392,9 @@ local function enter(data, row, opts)
     ---@cast line number
 
     local col = vim.tbl_get(data, "col", "value") or 1
-    col = col - 1 -- colums are 0-based
+    local end_col = vim.tbl_get(data, "end_col", "value")
 
-    local set_cursor = function()
-        vim.api.nvim_win_set_cursor(win, { line, col })
-        line = line - 1 -- back to 0-base again.
-        local end_col = vim.tbl_get(data, "end_col", "value")
-
-        if end_col == nil then
-            end_col = vim.api.nvim_buf_get_lines(buf, line, line + 1, false)[1]:len()
-        else
-            end_col = end_col -1
-        end
-
-        vim.highlight.range(buf, locus_ns, "DoitLocus", { line, col } , { line, end_col }, {
-            regtype = 'v',
-            inclusive = true,
-        })
-
-        vim.defer_fn(function()
-            vim.api.nvim_buf_clear_namespace(buf, locus_ns, line, line+1)
-        end, 500)
-
-    end
-
-    -- wrap in a pcall because the call to
-    -- nvim_win_set_cursor() may fail.
-    -- This happens when nvim isn't allowed to edit the buffer, and thus
-    -- nvim opens an empty buffer with the same name
-    pcall(set_cursor)
-
+    set_cursor(buf, win, line, col, end_col)
     set_extmark(row)
 end
 
