@@ -25,7 +25,7 @@ local default_config = {
     ask_about_save = true,
 
     ---@type boolean
-    want_error_keymaps = true,
+    want_navbuf_keymaps = true,
 
     ---@type boolean
     want_task_keymaps = true,

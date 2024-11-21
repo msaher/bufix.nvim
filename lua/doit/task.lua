@@ -151,7 +151,7 @@ local function create_task_buf(task)
 
     -- set buf as error buffer
     ---@cast buf number
-    require("doit.errors").set_buf(buf)
+    require("doit.nav").set_buf(buf)
 
     local config = require("doit").config
     if config.want_task_keymaps then

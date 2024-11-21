@@ -165,7 +165,7 @@ local function attach(buf)
         attach_term(buf)
     end
 
-    if require("doit").config.want_error_keymaps then
+    if require("doit").config.want_navbuf_keymaps then
         M.set_default_keymaps(buf)
     end
 end
@@ -174,10 +174,10 @@ end
 function M.register_buf(buf)
     if state.current_buf == nil then
         M.set_buf(buf)
-    elseif not vim.b[buf].doit_errorbuf then
+    elseif not vim.b[buf].doit_navbuf then
         ---@diagnostic disable-next-line: cast-local-type
         buf = (buf == 0) and vim.api.nvim_get_current_buf() or buf
-        vim.b[buf].doit_errorbuf = true
+        vim.b[buf].doit_navbuf = true
         attach(buf)
     end
 end
@@ -221,11 +221,11 @@ function M.set_buf(buf)
             state.current_buf = nil
             state.autocmd_id = nil
 
-            -- set the next error buffer by looking for the first buffer that
-            -- sets b:doit_errorbuf to true
+            -- set the next nav buffer by looking for the first buffer that
+            -- sets b:doit_navbuf to true
             local next_buf = vim.iter(vim.api.nvim_list_bufs())
                 :filter(function(b) return vim.api.nvim_buf_is_loaded(b) end)
-                :filter(function(b) return vim.b[b].doit_errorbuf == true end)
+                :filter(function(b) return vim.b[b].doit_navbuf == true end)
                 :find(function(b) return state.current_buf ~= b end)
 
             if next_buf ~= nil then
@@ -233,17 +233,17 @@ function M.set_buf(buf)
             end
 
         end,
-        desc = "doit: remove buf from being the current error buf",
+        desc = "doit: remove buf from being the current nav buf",
         once = true,
     })
 
-    if not vim.b[buf].doit_errorbuf then
-        vim.b[buf].doit_errorbuf = true
+    if not vim.b[buf].doit_navbuf then
+        vim.b[buf].doit_navbuf = true
         attach(buf)
     end
 end
 
-local function get_or_make_error_win()
+local function get_or_make_nav_win()
     local win = vim.fn.bufwinid(state.current_buf)
     if win == -1 then
         ---@diagnostic disable-next-line: cast-local-type
@@ -308,7 +308,7 @@ local function set_extmark(row)
 
     state.extmark_line = vim.api.nvim_buf_get_lines(state.current_buf, row, row+1, true)[1]
 
-    local win = get_or_make_error_win()
+    local win = get_or_make_nav_win()
     vim.api.nvim_win_set_cursor(win, { row+1, 0 })
 
     -- FIXME: would be nice to center the the window around the cursor if its currently
@@ -481,7 +481,7 @@ end
 
 ---@param step number
 local function move_to(step)
-    local win = get_or_make_error_win()
+    local win = get_or_make_nav_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]-1
     local res = jump(step, row+step)
 
@@ -502,14 +502,14 @@ end
 ---@return {data: Capture, row: number}?
 local function get_capture_under_cursor()
     local buf = vim.api.nvim_get_current_buf()
-    if not vim.b[buf].doit_errorbuf then
+    if not vim.b[buf].doit_navbuf then
         return
     end
 
     ---@cast buf number
     M.set_buf(buf)
 
-    local win = get_or_make_error_win()
+    local win = get_or_make_nav_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]                     -- 1-based
     local line = vim.api.nvim_buf_get_lines(state.current_buf, row - 1, row, true)[1] -- 0-based
 
@@ -562,7 +562,7 @@ end
 ---@param step number
 ---@return {data: Capture, row: number}?
 local function move_to_file(step)
-    local win = get_or_make_error_win()
+    local win = get_or_make_nav_win()
     local row = vim.api.nvim_win_get_cursor(win)[1]-1
     local skip_file = vim.tbl_get(get_capture_under_cursor() or {}, "data", "filename", "value")
     local res = jump_to_file(step, row, skip_file)

@@ -71,25 +71,25 @@ local subcommand_tbl = {
 
     next = {
         impl = function()
-            require("doit.errors").goto_next()
+            require("doit.nav").goto_next()
         end
     },
 
     ["next-file"] = {
         impl = function()
-            require("doit.errors").goto_next_file()
+            require("doit.nav").goto_next_file()
         end
     },
 
     ["prev-file"] = {
         impl = function()
-            require("doit.errors").goto_prev_file()
+            require("doit.nav").goto_prev_file()
         end
     },
 
     prev = {
         impl = function()
-            require("doit.errors").goto_prev()
+            require("doit.nav").goto_prev()
         end
     },
 
