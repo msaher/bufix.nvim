@@ -28,13 +28,13 @@ local default_config = {
     want_error_keymaps = true,
 
     ---@type boolean
-    want_task_keymaps = false,
+    want_task_keymaps = true,
 
     ---@type number in milliseconds
     locus_highlight_duration = 500,
 
     ---@type boolean
-    prompt_cmd_with_vim_ui = true,
+    prompt_cmd_with_vim_ui = false,
 
     ---@type table
     rules = {},
