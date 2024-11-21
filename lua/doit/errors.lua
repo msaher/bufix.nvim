@@ -203,7 +203,7 @@ function M.set_buf(buf)
 
     -- remove previous autocmd if it exists
     if state.autocmd_id ~= nil then
-        vim.api.nvim_del_autocmd(state.autocmd_id)
+        pcall(vim.api.nvim_del_autocmd, state.autocmd_id)
     end
 
     ---@cast buf number

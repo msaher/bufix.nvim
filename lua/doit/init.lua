@@ -29,6 +29,9 @@ local default_config = {
     ---@type number in milliseconds
     locus_highlight_duration = 500,
 
+    ---@type boolean
+    prompt_cmd_with_vim_ui = true,
+
     ---@type table
     rules = {},
 

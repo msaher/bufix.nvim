@@ -322,26 +322,26 @@ endfunction
 
 ---@param opts RunOpts?
 function Task:prompt_for_cmd(opts)
-    local input = vim.fn.input({
+    local settings =  {
         prompt = "Command to run: ",
         default = self.last_cmd or "",
         completion = "customlist,DoitInputComplete",
-    })
+    }
 
-    if input ~= nil and input ~= "" then
-        self:run(input, opts)
+    local use_vim_ui = require("doit").config.prompt_cmd_with_vim_ui
+    if use_vim_ui then
+        vim.ui.input(settings, function(input)
+            if input ~= nil and input ~= "" then
+                self:run(input, opts)
+            end
+        end
+        )
+    else
+        local input = vim.fn.input(settings)
+        if input ~= nil and input ~= "" then
+            self:run(input, opts)
+        end
     end
-
-    -- vim.ui.input({
-    --     prompt = "Command to run: ",
-    --     default = self.last_cmd or "",
-    --     completion = "customlist,DoitInputComplete",
-    -- }, function(input)
-    --         if input ~= nil and input ~= "" then
-    --             self:run(input, opts)
-    --         end
-    --     end
-    -- )
 
 end
 
