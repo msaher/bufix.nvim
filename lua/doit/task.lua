@@ -352,11 +352,29 @@ function Task:rerun(opts)
     self:run(self.last_cmd, opts)
 end
 
+---@return false | number
 function Task:stop()
     if self.chan ~= nil then
-        vim.fn.jobstop(self.chan)
+        local res = vim.fn.jobstop(self.chan)
         self.chan = nil
+        return res
     end
+
+    return false
+end
+
+-- NOTE: wont work on windows
+
+---@param signal number
+function Task:kill(signal)
+    if self.chan then
+        local pid = vim.fn.jobpid(self.chan)
+        return vim.system({'kill', '-s', signal, pid})
+    end
+end
+
+function Task:interrupt()
+    return self:kill(SIGINT-128)
 end
 
 -- completion function for prompt_for_cmd()
