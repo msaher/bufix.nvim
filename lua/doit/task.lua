@@ -337,6 +337,13 @@ do
     vim.api.nvim_set_hl(0, "DoitTaskAbnormal", { link = "WarningMsg", default = true })
 end
 
+function Task:stop()
+    if self.chan ~= nil then
+        vim.fn.jobstop(self.chan)
+        self.chan = nil
+    end
+end
+
 -- completion function for prompt_for_cmd()
 -- credit goes to https://github.com/ej-shafran/compile-mode.nvim
 -- Thank you!
