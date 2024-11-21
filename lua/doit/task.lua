@@ -227,6 +227,7 @@ end
 ---@field open_win (fun(buf: number, task: Task): number)?
 ---@field notify ("never" | "on_error" | "always")?
 ---@field ask_about_save boolean?
+---@field stdin string?
 
 ---@param cmd string | string[]
 ---@param opts RunOpts?

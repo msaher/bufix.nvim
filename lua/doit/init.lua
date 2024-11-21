@@ -42,7 +42,10 @@ local default_config = {
 ---@field open_win? fun(buf: number, task: Task): number
 ---@field buffer_name? string
 ---@field kill_running? boolean
----@field on_task_create? fun(buf: number, task: Task)
+---@field on_task_buf? fun(buf: number, task: Task)
+---@field ask_about_save? boolean
+---@field locus_highlight_duration? number
+---@field prompt_cmd_with_vim_ui? boolean
 ---@field rules? table
 
 ---@type DoitFullConfig
