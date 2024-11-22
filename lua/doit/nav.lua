@@ -619,9 +619,14 @@ function M.goto_prev_file()
     return goto_file(-1)
 end
 
-function M.send_to_qflist()
-    if not state.current_buf then
-        return
+---@param buf? number
+---@return boolean
+function M.send_to_qflist(buf)
+    if not buf then
+        buf = state.current_buf
+        if not buf then
+            return false
+        end
     end
 
     local lines = vim.api.nvim_buf_get_lines(state.current_buf, 0, -1, false)
@@ -640,6 +645,8 @@ function M.send_to_qflist()
         :totable()
 
     vim.fn.setqflist(quickfix_data)
+
+    return true
 end
 
 function M.set_default_keymaps(buf)
