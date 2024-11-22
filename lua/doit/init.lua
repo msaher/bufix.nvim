@@ -82,10 +82,12 @@ local default_config = {
 ---@type DoitFullConfig
 M.config = default_config
 
----@param cfg DoitConfig
+---@param cfg DoitConfig?
 function M.setup(cfg)
     ---@diagnostic disable-next-line assign-type-mismatch
-    M.config = vim.tbl_deep_extend('force', cfg, default_config)
+    if cfg ~= nil then
+        M.config = vim.tbl_deep_extend('force', cfg, M.config)
+    end
 end
 
 return M
