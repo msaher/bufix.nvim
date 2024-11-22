@@ -1,5 +1,6 @@
 -- pattern to strip ansi escape sequences and carriage carriage-return
 local strip_ansii_cr = "[\27\155\r][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
+-- local strip_ansii_cr = "[\27\155][]?[()#;?%d]*[A-PRZcf-ntqry=><~]?"
 
 local SIGFAULT = 139
 local SIGINT = 130
@@ -15,28 +16,40 @@ local exit_messages = {
     [SIGTERM] = "Task terminated",
 }
 
----@param first_item string
+---@param last_item string
 ---@param data string[]
 ---@return string
 ---@return number
-local function pty_append_to_buf(buf, first_item, data)
+local function pty_append_to_buf(buf, last_item, data)
+    -- EOF is when data == {" "}. See :h channel-lines
+    -- If we receive EOF then there's nothing to do
+    local eof = (#data == 1) and (data[1] == "")
+    if eof then
+        return "", #data
+    end
+
     -- as per :h channel-lines, the first and last items may be partial when
     -- jobstart is passed the pty = true option.
     -- We set the first item as the first element and return the last item
-    data[1] = first_item .. data[1]
-    first_item = data[#data] -- next first item
-    data[#data] = nil
+    data[1] = last_item .. data[1]
+    if #data > 1 then
+        last_item = data[#data] -- next first item
+        data[#data] = nil
+    else
+        last_item = ""
+    end
 
     -- strip ansii sequences and remove \r character
     data = vim.tbl_map(function(line)
-        return select(1, string.gsub(line, strip_ansii_cr, ""))
+        line = select(1, string.gsub(line, strip_ansii_cr, ""))
+        return line
     end, data)
 
     vim.schedule(function()
         vim.api.nvim_buf_set_lines(buf, -1, -1, true, data)
     end)
 
-    return first_item, #data
+    return last_item, #data
 end
 
 ---@return boolean true if user exited with esc
@@ -192,7 +205,7 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
         cmd,
     })
     local line_count = 4
-    local first_item = ""
+    local last_item = ""
 
     if stdin then
         -- NOTE: always run in shell in stdin is set
@@ -216,7 +229,7 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
         stdout_buffered = false, -- we'll buffer stdout ourselves
         on_stdout = function(_, data)
             local added
-            first_item, added = pty_append_to_buf(buf, first_item, data)
+            last_item, added = pty_append_to_buf(buf, last_item, data)
             line_count = line_count + added
         end,
 
