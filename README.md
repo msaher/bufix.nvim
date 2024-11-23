@@ -83,7 +83,7 @@ Accepts the following command modifiers:
 You can combine these for custom behaviour:
 
 ```
-:silent! horizontal botright Doit run grep -rn TODO`.
+:silent! horizontal botright Doit run grep -rn TODO
 ```
 
 :Doit rerun
