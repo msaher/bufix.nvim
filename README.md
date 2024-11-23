@@ -52,7 +52,6 @@ vim.api.nvim_create_autocmd("TermOpen", {
 # Commands
 
 :Doit
-
 : Prompts for a sub command
 
 :[range]Doit run [cmd]
@@ -81,38 +80,31 @@ You can combine these for custom behaviour:
 ```
 
 :Doit rerun
-
 : Reruns the last command.
 
 Accepts the same command modifiers as `:Doit run`
 
 :Doit stop
-
 : Sends `SIGTERM` to the running task.
 
 If the process doesn't terminate after a timeout, a `SIGKILL` signal is sent.
 Works Like `:h jobstop`
 
 :Doit interrupt
-
 : Sends `SIGINT` to the running task.
 
 This is Equivalent to typing ctrl-c `C-c` in a termianl.
 
 :Doit next
-
 : Go to the next error in the nav buffer
 
 :Doit prev
-
 : Go to the previous error in the nav buffer
 
 :Doit next-file
-
 : Go to the next file in the nav buffer
 
 :Doit prev-file
-
 : Go to the previous file in the nav buffer
 
 # Configuration
@@ -264,7 +256,6 @@ vim.api.nvim_create_autocmd("TermOpen", {
 ---
 
 task:run({cmd}, {opts})
-
 : Runs {cmd} in a task buffer.
 
 - Parameters:
@@ -291,14 +282,12 @@ task:run({cmd}, {opts})
           strings
 
 task:prompt_for_cmd({opts})
-
 : Prompts for a command to run.
 internally usees `vim.ui.input()`
 if `prompt_cmd_with_vim_ui` is set in [config](#Configuration).
 Takes same {opts} as `:h doit-task:run()`
 
 task:rerun({opts})
-
 : Reruns the last command.
 
 Accepts same {opts} as `:h doit-task:run()` except:
@@ -308,16 +297,13 @@ Accepts same {opts} as `:h doit-task:run()` except:
 
 
 task:stop()
-
 : Like `:h doit-:Doit-stop`
 
 
 task:interrupt()
-
 : Like `:h doit-:Doit-interrupt`
 
 task:kill({signal})
-
 : Send {signal} to task using the unix
 `kill` command.
 
@@ -344,36 +330,28 @@ Nav buffers are similar to the quickfix list. Some differnces:
 ---
 
 nav.goto_prev()
-
 : Go to the previous error
 
 nav.goto_next_file()
-
 : Go to the next error
 
 nav.goto_prev_file()
-
 : Go to the prevous error
 
 nav.move_to_next()
-
 : Move cursor to next error line
 
 nav.move_to_prev()
-
 : Move cursor to previous error line
 
 nav.goto_error_under_cursor()
-
 : Go to the error under the cursor
 
 nav.display_error_under_cursor()
-
 : Visit file containg the error,
 but do focus on its window
 
 nav.set_buf({buf})
-
 : Makes {buf} the current nav buffer.
 
 functions that operate on the current nav buffer:
@@ -386,7 +364,6 @@ functions that operate on the current nav buffer:
   - nav.move_to_prev_file()
 
 nav.register_buf({buf})
-
 : Register {buf} as a nav buffer
 
 If there's no nav buffer, then sets {buf} as the nav buffer. Otherwise, it
@@ -398,7 +375,6 @@ For example, if there are to nav buffers `A` and `B`, and `A` is the current
 one. Once buffer `A` gets deleted, buffer `B` becomes the current nav buffer.
 
 nav.send_to_qflist({buf})
-
 : Parse {buf}, and send it the quickfix list
 as per the error rules. {buf} doesn't have
 to be a nav buffer. If want to use the
@@ -410,21 +386,17 @@ built-in `:h :errorformat`, then use
 The following highlights are provided:
 
 DoitTaskSuccess
-
 : highlight group for when the task
 finishes successfully
 
 DoitTaskAbnormal
-
 : highlight group for when task exists
 abnormally
 
 DoitTaskSegfault
-
 : highlight group for when task segfaults
 
 DoitTaskTerminate
-
 : highlight group for when task terminates
 
 DoitFilename
