@@ -18,7 +18,7 @@ With lazy
 ## Quickstart
 
 Execute `:Doit run` to get prompted for a command. If the output contains paths
-(like output of `grep -rn` or a compiler), then you'll be able to jump through
+(try `grep -rn` or a compiler), then you'll be able to jump through
 them using `:Doit next` and `:Doit prev`. You can also press `<CR>` on a path to
 jump directly to it. If you'd like to rerun the last command use `:Doit rerun`.
 
@@ -404,4 +404,48 @@ as per the error rules. {buf} doesn't have
 to be a nav buffer. If want to use the
 built-in `:h :errorformat`, then use
 `:h cbuffer` instead.
+
+# Highlights
+
+The following highlights are provided:
+
+DoitTaskSuccess
+
+: highlight group for when the task
+finishes successfully
+
+DoitTaskAbnormal
+
+: highlight group for when task exists
+abnormally
+
+DoitTaskSegfault
+
+: highlight group for when task segfaults
+
+DoitTaskTerminate
+
+: highlight group for when task terminates
+
+DoitFilename
+: highlight group for filename
+
+DoitLine
+: highlight group for line number
+
+DoitLineEnd
+: highlight group for ending line number
+
+DoitCol
+: highlight group for column number
+
+DoitColEnd
+: highlight group for ending column number
+
+DoitType
+: highlight group for error type
+
+DoitCurrent
+: highlight group for the sign column
+arrow pointing at current error
 
