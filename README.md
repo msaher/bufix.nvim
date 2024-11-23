@@ -143,6 +143,12 @@ require("doit").setup({
     ---@type fun(task: Task, buf: number)?
     on_task_buf = nil,
 
+    -- Callback that runs after a buffer is registered as a navigation buffer.
+    -- Use this to create custom keymaps. ALL task bufers are nav buffers. nav
+    -- buffers are what's responsible for the jumping logic.
+    ---@type fun(buf: number)?
+    on_nav_buf = nil,
+
     --- Callback that runs after task exits. Similar to `jobstart()`. See :h on_exit for more.
     ---@type fun(job_id: number, exit_code: number, event_type: string, buf: number, task: Task)?
     on_exit = nil,

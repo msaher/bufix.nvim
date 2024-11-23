@@ -169,9 +169,15 @@ local function attach(buf)
         attach_term(buf)
     end
 
-    if require("doit").config.want_navbuf_keymaps then
+    local config = require("doit").config
+    if config.want_navbuf_keymaps then
         M.set_default_keymaps(buf)
     end
+
+    if config.on_nav_buf ~= nil then
+        config.on_nav_buf(buf)
+    end
+
 end
 
 ---@param buf number
