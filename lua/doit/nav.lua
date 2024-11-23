@@ -61,6 +61,7 @@ local function match(line)
             return data
         end
     end
+
     local rules = require("doit.rules")
 
     for k, rule in pairs(rules) do
@@ -650,18 +651,18 @@ function M.send_to_qflist(buf)
 end
 
 function M.set_default_keymaps(buf)
-    vim.keymap.set("n", "<CR>" , M.goto_error_under_cursor,    { buffer = buf })
-    vim.keymap.set("n", "g<CR>", M.display_error_under_cursor, { buffer = buf })
-    vim.keymap.set("n", "gj"   , M.move_to_next,               { buffer = buf })
-    vim.keymap.set("n", "gk"   , M.move_to_prev,               { buffer = buf })
-    vim.keymap.set("n", "]]"   , M.move_to_next_file,          { buffer = buf })
-    vim.keymap.set("n", "[["   , M.move_to_prev_file,          { buffer = buf })
+    vim.keymap.set("n", "<CR>" , M.goto_error_under_cursor,    { buffer = buf,  desc = "Go to error under cursor"})
+    vim.keymap.set("n", "g<CR>", M.display_error_under_cursor, { buffer = buf,  desc = "Dispaly error under cursor"})
+    vim.keymap.set("n", "gj"   , M.move_to_next,               { buffer = buf,  desc = "Move cursor to next error"})
+    vim.keymap.set("n", "gk"   , M.move_to_prev,               { buffer = buf,  desc = "Move cursor to prev error"})
+    vim.keymap.set("n", "]]"   , M.move_to_next_file,          { buffer = buf,  desc = "Move cursor to next file"})
+    vim.keymap.set("n", "[["   , M.move_to_prev_file,          { buffer = buf,  desc = "Move cursor to prev file"})
 
     vim.keymap.set("n", "<C-q>", function()
         M.send_to_qflist()
         vim.cmd.copen()
     end,
-    { buffer = buf })
+    { buffer = buf, desc = "Send errors to qflist"})
 
 end
 
