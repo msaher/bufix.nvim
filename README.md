@@ -42,7 +42,7 @@ vim.keymap.set("n", "]e",        function() require("doit.nav").goto_next()     
 vim.keymap.set("n", "[e",        function() require("doit.nav").goto_prev()       end , { desc = "Go to prev error"}))
 ```
 
-If you want `:h :termianl` to act just like a task buffer, then add this
+If you want `:h :terminal` to act just like a task buffer, then add this
 autocommand:
 
 ```lua
