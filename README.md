@@ -331,14 +331,15 @@ doit-nav.register_buf()`
 
 Nav buffers are similar to the quickfix list. Some differnces:
 
-- Nav buffers work on "live" buffers. This makes them useful when running servers
-  or logging commands like `tail -f`. They additionally can be used
-  interactively with `:h termianl`.
+- Nav buffers work on "live" buffers. like terminals or tasks. This makes them
+  useful when running servers or logging commands like `tail -f`. They
+  additionally can be used with interactive buffers like `:h termianl`.
 
-- Nav buffers use `:h vim.lpeg` to parse error messages. You can add or
-  overwrite existing rules. See `:h doit-rules`
+- Nav buffers use `:h vim.lpeg` to parse error messages.
 
 - Unlike the quickfix list, you don't have to mess with `:h errorformat`.
+
+- The cursor gets highlighted when jumping through errors.
 
 ---
 
@@ -400,5 +401,7 @@ nav.send_to_qflist({buf})
 
 : Parse {buf}, and send it the quickfix list
 as per the error rules. {buf} doesn't have
-to be a nav buffer.
+to be a nav buffer. If want to use the
+built-in `:h :errorformat`, then use
+`:h cbuffer` instead.
 
