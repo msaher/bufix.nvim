@@ -2,7 +2,14 @@
 
 > This plugin is currently in the testing phase.
 
-`doit.nvim` is a command runner inspired by emacs' `M-x compile`
+a command runner inspired by emacs' M-x compile
+
+`doit.nvim` is a versatile task execution and navigation plugin for Neovim. It
+streamlines running commands, parsing their output, and navigating through
+errors or file paths directly within Neovim.
+
+- Run commands and view their output in a dedicated, easily manageable buffer.
+- (Optional) Integratation with `:terminal`.
 
 ## Installation
 
@@ -423,7 +430,7 @@ arrow pointing at current error
 
 # Acknowledgment
 
-This plugin wouldn't have been possible without inspiration from
+This plugin wouldn't have been possible without inspiration from:
 
 - Emacs (duh)
 - <https://github.com/ej-shafran/compile-mode.nvim>
