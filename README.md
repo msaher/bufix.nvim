@@ -13,6 +13,8 @@ errors or file paths directly within Neovim.
 
 ## Installation
 
+This plugin requires nvim >= 0.10
+
 With lazy
 
 ```lua

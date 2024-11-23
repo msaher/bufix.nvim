@@ -30,6 +30,8 @@ errors or file paths directly within Neovim.
 
 INSTALLATION                                  *doit-introduction-installation*
 
+This plugin requires nvim >= 0.10
+
 With lazy
 
 >lua
