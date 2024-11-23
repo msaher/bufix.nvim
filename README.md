@@ -421,3 +421,10 @@ DoitCurrent
 : highlight group for the sign column
 arrow pointing at current error
 
+# Acknowledgment
+
+This plugin wouldn't have been possible without inspiration from
+
+- Emacs (duh)
+- <https://github.com/ej-shafran/compile-mode.nvim>
+- <https://github.com/nvim-neorocks/nvim-best-practices>

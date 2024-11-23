@@ -18,6 +18,7 @@ doit-DoitTaskSegfault	doit.txt	/*doit-DoitTaskSegfault*
 doit-DoitTaskSuccess	doit.txt	/*doit-DoitTaskSuccess*
 doit-DoitTaskTerminate	doit.txt	/*doit-DoitTaskTerminate*
 doit-DoitType	doit.txt	/*doit-DoitType*
+doit-acknowledgment	doit.txt	/*doit-acknowledgment*
 doit-commands	doit.txt	/*doit-commands*
 doit-configuration	doit.txt	/*doit-configuration*
 doit-highlights	doit.txt	/*doit-highlights*
