@@ -130,19 +130,17 @@ function Task.default_open_win(buf)
     })
 end
 
----@param win number
-local function matchadd(win)
-    vim.api.nvim_win_call(win, function()
-        vim.fn.matchadd("DoitTaskSuccess", [[Task \zsfinished\ze]])
-
-        vim.fn.matchadd("DoitTaskAbnormal", [[Task exited \zsabnormally\ze with code \d\+]])
-        vim.fn.matchadd("DoitTaskAbnormal", [[Task exited abnormally with code \zs\d\+\ze]])
-
-        vim.fn.matchadd("DoitTaskSegfault", [[Task \zssegmentation fault\ze (core dumped) at]])
-
-        vim.fn.matchadd("DoitTaskTerminate", [[Task \zsterminated\ze at]])
-
-        vim.fn.matchadd("DoitTaskInterrupt", [[Task \zsinterrupt\ze at]])
+---@param number
+local function add_highlights(buf)
+    vim.api.nvim_buf_call(buf, function()
+        vim.cmd [[
+        syntax match DoitTaskSuccess /Task \zsfinished\ze/
+        syntax match DoitTaskAbnormal /Task exited \zsabnormally\ze with code \d\+/
+        syntax match DoitTaskAbnormal /Task exited abnormally with code \zs\d\+\ze/
+        syntax match DoitTaskSegfault /Task \zssegmentation fault\ze (core dumped) at/
+        syntax match DoitTaskTerminate /Task \zsterminated\ze at/
+        syntax match DoitTaskInterrupt /Task \zsinterrupt\ze at/
+        ]]
     end)
 end
 
@@ -251,6 +249,7 @@ function Task:_jobstart(cmd, buf, cwd, notify, stdin, on_exit)
             vim.api.nvim_buf_set_lines(buf, -1, -1, true, { "", msg })
 
             self.chan = nil
+            add_highlights(buf)
 
             on_exit = on_exit or require("doit").config.on_exit
             if on_exit then
@@ -331,7 +330,6 @@ function Task:run(cmd, opts)
         local open_win = opts.open_win or require("doit").config.open_win
         win = open_win(buf, self)
         vim.api.nvim_win_set_buf(win, buf)
-        matchadd(win)
 
         vim.api.nvim_set_option_value("number", false, { win = win })
     end
