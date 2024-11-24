@@ -360,12 +360,12 @@ but do focus on its window
 
 functions that operate on the current nav buffer:
 
-  - nav.goto_error_under_cursor()
-  - nav.display_error_under_cursor()
-  - nav.move_to_next()
-  - nav.move_to_prev()
-  - nav.move_to_next_file()
-  - nav.move_to_prev_file()
+  - `nav.goto_error_under_cursor()`
+  - `nav.display_error_under_cursor()`
+  - `nav.move_to_next()`
+  - `nav.move_to_prev()`
+  - `nav.move_to_next_file()`
+  - `nav.move_to_prev_file()`
 
 `nav.register_buf({buf})`
 : Register `{buf}` as a nav buffer
