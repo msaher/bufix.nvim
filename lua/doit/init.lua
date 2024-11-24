@@ -62,11 +62,7 @@ local default_config = {
 
     --- If true, use vim.ui.input() to prompt.
     ---@type boolean
-    prompt_cmd_with_vim_ui = false,
-
-    --- Extra error rules
-    ---@type table
-    rules = {},
+    prompt_cmd_with_vim_ui = true,
 
 }
 
