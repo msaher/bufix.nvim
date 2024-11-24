@@ -88,7 +88,7 @@ M.config = default_config
 function M.setup(cfg)
     ---@diagnostic disable-next-line assign-type-mismatch
     if cfg ~= nil then
-        M.config = vim.tbl_deep_extend('force', cfg, M.config)
+        M.config = vim.tbl_deep_extend('force', M.config, cfg)
     end
 end
 
