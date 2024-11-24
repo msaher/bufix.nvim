@@ -56,7 +56,7 @@ Handy keymaps:
     vim.keymap.set("n", "<leader>k", "<cmd>Doit run<CR>",  { desc = "Run command"})
     vim.keymap.set("n", "]e",        "<cmd>Doit next<CR>", { desc = "Go to next error"})
     vim.keymap.set("n", "[e",        "<cmd>Doit prev<CR>", { desc = "Go to prev error"})
-    
+
     --- or if you prefer to use the API
     vim.keymap.set("n", "<leader>r", function() require("doit.task"):prompt_for_cmd() end , { desc = "Run command"})
     vim.keymap.set("n", "]e",        function() require("doit.nav").goto_next()       end , { desc = "Go to next error"}))
@@ -85,13 +85,13 @@ autocommand:
                                                                 *doit-:Doit*
 
 
-:Doit                                  Prompts for a sub command
+`:Doit`                                Prompts for a sub command
 
 
-                                                                    *doit-:*
+                                                                    *doit-:Doit-run*
 
 
-:[range]Doit run [cmd]                 If [cmd] is set, runs [cmd] in the task buffer. Otherwise, prompts for a
+`:[range]Doit run [cmd]`               If [cmd] is set, runs [cmd] in the task buffer. Otherwise, prompts for a
                                        command to run.
 
 
@@ -120,7 +120,7 @@ You can combine these for custom behaviour:
                                                           *doit-:Doit-rerun*
 
 
-:Doit rerun                            Reruns the last command.
+`:Doit rerun`                          Reruns the last command.
 
 
 
@@ -130,7 +130,7 @@ Accepts the same command modifiers as `:Doit run`
                                                            *doit-:Doit-stop*
 
 
-:Doit stop                             Sends `SIGTERM` to the running task.
+`:Doit stop`                           Sends `SIGTERM` to the running task.
 
 
 
@@ -141,7 +141,7 @@ Works Like |jobstop|
                                                       *doit-:Doit-interrupt*
 
 
-:Doit interrupt                        Sends `SIGINT` to the running task.
+`:Doit interrupt`                      Sends `SIGINT` to the running task.
 
 
 
@@ -151,25 +151,25 @@ This is Equivalent to typing ctrl-c `C-c` in a termianl.
                                                            *doit-:Doit-next*
 
 
-:Doit next                             Go to the next error in the nav buffer
+`:Doit next`                           Go to the next error in the nav buffer
 
 
                                                            *doit-:Doit-prev*
 
 
-:Doit prev                             Go to the previous error in the nav buffer
+`:Doit prev`                           Go to the previous error in the nav buffer
 
 
                                                       *doit-:Doit-next-file*
 
 
-:Doit next-file                        Go to the next file in the nav buffer
+`:Doit next-file`                      Go to the next file in the nav buffer
 
 
                                                       *doit-:Doit-prev-file*
 
 
-:Doit prev-file                        Go to the previous file in the nav buffer
+`:Doit prev-file`                      Go to the previous file in the nav buffer
 
 
 
@@ -181,75 +181,75 @@ Configuration is done through calling `require("doit").setup()`. It justs sets
 `cfg` to the `require("doit").config` table. The default configuration is:
 
 >lua
-    
+
     -- DONT COPY PASTE THIS ITS JUST THE DEFAULT CONFIG
     -- Read the next section to learn more about the options
     require("doit").setup({
         --- notifying when the command finishes
         ---@type "never" | "on_error" | "always"
         notify = "never",
-    
+
         --- Function that returns the window number that the task buffer will be
         --- placed in.
         ---@type fun(buf: number, task: Task): number
         open_win = function(buf) return require("doit.task").default_open_win(buf) end,
-    
+
         --- Name of the task buffer.
         ---@type string
         buffer_name = "*Task*",
-    
+
         -- Callback that runs after the task buffer is created. Use this if you want
         -- to create custom keymaps.
         ---@type fun(task: Task, buf: number)?
         on_task_buf = nil,
-    
+
         -- Callback that runs after a buffer is registered as a navigation buffer.
         -- Use this to create custom keymaps. ALL task bufers are nav buffers. nav
         -- buffers are what's responsible for the jumping logic.
         ---@type fun(buf: number)?
         on_nav_buf = nil,
-    
+
         --- Callback that runs after task exits. Similar to `jobstart()`. See :h on_exit for more.
         ---@type fun(job_id: number, exit_code: number, event_type: string, buf: number, task: Task)?
         on_exit = nil,
-    
+
         --- Prompts to save if there are unsaved changes. Useful to avoid compiling
         --- old code.
         ---@type boolean
         ask_about_save = true,
-    
+
         --- Do not ask for confirmation before terminating a command
         ---@type boolean
         always_terminate = false,
-    
+
         --- Buffer local keymaps in nav buffers. Such as <CR> to jump or <C-q> to
         --- send to qflist
         ---@type boolean
         want_navbuf_keymaps = true,
-    
+
         --- Buffer local keymaps in task buffers. Such as "r" to rerun or "<C-c"> to
         --- interrupt.
         ---@type boolean
         want_task_keymaps = true,
-    
+
         --- Default timestamp fromat used in task buffers. Accepts same format as
         --- :h os.date() in lua
         ---@type string
         time_format = "%a %b %e %H:%M:%S",
-    
+
         --- How long to highlight the cursor after jumping. Set it to 0 to disable
         --- it.
         ---@type number in milliseconds
         locus_highlight_duration = 500,
-    
+
         --- If true, use vim.ui.input() to prompt.
         ---@type boolean
         prompt_cmd_with_vim_ui = false,
-    
+
         --- Extra error rules
         ---@type table
         rules = {},
-    
+
     })
 <
 
@@ -271,7 +271,7 @@ nav buffers (like task buffers):
         vim.keymap.set("n", "gk"   , require("doit.nav").move_to_prev,               { buffer = buf,  desc = "Move cursor to prev error"})
         vim.keymap.set("n", "]]"   , require("doit.nav").move_to_next_file,          { buffer = buf,  desc = "Move cursor to next file"})
         vim.keymap.set("n", "[["   , require("doit.nav").move_to_prev_file,          { buffer = buf,  desc = "Move cursor to prev file"})
-    
+
         vim.keymap.set("n", "<C-q>", function()
             require("doit.nav").send_to_qflist()
             vim.cmd.copen()
@@ -328,13 +328,13 @@ use `:Doit next` and friends, then add this auto command
                                                            *doit-task:run()*
 
 
-task:run({cmd}, {opts})                Runs {cmd} in a task buffer.
+`task:run({cmd}, {opts})`              Runs {cmd} in a task buffer.
 
 
 
 - Parameters:
-    - {cmd}: string or list of strings. If its a string, then it runs in a |'shell'|.
-    - {opts}: Optional parameters. They have higher priority then
+    - `{cmd}`: string or list of strings. If its a string, then it runs in a |'shell'|.
+    - `{opts}`: Optional parameters. They have higher priority then
         |doit-config|
         - `cwd`: string. Working directory of the task. Defaults to the current
             working directory.
@@ -347,31 +347,31 @@ task:run({cmd}, {opts})                Runs {cmd} in a task buffer.
             - `buf`: buffer number of the task
             - `task`: Task object
         - `notify`: How to notify when a task finishes. One of
-            - "never": Never notify when a task finishes.
-            - "on_error": only notify on errors.
-            - "always": Always notify.
+            - `"never"`: Never notify when a task finishes.
+            - `"on_error"`: only notify on errors.
+            - `"always"`: Always notify.
         - `stdin`: string. Standard input to pass to {cmd}. If non-nil,
-            {cmd} always runs in |shell|. Even if {cmd} is a list of
+            `{cmd}` always runs in |shell|. Even if {cmd} is a list of
             strings
 
 
                                                 *doit-task:prompt_for_cmd()*
 
 
-task:prompt_for_cmd({opts})            Prompts for a command to run.
+`task:prompt_for_cmd({opts})`          Prompts for a command to run.
                                        internally usees `vim.ui.input()`
                                        if `prompt_cmd_with_vim_ui` is set in |doit-config|.
-                                       Takes same {opts} as |doit-task:run()|
+                                       Takes same `{opts}` as |doit-task:run()|
 
 
                                                          *doit-task:rerun()*
 
 
-task:rerun({opts})                     Reruns the last command.
+`task:rerun({opts})`                   Reruns the last command.
 
 
 
-Accepts same {opts} as |doit-task:run()| except:
+Accepts same `{opts}` as |doit-task:run()| except:
 
 - `cwd` is always the same as the last cwd used by the task buffer
 - `stdin` is always the same as the last stdin used by the task buffer
@@ -380,19 +380,19 @@ Accepts same {opts} as |doit-task:run()| except:
                                                           *doit-task:stop()*
 
 
-task:stop()                            Like |doit-:Doit-stop|
+`task:stop()`                          Like |doit-:Doit-stop|
 
 
                                                      *doit-task:interrupt()*
 
 
-task:interrupt()                       Like |doit-:Doit-interrupt|
+`task:interrupt()`                     Like |doit-:Doit-interrupt|
 
 
                                                           *doit-task:kill()*
 
 
-task:kill({signal})                    Send {signal} to task using the unix
+`task:kill({signal})`                  Send `{signal}` to task using the unix
                                        `kill` command.
 
 
@@ -420,50 +420,50 @@ Nav buffers are similar to the quickfix list. Some differnces:
                                                       *doit-nav.goto_prev()*
 
 
-nav.goto_prev()                        Go to the previous error
+`nav.goto_prev()`                      Go to the previous error
 
 
                                                  *doit-nav.goto_next_file()*
 
 
-nav.goto_next_file()                   Go to the next error
+`nav.goto_next_file()`                 Go to the next error
 
 
                                                  *doit-nav.goto_prev_file()*
 
 
-nav.goto_prev_file()                   Go to the prevous error
+`nav.goto_prev_file()`                 Go to the prevous error
 
 
                                                    *doit-nav.move_to_next()*
 
 
-nav.move_to_next()                     Move cursor to next error line
+`nav.move_to_next()`                   Move cursor to next error line
 
 
                                                    *doit-nav.move_to_prev()*
 
 
-nav.move_to_prev()                     Move cursor to previous error line
+`nav.move_to_prev()`                   Move cursor to previous error line
 
 
                                         *doit-nav.goto_error_under_cursor()*
 
 
-nav.goto_error_under_cursor()          Go to the error under the cursor
+`nav.goto_error_under_cursor()`        Go to the error under the cursor
 
 
                                      *doit-nav.display_error_under_cursor()*
 
 
-nav.display_error_under_cursor()       Visit file containg the error,
+`nav.display_error_under_cursor()`     Visit file containg the error,
                                        but do focus on its window
 
 
                                                         *doit-nav.set_buf()*
 
 
-nav.set_buf({buf})                     Makes {buf} the current nav buffer.
+`nav.set_buf({buf})`                   Makes {buf} the current nav buffer.
 
 
 
@@ -480,14 +480,14 @@ functions that operate on the current nav buffer:
                                                    *doit-nav.register_buf()*
 
 
-nav.register_buf({buf})                Register {buf} as a nav buffer
+`nav.register_buf({buf})`              Register `{buf}` as a nav buffer
 
 
 
-If there’s no nav buffer, then sets {buf} as the nav buffer. Otherwise, it
+If there’s no nav buffer, then sets `{buf}` as the nav buffer. Otherwise, it
 only adds error highlighting and sets `b:doit_navbuf = true`. When the current
-nav buffer gets deleted, {buf} becomes a potential candidate to be the next nav
-buffer.
+nav buffer gets deleted, `{buf}` becomes a potential candidate to be the next
+nav buffer.
 
 For example, if there are to nav buffers `A` and `B`, and `A` is the current
 one. Once buffer `A` gets deleted, buffer `B` becomes the current nav buffer.
@@ -496,8 +496,8 @@ one. Once buffer `A` gets deleted, buffer `B` becomes the current nav buffer.
                                                  *doit-nav.send_to_qflist()*
 
 
-nav.send_to_qflist({buf})              Parse {buf}, and send it the quickfix list
-                                       as per the error rules. {buf} doesn’t have
+`nav.send_to_qflist({buf})`            Parse `{buf},` and send it the quickfix list
+                                       as per the error rules. `{buf}` doesn’t have
                                        to be a nav buffer. If want to use the
                                        built-in |:errorformat|, then use
                                        |cbuffer| instead.
@@ -514,69 +514,69 @@ The following highlights are provided:
                                                       *doit-DoitTaskSuccess*
 
 
-DoitTaskSuccess                        highlight group for when the task
+`DoitTaskSuccess`                      highlight group for when the task
                                        finishes successfully
 
 
                                                      *doit-DoitTaskAbnormal*
 
 
-DoitTaskAbnormal                       highlight group for when task exists
+`DoitTaskAbnormal`                     highlight group for when task exists
                                        abnormally
 
 
                                                      *doit-DoitTaskSegfault*
 
 
-DoitTaskSegfault                       highlight group for when task segfaults
+`DoitTaskSegfault`                     highlight group for when task segfaults
 
 
                                                     *doit-DoitTaskTerminate*
 
 
-DoitTaskTerminate                      highlight group for when task terminates
+`DoitTaskTerminate`                    highlight group for when task terminates
 
 
                                                          *doit-DoitFilename*
 
 
-DoitFilename                           highlight group for filename
+`DoitFilename`                         highlight group for filename
 
 
                                                              *doit-DoitLine*
 
 
-DoitLine                               highlight group for line number
+`DoitLine`                             highlight group for line number
 
 
                                                           *doit-DoitLineEnd*
 
 
-DoitLineEnd                            highlight group for ending line number
+`DoitLineEnd`                          highlight group for ending line number
 
 
                                                               *doit-DoitCol*
 
 
-DoitCol                                highlight group for column number
+`DoitCol`                              highlight group for column number
 
 
                                                            *doit-DoitColEnd*
 
 
-DoitColEnd                             highlight group for ending column number
+`DoitColEnd`                           highlight group for ending column number
 
 
                                                              *doit-DoitType*
 
 
-DoitType                               highlight group for error type
+`DoitType`                             highlight group for error type
 
 
                                                           *doit-DoitCurrent*
 
 
-DoitCurrent                            highlight group for the sign column
+`DoitCurrent`                          highlight group for the sign column
                                        arrow pointing at current error
 
 

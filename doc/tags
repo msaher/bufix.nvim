@@ -1,4 +1,3 @@
-doit-:	doit.txt	/*doit-:*
 doit-:Doit	doit.txt	/*doit-:Doit*
 doit-:Doit-interrupt	doit.txt	/*doit-:Doit-interrupt*
 doit-:Doit-next	doit.txt	/*doit-:Doit-next*
@@ -6,6 +5,7 @@ doit-:Doit-next-file	doit.txt	/*doit-:Doit-next-file*
 doit-:Doit-prev	doit.txt	/*doit-:Doit-prev*
 doit-:Doit-prev-file	doit.txt	/*doit-:Doit-prev-file*
 doit-:Doit-rerun	doit.txt	/*doit-:Doit-rerun*
+doit-:Doit-run	doit.txt	/*doit-:Doit-run*
 doit-:Doit-stop	doit.txt	/*doit-:Doit-stop*
 doit-DoitCol	doit.txt	/*doit-DoitCol*
 doit-DoitColEnd	doit.txt	/*doit-DoitColEnd*

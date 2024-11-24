@@ -60,11 +60,10 @@ vim.api.nvim_create_autocmd("TermOpen", {
 
 # Commands
 
-:Doit
+`:Doit`
 : Prompts for a sub command
 
-:[range]Doit run [cmd]
-
+`:[range]Doit run [cmd]`
 : If [cmd] is set, runs [cmd] in the task buffer. Otherwise, prompts for a
 command to run.
 
@@ -88,32 +87,32 @@ You can combine these for custom behaviour:
 :silent! horizontal botright Doit run grep -rn TODO
 ```
 
-:Doit rerun
+`:Doit rerun`
 : Reruns the last command.
 
 Accepts the same command modifiers as `:Doit run`
 
-:Doit stop
+`:Doit stop`
 : Sends `SIGTERM` to the running task.
 
 If the process doesn't terminate after a timeout, a `SIGKILL` signal is sent.
 Works Like `:h jobstop`
 
-:Doit interrupt
+`:Doit interrupt`
 : Sends `SIGINT` to the running task.
 
 This is Equivalent to typing ctrl-c `C-c` in a termianl.
 
-:Doit next
+`:Doit next`
 : Go to the next error in the nav buffer
 
-:Doit prev
+`:Doit prev`
 : Go to the previous error in the nav buffer
 
-:Doit next-file
+`:Doit next-file`
 : Go to the next file in the nav buffer
 
-:Doit prev-file
+`:Doit prev-file`
 : Go to the previous file in the nav buffer
 
 # Configuration
@@ -264,13 +263,13 @@ vim.api.nvim_create_autocmd("TermOpen", {
 
 ---
 
-task:run({cmd}, {opts})
+`task:run({cmd}, {opts})`
 : Runs {cmd} in a task buffer.
 
 - Parameters:
-    * {cmd}: string or list of strings. If its a string, then it runs in a `:h
+    * `{cmd}`: string or list of strings. If its a string, then it runs in a `:h
       'shell'`.
-    * {opts}: Optional parameters. They have higher priority then
+    * `{opts}`: Optional parameters. They have higher priority then
       [config](#Configuration)
         + `cwd`: string. Working directory of the task. Defaults to the current
           working directory.
@@ -283,37 +282,37 @@ task:run({cmd}, {opts})
             + `buf`: buffer number of the task
             + `task`: Task object
         + `notify`: How to notify when a task finishes. One of
-            + "never": Never notify when a task finishes.
-            + "on_error": only notify on errors.
-            + "always": Always notify.
+            + `"never"`: Never notify when a task finishes.
+            + `"on_error"`: only notify on errors.
+            + `"always"`: Always notify.
         + `stdin`: string. Standard input to pass to {cmd}. If non-nil,
-          {cmd} always runs in `:h shell`. Even if {cmd} is a list of
+          `{cmd}` always runs in `:h shell`. Even if {cmd} is a list of
           strings
 
-task:prompt_for_cmd({opts})
+`task:prompt_for_cmd({opts})`
 : Prompts for a command to run.
 internally usees `vim.ui.input()`
 if `prompt_cmd_with_vim_ui` is set in [config](#Configuration).
-Takes same {opts} as `:h doit-task:run()`
+Takes same `{opts}` as `:h doit-task:run()`
 
-task:rerun({opts})
+`task:rerun({opts})`
 : Reruns the last command.
 
-Accepts same {opts} as `:h doit-task:run()` except:
+Accepts same `{opts}` as `:h doit-task:run()` except:
 
 - `cwd` is always the same as the last cwd used by the task buffer
 - `stdin` is always the same as the last stdin used by the task buffer
 
 
-task:stop()
+`task:stop()`
 : Like `:h doit-:Doit-stop`
 
 
-task:interrupt()
+`task:interrupt()`
 : Like `:h doit-:Doit-interrupt`
 
-task:kill({signal})
-: Send {signal} to task using the unix
+`task:kill({signal})`
+: Send `{signal}` to task using the unix
 `kill` command.
 
 # Nav
@@ -338,29 +337,29 @@ Nav buffers are similar to the quickfix list. Some differnces:
 
 ---
 
-nav.goto_prev()
+`nav.goto_prev()`
 : Go to the previous error
 
-nav.goto_next_file()
+`nav.goto_next_file()`
 : Go to the next error
 
-nav.goto_prev_file()
+`nav.goto_prev_file()`
 : Go to the prevous error
 
-nav.move_to_next()
+`nav.move_to_next()`
 : Move cursor to next error line
 
-nav.move_to_prev()
+`nav.move_to_prev()`
 : Move cursor to previous error line
 
-nav.goto_error_under_cursor()
+`nav.goto_error_under_cursor()`
 : Go to the error under the cursor
 
-nav.display_error_under_cursor()
+`nav.display_error_under_cursor()`
 : Visit file containg the error,
 but do focus on its window
 
-nav.set_buf({buf})
+`nav.set_buf({buf})`
 : Makes {buf} the current nav buffer.
 
 functions that operate on the current nav buffer:
@@ -372,20 +371,20 @@ functions that operate on the current nav buffer:
   - nav.move_to_next_file()
   - nav.move_to_prev_file()
 
-nav.register_buf({buf})
-: Register {buf} as a nav buffer
+`nav.register_buf({buf})`
+: Register `{buf}` as a nav buffer
 
-If there's no nav buffer, then sets {buf} as the nav buffer. Otherwise, it
+If there's no nav buffer, then sets `{buf}` as the nav buffer. Otherwise, it
 only adds error highlighting and sets `b:doit_navbuf = true`. When the current nav
-buffer gets deleted, {buf} becomes a potential candidate to be the next nav
+buffer gets deleted, `{buf}` becomes a potential candidate to be the next nav
 buffer.
 
 For example, if there are to nav buffers `A` and `B`, and `A` is the current
 one. Once buffer `A` gets deleted, buffer `B` becomes the current nav buffer.
 
-nav.send_to_qflist({buf})
-: Parse {buf}, and send it the quickfix list
-as per the error rules. {buf} doesn't have
+`nav.send_to_qflist({buf})`
+: Parse `{buf},` and send it the quickfix list
+as per the error rules. `{buf}` doesn't have
 to be a nav buffer. If want to use the
 built-in `:h :errorformat`, then use
 `:h cbuffer` instead.
@@ -394,39 +393,39 @@ built-in `:h :errorformat`, then use
 
 The following highlights are provided:
 
-DoitTaskSuccess
+`DoitTaskSuccess`
 : highlight group for when the task
 finishes successfully
 
-DoitTaskAbnormal
+`DoitTaskAbnormal`
 : highlight group for when task exists
 abnormally
 
-DoitTaskSegfault
+`DoitTaskSegfault`
 : highlight group for when task segfaults
 
-DoitTaskTerminate
+`DoitTaskTerminate`
 : highlight group for when task terminates
 
-DoitFilename
+`DoitFilename`
 : highlight group for filename
 
-DoitLine
+`DoitLine`
 : highlight group for line number
 
-DoitLineEnd
+`DoitLineEnd`
 : highlight group for ending line number
 
-DoitCol
+`DoitCol`
 : highlight group for column number
 
-DoitColEnd
+`DoitColEnd`
 : highlight group for ending column number
 
-DoitType
+`DoitType`
 : highlight group for error type
 
-DoitCurrent
+`DoitCurrent`
 : highlight group for the sign column
 arrow pointing at current error
 
