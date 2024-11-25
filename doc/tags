@@ -36,6 +36,7 @@ doit-nav.move_to_prev()	doit.txt	/*doit-nav.move_to_prev()*
 doit-nav.register_buf()	doit.txt	/*doit-nav.register_buf()*
 doit-nav.send_to_qflist()	doit.txt	/*doit-nav.send_to_qflist()*
 doit-nav.set_buf()	doit.txt	/*doit-nav.set_buf()*
+doit-rules	doit.txt	/*doit-rules*
 doit-table-of-contents	doit.txt	/*doit-table-of-contents*
 doit-task	doit.txt	/*doit-task*
 doit-task:interrupt()	doit.txt	/*doit-task:interrupt()*

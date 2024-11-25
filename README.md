@@ -425,6 +425,100 @@ abnormally
 : highlight group for the sign column
 arrow pointing at current error
 
+# Rules
+
+This plugin uses `:h vim.lpeg` (or `:h vim.re`) to parse errors. To add new rules or
+overwrite existing ones configure the `rules` in `.setup()`.
+
+```lua
+require("doit").setup({
+    rules = {
+        my_rule = vim.lpeg(<your_rule>)
+    }
+})
+```
+
+Each `lpeg` pattern returns a single table (we call it the `Capture`) with
+entries in the following form:
+
+```lua
+---@class Capture
+---@field filename Span // only required part
+---@field line? Span
+---@field line_end? Span
+---@field col? Span
+---@field col_end? Span
+---@field type? Span
+```
+
+(`type` can either be `"E" | "W" | "I"` for errors, warning, and information.
+If unset, `"E"` is assumed)
+
+Where `Span` is
+
+```lua
+---@class Span
+---@field start number
+---@field finish number
+---@field value string | number
+```
+
+(only `filename` and `type` are strings. The rest are numbers)
+
+To be more concrete consider this example:
+
+```lua
+local lpeg = vim.lpeg
+local P, R, S, = lpeg.P, lpeg.R, lpeg.S,
+local Cg, Ct, Cc, Cp = lpeg.Cg, lpeg.Ct, lpeg.Cc, lpeg.Cp
+
+-- helper
+local function Cg_span(patt, name)
+    return Cg(
+        Ct(
+            Cp() * -- start position
+            Cg(patt, "value") *
+            Cp() -- end
+        ) / function(t)
+            return { start = t[1], value = t.value, finish = t[2] }
+        end,
+        name
+    )
+end
+
+require("doit").setup {
+    rules = {
+        -- disable the gnu rule for whatever reason
+        gnu = lpeg(false),
+
+        -- define a new rule for the iar compiler
+        -- It has errors of the form:
+        -- "foo.c",3  Error[32]: Error message
+        -- "foo.c",3  Warning[32]: Error message
+
+        iar = Ct(
+            '"' * Cg_span((1 - "")^1, "filename") * '"' * -- "foo.c"
+            "," * Cg_span(R("09")^1 / tonumber, "line") * S(" \t")^0 * -- ,3
+            (P("Warning") * Cg_span(Cc"W", "type"))^-1 -- Warning (optional)
+        )
+    }
+}
+```
+
+Quick explanation:
+
+- `Ct()` is to make the pattern return a table (instead of multiple values)
+- `*` is for concatenating patterns
+- `Cg_span` is a helper function that
+    - Calls `Cp()` to capture the starting and ending positions
+    - Calls `Cg()` to "tag" a pattern with a name (such as "value")
+    - Passes the pattern to a function to turn into a table with keys `start`,
+        `value` and `finish`.
+- `R("09")^1` captures one or more digits
+- `S(" \t")^0` captures optional white space.
+
+To learn more see `:h vim.lpeg` and `:h vim.re`.
+
 # Acknowledgment
 
 This plugin wouldn't have been possible without inspiration from:
