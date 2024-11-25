@@ -288,8 +288,8 @@ M.gnu = Ct({
     program = (R("AZ", "az") * (R("AZ", "az") + S".-_")^1),
 
 
-    -- filenames cannot start with a digit
-    non_digit = (1-(R"09"+"\n")),
+    -- filenames cannot start with a digit or space
+    non_digit = (1-(R"09"+S" \n")),
 
     -- if part of the filename contains a space, ensure the next character is NOT dash
     -- or slash or newline or a another space. This rejects rare cases.
@@ -298,8 +298,8 @@ M.gnu = Ct({
     with_space = " " * -V'timestamp' * except(" -/\n"),
 
     -- If part of the filename contains a colon, then esure what follows is NOT
-    -- a location nor a colon
-    with_colon = ":" * -V'location' * except(":\n"),
+    -- a location nor a colon nor a space
+    with_colon = ":" * -V'location' * except(" :\n"),
 
     -- normal file content
     with_sanity = except(" :\n"),
