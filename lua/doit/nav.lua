@@ -1,7 +1,7 @@
 local M = {}
 
 -- to speed up searching
-local cache = vim.ringbuf(5)
+M.cache = vim.ringbuf(5)
 
 local highlights = {
     filename = "DoitFilename",
@@ -55,20 +55,18 @@ local state = {
 ---@param line string
 ---@return Capture?
 local function match(line)
-    for _, rule in pairs(cache._items) do
+    for _, rule in pairs(M.cache._items) do
         local data = rule:match(line)
         if data ~= nil then
             return data
         end
     end
 
-    local rules = require("doit.rules")
-
-    for k, rule in pairs(rules) do
+    for _, rule in pairs(require("doit").rules) do
         local data = rule:match(line)
         if data ~= nil then
-            cache:push(rule)
-            vim.print(k)
+            M.cache:push(rule)
+            -- vim.print(_)
             return data
         end
     end
@@ -83,7 +81,7 @@ end
 local function highlight_line(buf, line, idx)
 
     local cap = match(line)
-    if cap == nil then
+    if type(cap) ~= "table" then
         vim.api.nvim_buf_clear_namespace(buf, -1, idx, idx+1)
         return
     end

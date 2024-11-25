@@ -64,6 +64,10 @@ local default_config = {
     ---@type boolean
     prompt_cmd_with_vim_ui = true,
 
+    ---Add any aditional parsing rules
+    ---See `:h doit-rules` to learn more
+    ---@type table
+    rules = {}
 }
 
 ---@class DoitConfig
@@ -84,12 +88,22 @@ local default_config = {
 ---@type DoitFullConfig
 M.config = default_config
 
+M.rules = require("doit.rules")
+
 ---@param cfg DoitConfig?
 function M.setup(cfg)
     ---@diagnostic disable-next-line assign-type-mismatch
     if cfg ~= nil then
+
         M.config = vim.tbl_deep_extend('force', M.config, cfg)
+
+        M.rules = vim.tbl_deep_extend('force', M.rules, M.config.rules)
+
+        if package.loaded["doit.nav"] then
+            require("doit.nav").cache:clear()
+        end
     end
+
 end
 
 return M
