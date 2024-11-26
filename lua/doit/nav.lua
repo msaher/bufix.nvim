@@ -52,18 +52,56 @@ local state = {
 
 }
 
+---@param efm string
+---@param line string
+---@return Capture?
+local function errorformat_to_capture(efm, line)
+    local qf_data = vim.fn.getqflist({
+        efm = efm,
+        lines = { line },
+    }).items[1]
+
+    -- errorformat didn't match
+    if qf_data.valid ~= 1 then
+        return nil
+    end
+
+    -- HACK: for errorformat, getqflist doesn't expose span information,
+    -- as a workaround highlight the entire line as a file
+    local cap = {
+        filename = { value = vim.api.nvim_buf_get_name(qf_data.bufnr), start = 1, finish = #line+1 },
+        line     = { value = qf_data.lnum },
+        line_end = { value = qf_data.end_lnum },
+        type     = { value = qf_data.type },
+    }
+
+    return cap
+end
+
+---@param rule string | table
+---@param line string
+---@return Capture?
+local function match_rule(rule, line)
+    if type(rule) == "string" then
+        return errorformat_to_capture(rule, line)
+    else
+        return rule:match(line)
+    end
+end
+
 ---@param line string
 ---@return Capture?
 local function match(line)
+
     for _, rule in pairs(M.cache._items) do
-        local data = rule:match(line)
+        local data = match_rule(rule, line)
         if data ~= nil then
             return data
         end
     end
 
     for _, rule in pairs(require("doit").rules) do
-        local data = rule:match(line)
+        local data = match_rule(rule, line)
         if data ~= nil then
             M.cache:push(rule)
             -- vim.print(_)
@@ -87,11 +125,14 @@ local function highlight_line(buf, line, idx)
     end
 
     for k, span in pairs(cap) do
-        local byte_start = vim.str_byteindex(line, span.start - 1)
-        local byte_finish = vim.str_byteindex(line, span.finish - 1)
-        ---@cast byte_start number
-        ---@cast byte_finish number
-        vim.api.nvim_buf_add_highlight(buf, -1, highlights[k], idx, byte_start, byte_finish)
+        -- HACK: errorformat has no span except for filename
+        if span.start ~= nil then
+            local byte_start = vim.str_byteindex(line, span.start - 1)
+            local byte_finish = vim.str_byteindex(line, span.finish - 1)
+            ---@cast byte_start number
+            ---@cast byte_finish number
+            vim.api.nvim_buf_add_highlight(buf, -1, highlights[k], idx, byte_start, byte_finish)
+        end
     end
 end
 
