@@ -158,10 +158,6 @@ local function create_task_buf(task)
 
     vim.api.nvim_set_option_value("filetype", "doit", { buf = buf})
 
-    -- set buf as error buffer
-    ---@cast buf number
-    require("doit.nav").set_buf(buf)
-
     local config = require("doit").config
     if config.want_task_keymaps then
         vim.keymap.set("n", "r", function() task:rerun() end, { buffer = buf, desc = "Rerun task" })
@@ -341,6 +337,10 @@ function Task:run(cmd, opts)
 
     local noitfy = opts.notify or require("doit").config.notify
     self:_jobstart(cmd, buf, cwd, noitfy, opts.stdin)
+
+    -- set buf as error buffer
+    ---@cast buf number
+    require("doit.nav").set_buf(buf)
 
     -- may reuse in next call to run()
     self.last_cmd = cmd
