@@ -427,19 +427,37 @@ arrow pointing at current error
 
 # Rules
 
-This plugin uses `:h vim.lpeg` (or `:h vim.re`) to parse errors. To add new rules or
-overwrite existing ones configure the `rules` in `.setup()`.
+Errors are parsed according to "rules". There are two types of rules:
+
+1. `:h vim.lpeg` grammars (advanced). Powerful and expressive, but might be
+   overkill for simple error messages
+2. `:h errorformat`. Uses vim's built-in error formats used in `:h quickfix`.
+
+To add new rules or overwrite existing ones configure the `rules` in `.setup()`.
 
 ```lua
 require("doit").setup({
     rules = {
         my_rule = vim.lpeg(<your_rule>)
+        another_rule = "<or_your_errorformat>"
     }
 })
 ```
 
-Each `lpeg` pattern returns a single table (we call it the `Capture`) with
-entries in the following form:
+Example using `:h errorformat`:
+
+```lua
+require("doit").setup({
+    rules = {
+        love = [[Error: %*[^\ ] error: %f:%l: %m]]
+    }
+})
+```
+
+---
+
+Each `lpeg` rule returns a single table (we call it the `Capture`) with entries
+in the following form:
 
 ```lua
 ---@class Capture

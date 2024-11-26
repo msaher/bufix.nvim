@@ -1,3 +1,4 @@
+doit	doit.txt	/*doit*
 doit-:Doit	doit.txt	/*doit-:Doit*
 doit-:Doit-interrupt	doit.txt	/*doit-:Doit-interrupt*
 doit-:Doit-next	doit.txt	/*doit-:Doit-next*
@@ -45,4 +46,3 @@ doit-task:prompt_for_cmd()	doit.txt	/*doit-task:prompt_for_cmd()*
 doit-task:rerun()	doit.txt	/*doit-task:rerun()*
 doit-task:run()	doit.txt	/*doit-task:run()*
 doit-task:stop()	doit.txt	/*doit-task:stop()*
-doit.txt	doit.txt	/*doit.txt*
