@@ -288,9 +288,6 @@ M.gnu = Ct({
     program = (R("AZ", "az") * (R("AZ", "az") + S".-_")^1),
 
 
-    -- filenames cannot start with a digit or space
-    non_digit = (1-(R"09"+S" \n")),
-
     -- if part of the filename contains a space, ensure the next character is NOT dash
     -- or slash or newline or a another space. This rejects rare cases.
     -- Further, ensure that what follows is NOT a timestamp.
@@ -304,7 +301,9 @@ M.gnu = Ct({
     -- normal file content
     with_sanity = except(" :\n"),
 
-    filename = Cg_span(V'non_digit' * (V'with_sanity' + V'with_space' + V'with_colon')^0, "filename"),
+    all_digits = R("09")^1 * ":",
+    has_non_digit = (lpeg.P(1) - lpeg.R("09"))^0,
+    filename = Cg_span(-V'all_digits' * (V'with_sanity' + V'with_space' + V'with_colon')^0, "filename"),
 
     -- save some typing
     nums = R("09")^1 / tonumber,

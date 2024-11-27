@@ -185,6 +185,7 @@ local function test_patterns()
         { rule ="gnu", line = ".git/logs/HEAD:85:152d", want = {filename = ".git/logs/HEAD", line = 85}},
 
         { rule ="gnu", line = "Error: Syntax error: goat.lua:13: unexpected symbol near '2'", want = nil},
+        { rule ="gnu", line = "3rd-party/json.hpp:22:37:#include <cstddef> // nullptr_t, ptrdiff_t, size_t", want = { filename = "3rd-party/json.hpp", line = 22, col = 37 }},
 
         { rule = "cucumber", line = "Scenario: undefined step  # features/cucumber.feature:3", want = {line = 3, filename = "features/cucumber.feature"}},
         { rule = "cucumber", line = "      /home/gusev/.rvm/foo/bar.rb:500:in `_wrap_assertion'", want = {line = 500, filename = "/home/gusev/.rvm/foo/bar.rb"}},
