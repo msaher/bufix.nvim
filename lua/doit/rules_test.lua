@@ -1,5 +1,5 @@
+package.loaded["doit.rules"] = nil
 local rules = require("doit.rules")
-local busted = require("plenary.busted")
 
 
 local function tbl_equal(a, b)
@@ -32,7 +32,7 @@ local function tbl_equal(a, b)
 end
 
 
-busted.describe("error patterns", function()
+local function test_patterns()
 
     local cases = {
         { rule = "absoft", line = "Error on line 3 of t.f: Execution error unclassifiable statement", want = {line = 3, filename = "t.f" }},
@@ -234,22 +234,23 @@ busted.describe("error patterns", function()
 
     }
 
-    busted.it("captures error information", function()
-        for i, v in ipairs(cases) do
-            local cap = rules[v.rule]:match(v.line)
-            local got = nil
-            if cap ~= nil then
-                got = {}
-                for k, c in pairs(cap) do
-                    got[k] = c.value
-                end
+    for i, v in ipairs(cases) do
+        local cap = rules[v.rule]:match(v.line)
+        local got = nil
+        if cap ~= nil then
+            got = {}
+            for k, c in pairs(cap) do
+                got[k] = c.value
             end
-
-            assert(
-                tbl_equal(got, v.want),
-                string.format("Test #%d failed for rule '%s' with line '%s'\n\tgot %s, want %s", i, v.rule, v.line, vim.inspect(got), vim.inspect(v.want))
-            )
         end
-    end)
-end)
 
+        assert(
+            tbl_equal(got, v.want),
+            string.format("Test #%d failed for rule '%s' with line '%s'\n\tgot %s, want %s", i, v.rule, v.line, vim.inspect(got), vim.inspect(v.want))
+        )
+    end
+
+end
+
+
+test_patterns()

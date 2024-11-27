@@ -304,7 +304,7 @@ M.gnu = Ct({
     -- normal file content
     with_sanity = except(" :\n"),
 
-    filename = Cg_span(V'non_digit' * (V'with_space' + V'with_colon' + V'with_sanity')^0, "filename"),
+    filename = Cg_span(V'non_digit' * (V'with_sanity' + V'with_space' + V'with_colon')^0, "filename"),
 
     -- save some typing
     nums = R("09")^1 / tonumber,
