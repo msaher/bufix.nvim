@@ -1,6 +1,6 @@
 # Introduction
 
-> This plugin is currently in the testing phase.
+> This plugin is currently in the testing phase. Breaking changes might occur
 
 Jump through `:terminal`'s errors (or any other buffer).
 
