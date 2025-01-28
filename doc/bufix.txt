@@ -1,0 +1,434 @@
+*bufix.txt*                  For                  Last change: 2025 January 28
+
+==============================================================================
+Table of Contents                                    *bufix-table-of-contents*
+
+1. Introduction                                           |bufix-introduction|
+  - Installation                             |bufix-introduction-installation|
+  - Quickstart                                 |bufix-introduction-quickstart|
+2. Commands                                                   |bufix-commands|
+3. Configuration                                         |bufix-configuration|
+4. Highlights                                               |bufix-highlights|
+5. Rules                                                         |bufix-rules|
+6. Acknowledgment                                       |bufix-acknowledgment|
+
+==============================================================================
+1. Introduction                                           *bufix-introduction*
+
+
+  This plugin is currently in the testing phase.
+Jump through `:terminal`’s errors (or any other buffer).
+
+`bufix.nvim` is a navigation plugin similar to the quickfix list, but works on
+arbitrary buffers like `:terminal` buffers.
+
+Some differences compared to the quickfix list
+
+1. bufix buffers work on "live" buffers like terminals. This makes them useful when running servers or logging commands like `tail -f`.
+2. It parses using |vim.lpeg|. This means that you do not have to mess with |errorformat|.
+3. The cursor gets highlighted when jumping through errors (configurable).
+
+Limitations:
+
+1. Currently, multi-line errors are not supported
+
+This plugin is inspired by emacs’ M-x compile.
+
+
+INSTALLATION                                 *bufix-introduction-installation*
+
+This plugin requires nvim >= 0.10
+
+With lazy
+
+>lua
+    {
+        "msaher/bufix.nvim"
+        -- calling setup is optional :)
+    }
+<
+
+
+QUICKSTART                                     *bufix-introduction-quickstart*
+
+Run `:Bufix register` to register the current buffer as a bufix buffer (try
+doing it on a terminal buffer that has some output like `:term grep -rn
+<string>`). You’ll be able to jump through them using `:Bufix next` and
+`:Bufix prev`. You can also press `<CR>` on a path to jump directly to it
+
+Handy keymaps:
+
+>lua
+    vim.keymap.set("n", "]e",        "<cmd>Bufix next<CR>", { desc = "Go to next error"})
+    vim.keymap.set("n", "[e",        "<cmd>Bufix prev<CR>", { desc = "Go to prev error"})
+    
+    --- or if you prefer to use the API
+    vim.keymap.set("n", "]e",        function() require("bufix.api").goto_next()       end , { desc = "Go to next error"}))
+    vim.keymap.set("n", "[e",        function() require("bufix.api").goto_prev()       end , { desc = "Go to prev error"}))
+<
+
+To always mark `:terminal` as bufix buffers
+
+>lua
+    local group = vim.api.nvim_create_augroup("BufixTerm", { clear = true })
+    vim.api.nvim_create_autocmd("TermOpen", {
+        group = group,
+        callback = function(opts)
+            require("bufix.api").register_buf(opts.buf) -- make it work with goto_next() and friends
+        end,
+    })
+<
+
+
+==============================================================================
+2. Commands                                                   *bufix-commands*
+
+
+                                                              *bufix-:Bufix*
+
+
+`:Bufix`                               Prompts for a sub command
+
+
+                                                         *bufix-:Bufix-next*
+
+
+`:Bufix next`                          Go to the next error in the nav buffer
+
+
+                                                         *bufix-:Bufix-prev*
+
+
+`:Bufix prev`                          Go to the previous error in the nav buffer
+
+
+                                                    *bufix-:Bufix-next-file*
+
+
+`:Bufix next-file`                     Go to the next file in the nav buffer
+
+
+                                                    *bufix-:Bufix-prev-file*
+
+
+`:Bufix prev-file`                     Go to the previous file in the nav buffer
+
+
+
+
+==============================================================================
+3. Configuration                                         *bufix-configuration*
+
+Configuration is done through calling `require("bufix").setup()`. It justs sets
+`cfg` to the `require("bufix").config` table. The default configuration is:
+
+>lua
+    
+    -- DONT COPY PASTE THIS ITS JUST THE DEFAULT CONFIG
+    -- Read the next section to learn more about the options
+    require("bufix").setup({
+        --- Buffer local keymaps in bufix buffers. Such as <CR> to jump or <C-q> to
+        --- send to qflist
+        ---@type boolean
+        want_buffer_keymaps = true,
+    
+        --- How long to highlight the cursor after jumping. Set it to 0 to disable
+        --- it.
+        ---@type number in milliseconds
+        locus_highlight_duration = 500,
+    
+        ---Add any aditional parsing rules
+        ---See `:h bufix-rules` to learn more
+        ---@type table
+        rules = {}
+    
+    })
+<
+
+If `want_buffer_keymaps` is true, then these buffer local mappings are set for
+nav buffers (like task buffers):
+
+>lua
+        vim.keymap.set("n", "<CR>" , require("bufix.api").goto_error_under_cursor,    { buffer = buf,  desc = "Go to error under cursor"})
+        vim.keymap.set("n", "g<CR>", require("bufix.api").display_error_under_cursor, { buffer = buf,  desc = "Dispaly error under cursor"})
+        vim.keymap.set("n", "gj"   , require("bufix.api").move_to_next,               { buffer = buf,  desc = "Move cursor to next error"})
+        vim.keymap.set("n", "gk"   , require("bufix.api").move_to_prev,               { buffer = buf,  desc = "Move cursor to prev error"})
+        vim.keymap.set("n", "]]"   , require("bufix.api").move_to_next_file,          { buffer = buf,  desc = "Move cursor to next file"})
+        vim.keymap.set("n", "[["   , require("bufix.api").move_to_prev_file,          { buffer = buf,  desc = "Move cursor to prev file"})
+    
+        vim.keymap.set("n", "<C-q>", function()
+            require("bufix.api").send_to_qflist()
+            vim.cmd.copen()
+        end,
+        { buffer = buf, desc = "Send errors to qflist"})
+<
+
+Where `buf` is the bufix buffer.
+
+------------------------------------------------------------------------------
+
+                                                     *bufix-api.goto_prev()*
+
+
+`api.goto_prev()`                      Go to the previous error
+
+
+                                                *bufix-api.goto_next_file()*
+
+
+`api.goto_next_file()`                 Go to the next error
+
+
+                                                *bufix-api.goto_prev_file()*
+
+
+`api.goto_prev_file()`                 Go to the prevous error
+
+
+                                                  *bufix-api.move_to_next()*
+
+
+`api.move_to_next()`                   Move cursor to next error line
+
+
+                                                  *bufix-api.move_to_prev()*
+
+
+`api.move_to_prev()`                   Move cursor to previous error line
+
+
+                                       *bufix-api.goto_error_under_cursor()*
+
+
+`api.goto_error_under_cursor()`        Go to the error under the cursor
+
+
+                                    *bufix-api.display_error_under_cursor()*
+
+
+`api.display_error_under_cursor()`     Visit file containing the error,
+                                       but do focus on its window
+
+
+                                                       *bufix-api.set_buf()*
+
+
+`api.set_buf({buf})`                   Makes {buf} the current nav buffer.
+
+
+
+functions that operate on the current bufix buffer:
+
+- `api.goto_error_under_cursor()`
+- `api.display_error_under_cursor()`
+- `api.move_to_next()`
+- `api.move_to_prev()`
+- `api.move_to_next_file()`
+- `api.move_to_prev_file()`
+
+
+                                                  *bufix-api.register_buf()*
+
+
+`api.register_buf({buf})`              Register `{buf}` as a bufix buffer
+
+
+
+If there’s no bufix buffer, then sets `{buf}` as the nav buffer. Otherwise,
+it only adds error highlighting and sets `b:bufix_buf = true`. When the current
+bufix buffer gets deleted, `{buf}` becomes a potential candidate to be the next
+bufix buffer.
+
+For example, if there are two bufix buffers `A` and `B`, and `A` is the current
+one. Once buffer `A` gets deleted, buffer `B` becomes the current bufix buffer.
+
+
+                                                *bufix-api.send_to_qflist()*
+
+
+`api.send_to_qflist({buf})`            Parse `{buf},` and send it the quickfix list
+                                       as per the error rules. `{buf}` doesn’t have
+                                       to be a bufix buffer. If want to use the
+                                       built-in |:errorformat|, then use
+                                       |cbuffer| instead.
+
+
+
+
+==============================================================================
+4. Highlights                                               *bufix-highlights*
+
+The following highlights are provided:
+
+
+                                                       *bufix-BufixFilename*
+
+
+`BufixFilename`                        highlight group for filename
+
+
+                                                           *bufix-BufixLine*
+
+
+`BufixLine`                            highlight group for line number
+
+
+                                                        *bufix-BufixLineEnd*
+
+
+`BufixLineEnd`                         highlight group for ending line number
+
+
+                                                            *bufix-BufixCol*
+
+
+`BufixCol`                             highlight group for column number
+
+
+                                                         *bufix-BufixColEnd*
+
+
+`BufixColEnd`                          highlight group for ending column number
+
+
+                                                           *bufix-BufixType*
+
+
+`BufixType`                            highlight group for error type
+
+
+                                                        *bufix-BufixCurrent*
+
+
+`BufixCurrent`                         highlight group for the sign column
+                                       arrow pointing at current error
+
+
+
+
+==============================================================================
+5. Rules                                                         *bufix-rules*
+
+Errors are parsed according to "rules". There are two types of rules:
+
+1. |vim.lpeg| grammars (advanced). Powerful and expressive, but might be
+overkill for simple error messages
+2. |errorformat|. Uses vim’s built-in error formats used in |quickfix|.
+
+To add new rules or overwrite existing ones configure the `rules` in
+`.setup()`.
+
+>lua
+    require("bufix").setup({
+        rules = {
+            my_rule = vim.lpeg(<your_rule>)
+            another_rule = "<or_your_errorformat>"
+        }
+    })
+<
+
+Example using |errorformat|:
+
+>lua
+    require("bufix").setup({
+        rules = {
+            love = [[Error: %*[^\ ] error: %f:%l: %m]]
+        }
+    })
+<
+
+------------------------------------------------------------------------------
+Each `lpeg` rule returns a single table (we call it the `Capture`) with entries
+in the following form:
+
+>lua
+    ---@class Capture
+    ---@field filename Span // only required part
+    ---@field line? Span
+    ---@field line_end? Span
+    ---@field col? Span
+    ---@field col_end? Span
+    ---@field type? Span
+<
+
+(`type` can either be `"E" | "W" | "I"` for errors, warning, and information.
+If unset, `"E"` is assumed. Currently types are unused).
+
+Where `Span` is
+
+>lua
+    ---@class Span
+    ---@field start number
+    ---@field finish number
+    ---@field value string | number
+<
+
+(only `filename` and `type` are strings. The rest are numbers)
+
+To be more concrete consider this example:
+
+>lua
+    local lpeg = vim.lpeg
+    local P, R, S, = lpeg.P, lpeg.R, lpeg.S,
+    local Cg, Ct, Cc, Cp = lpeg.Cg, lpeg.Ct, lpeg.Cc, lpeg.Cp
+    
+    -- helper
+    local function Cg_span(patt, name)
+        return Cg(
+            Ct(
+                Cp() * -- start position
+                Cg(patt, "value") *
+                Cp() -- end
+            ) / function(t)
+                return { start = t[1], value = t.value, finish = t[2] }
+            end,
+            name
+        )
+    end
+    
+    require("bufix").setup {
+        rules = {
+            -- disable the gnu rule for whatever reason
+            gnu = lpeg(false),
+    
+            -- define a new rule for the iar compiler
+            -- It has errors of the form:
+            -- "foo.c",3  Error[32]: Error message
+            -- "foo.c",3  Warning[32]: Error message
+    
+            iar = Ct(
+                '"' * Cg_span((1 - "")^1, "filename") * '"' * -- "foo.c"
+                "," * Cg_span(R("09")^1 / tonumber, "line") * S(" \t")^0 * -- ,3
+                (P("Warning") * Cg_span(Cc"W", "type"))^-1 -- Warning (optional)
+            )
+        }
+    }
+<
+
+Quick explanation:
+
+- `Ct()` is to make the pattern return a table (instead of multiple values)
+- `*` is for concatenating patterns
+- `Cg_span` is a helper function that
+    - Calls `Cp()` to capture the starting and ending positions
+    - Calls `Cg()` to "tag" a pattern with a name (such as "value")
+    - Passes the pattern to a function to turn into a table with keys `start`,
+        `value` and `finish`.
+- `R("09")^1` captures one or more digits
+- `S(" \t")^0` captures optional white space.
+
+To learn more see |vim.lpeg| and |vim.re|.
+
+
+==============================================================================
+6. Acknowledgment                                       *bufix-acknowledgment*
+
+This plugin wouldn’t have been possible without inspiration from:
+
+- Emacs
+- <https://github.com/ej-shafran/compile-mode.nvim>
+- <https://github.com/nvim-neorocks/nvim-best-practices>
+
+Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
+
+vim:tw=78:ts=8:noet:ft=help:norl:
