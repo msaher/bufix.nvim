@@ -16,7 +16,7 @@ Table of Contents                                    *bufix-table-of-contents*
 1. Introduction                                           *bufix-introduction*
 
 
-  This plugin is currently in the testing phase.
+  This plugin is currently in the testing phase. Breaking changes might occur
 Jump through `:terminal`’s errors (or any other buffer).
 
 `bufix.nvim` is a navigation plugin similar to the quickfix list, but works on
@@ -251,6 +251,12 @@ one. Once buffer `A` gets deleted, buffer `B` becomes the current bufix buffer.
                                        to be a bufix buffer. If want to use the
                                        built-in |:errorformat|, then use
                                        |cbuffer| instead.
+
+
+                                                         *bufix-api.match()*
+
+
+`api.match({line})`                    Parses `{line}` and returns a `Capture` if successful.
 
 
 

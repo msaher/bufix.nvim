@@ -178,6 +178,9 @@ to be a bufix buffer. If want to use the
 built-in `:h :errorformat`, then use
 `:h cbuffer` instead.
 
+`api.match({line})`
+: Parses `{line}` and returns a `Capture` if successful.
+
 # Highlights
 
 The following highlights are provided:

@@ -16,6 +16,7 @@ bufix-api.goto_error_under_cursor()	bufix.txt	/*bufix-api.goto_error_under_curso
 bufix-api.goto_next_file()	bufix.txt	/*bufix-api.goto_next_file()*
 bufix-api.goto_prev()	bufix.txt	/*bufix-api.goto_prev()*
 bufix-api.goto_prev_file()	bufix.txt	/*bufix-api.goto_prev_file()*
+bufix-api.match()	bufix.txt	/*bufix-api.match()*
 bufix-api.move_to_next()	bufix.txt	/*bufix-api.move_to_next()*
 bufix-api.move_to_prev()	bufix.txt	/*bufix-api.move_to_prev()*
 bufix-api.register_buf()	bufix.txt	/*bufix-api.register_buf()*
