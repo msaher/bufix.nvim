@@ -18,6 +18,8 @@ Limitations:
 
 This plugin is inspired by emacs' M-x compile.
 
+https://github.com/user-attachments/assets/5ca33b68-bec3-44cc-b36b-ab0726b24a3d
+
 ## Installation
 
 This plugin requires nvim >= 0.10
